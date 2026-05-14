@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" fill="none">
+  <!-- Stylized world map silhouette - simplified continents -->
+  <defs>
+    <linearGradient id="oceanGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a3b5c"/>
+      <stop offset="1" stop-color="#0a1929"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#oceanGrad)" rx="4"/>
+
+  <!-- Grid lines -->
+  <g stroke="rgba(255,255,255,0.06)" stroke-width="1">
+    <line x1="0" y1="125" x2="800" y2="125"/>
+    <line x1="0" y1="250" x2="800" y2="250"/>
+    <line x1="0" y1="375" x2="800" y2="375"/>
+    <line x1="200" y1="0" x2="200" y2="500"/>
+    <line x1="400" y1="0" x2="400" y2="500"/>
+    <line x1="600" y1="0" x2="600" y2="500"/>
+  </g>
+
+  <!-- Stylized continents (highly abstracted) -->
+  <g fill="#c8102e" opacity="0.92">
+    <!-- North America -->
+    <path d="M120 110 Q90 130 95 170 L100 220 Q120 240 165 235 L195 200 Q210 175 195 155 L180 130 Q165 105 140 100 Z"/>
+    <!-- South America -->
+    <path d="M205 280 Q195 320 200 360 L215 405 Q230 425 245 415 L255 385 Q260 345 250 310 L235 285 Q225 270 215 275 Z" fill="#d4a936"/>
+  </g>
+  <g fill="#f4ead5" opacity="0.88">
+    <!-- Europe -->
+    <path d="M380 130 L420 125 L445 145 L440 175 L410 185 L380 175 L370 155 Z"/>
+    <!-- Africa -->
+    <path d="M385 200 Q380 240 395 285 L420 330 L440 320 L445 270 L435 230 L420 205 Z" fill="#1a3b5c" opacity="1"/>
+    <!-- Asia -->
+    <path d="M470 110 Q500 105 555 130 L620 150 L650 175 L640 215 L585 220 L530 200 L475 175 Z" fill="#c8102e" opacity="0.92"/>
+    <!-- India -->
+    <path d="M555 220 L560 250 L575 275 L585 250 L575 225 Z" fill="#d4a936"/>
+    <!-- SE Asia / Indonesia -->
+    <path d="M615 245 L645 250 L660 265 L640 280 L620 270 Z" fill="#f4ead5"/>
+    <!-- Australia -->
+    <path d="M620 330 Q605 345 615 370 L645 385 L685 380 L700 365 L690 340 L660 325 Z" fill="#1a3b5c"/>
+  </g>
+
+  <!-- Country borders highlighted -->
+  <g stroke="rgba(255,255,255,0.4)" stroke-width="0.8" fill="none">
+    <path d="M120 110 Q90 130 95 170 L100 220 Q120 240 165 235 L195 200 Q210 175 195 155 L180 130 Q165 105 140 100 Z"/>
+    <path d="M380 130 L420 125 L445 145 L440 175 L410 185 L380 175 L370 155 Z"/>
+    <path d="M470 110 Q500 105 555 130 L620 150 L650 175 L640 215 L585 220 L530 200 L475 175 Z"/>
+  </g>
+
+  <!-- Pulse rings to give "active" feel -->
+  <g fill="none" stroke="#d4a936" stroke-width="1.5" opacity="0.6">
+    <circle cx="400" cy="250" r="40"/>
+    <circle cx="400" cy="250" r="60" opacity="0.3"/>
+  </g>
+
+  <!-- Decorative compass rose in bottom right -->
+  <g transform="translate(720, 430)">
+    <circle r="32" fill="#f4ead5" stroke="#0a1929" stroke-width="2"/>
+    <path d="M0,-26 L4,0 L0,26 L-4,0 Z" fill="#c8102e"/>
+    <text y="-12" text-anchor="middle" font-family="serif" font-size="10" fill="#0a1929" font-weight="bold">N</text>
+  </g>
+
+  <!-- Editorial overlay text -->
+  <g font-family="monospace" fill="#f4ead5" opacity="0.4">
+    <text x="20" y="30" font-size="11" letter-spacing="2">ED. 01 · GLOBAL</text>
+    <text x="20" y="488" font-size="9" letter-spacing="1">FOOTBALL CONQUEST · BROADCAST PREVIEW</text>
+  </g>
+</svg>
