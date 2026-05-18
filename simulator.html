@@ -24,7 +24,12 @@ html,body{height:100%;background:#070e17;-webkit-user-select:none;user-select:no
 #paint-swatch.loaded{border-color:#378add;}
 #paint-label{font-size:10px;color:#7a9bb5;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis;}
 #mwrap{position:relative;flex:1;overflow:hidden;background:#0e2034;touch-action:none;}
-#msvg{display:block;width:100%;height:100%;}
+#msvg{display:block;width:100%;height:100%;position:relative;z-index:1;}
+/* Scattered FC logos behind the map — fills the dead navy negative space. */
+#fc-bg-pattern{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+/* Light mode: keep the pattern visible but recolour from red → dark navy and ease the
+   opacity so it reads as a watermark on the light blue background instead of competing. */
+body.map-light #fc-bg-pattern text{fill:#1a3550;opacity:0.13;}
 #erase-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;}
 #hint{position:absolute;top:8px;left:10px;font-size:10px;color:rgba(255,255,255,.28);pointer-events:none;z-index:4;line-height:1.5;}
 .tip{position:absolute;background:rgba(8,16,28,.95);border:1px solid #2a3f55;border-radius:6px;padding:4px 9px;font-size:11px;color:#fff;pointer-events:none;display:none;white-space:nowrap;z-index:20;}
@@ -34,17 +39,21 @@ html,body{height:100%;background:#070e17;-webkit-user-select:none;user-select:no
 /* Horizontal strip across the bottom, full-width */
 #game-panel{position:absolute;bottom:10px;left:10px;right:10px;
 background:rgba(7,14,23,.96);border:1px solid #2a3f55;border-radius:10px;
-display:none;flex-direction:row;z-index:25;overflow:hidden;
-box-shadow:0 6px 18px rgba(0,0,0,.5);align-items:stretch;}
+display:none;flex-direction:column;z-index:25;overflow:hidden;
+box-shadow:0 6px 18px rgba(0,0,0,.5);}
 #game-panel.open{display:flex;}
-.g-head{padding:8px 12px;background:#0a1624;border-right:1px solid #1a2f40;
-display:flex;flex-direction:column;justify-content:center;gap:6px;min-width:110px;}
-.g-title{font-size:11px;font-weight:600;color:#7ab8e8;letter-spacing:.5px;white-space:nowrap;}
+.g-head{padding:7px 16px;background:#0a1624;border-bottom:1px solid #1a2f40;
+display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:6px;}
+.g-title{font-size:13px;font-weight:600;color:#7ab8e8;letter-spacing:.5px;white-space:nowrap;}
 .g-head .g-stats{display:flex;gap:4px;}
-#game-close{background:transparent;border:none;color:#7a9bb5;font-size:14px;cursor:pointer;padding:0;
-position:absolute;top:6px;right:8px;}
+/* Redundant in lower HUD now that top floating HUD shows turn/remaining. */
+#game-panel.conquest-mode .g-head .g-stats{display:none;}
+/* Settings gear hidden in conquest mode (user-flagged as unused). Settings still
+   reachable for non-conquest sessions in case existing imperialism users rely on it. */
+#game-panel.conquest-mode #game-settings{display:none;}
+#game-close{background:transparent;border:none;color:#7a9bb5;font-size:14px;cursor:pointer;padding:0;}
 #game-close:hover{color:#fff;}
-.g-body{padding:8px 12px;display:flex;flex-direction:row;gap:10px;flex:1;align-items:center;min-width:0;}
+.g-body{padding:14px 16px;display:flex;flex-direction:row;gap:14px;flex:1;align-items:center;min-width:0;}
 .g-slots{display:flex;gap:6px;align-items:center;flex-shrink:0;}
 .g-slot{background:#0e2034;border:1px solid #1a2f40;border-radius:6px;padding:6px 10px;
 min-width:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
@@ -85,6 +94,91 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
 .g-btn.ghost{background:transparent;color:#7ab8e8;border:1px solid #2a4f6a;}
 .g-btn.ghost:hover{background:#1a2f40;}
 .g-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ──── Conquest mode: compact centered card with stacked layout ────────────
+   Card centers horizontally (auto width hugs content) instead of stretching
+   full-width. The body becomes a column: flags row above, action buttons row
+   below. Flags are large; the "World Conquest" title row and YOU/DEFENDER
+   slot labels are dropped so the card stays as short as possible. */
+#game-panel.conquest-mode{
+  left:50%;right:auto;width:auto;max-width:calc(100% - 24px);
+  bottom:32px;
+  transform:translateX(-50%);
+}
+/* Hide the title bar entirely in conquest — the hero context is already shown
+   in the floating top HUD. The close button stays as a tiny corner X. */
+#game-panel.conquest-mode .g-head{display:none;}
+#game-panel.conquest-mode #game-close{
+  display:block;position:absolute;top:6px;right:8px;z-index:2;
+  font-size:13px;color:#6a7e93;
+}
+#game-panel.conquest-mode #game-close:hover{color:#fff;}
+#game-panel.conquest-mode .g-body{
+  flex-direction:column;gap:10px;align-items:center;padding:14px 22px 14px;
+}
+/* Drop YOU/DEFENDER labels — flag + country name is enough context. */
+#game-panel.conquest-mode .g-slot-label{display:none;}
+#game-panel.conquest-mode .g-slot{min-width:110px;padding:6px 14px 8px;}
+#game-panel.conquest-mode .g-slot-flag{width:64px;height:40px;margin-top:0;}
+#game-panel.conquest-mode .g-slot-val{font-size:13px;margin-top:6px;}
+/* FC 26-style star rating row under each team name. Each of the 5 stars is
+   rendered as its own <span class="g-star ..."> with state full/half/empty —
+   no width-clip math, no glyph-width assumptions, just three independent
+   colour states. Half-stars use a left-to-right gold/grey gradient that's
+   text-clipped onto the ★ glyph. Conquest-mode only by default. */
+.g-slot-stars{display:none;font-size:11px;line-height:1;letter-spacing:1px;
+  margin:5px auto 0;text-align:center;user-select:none;white-space:nowrap;}
+.g-slot-stars .g-star{color:#3a4a5e;display:inline-block;}
+.g-slot-stars .g-star.full{color:#d4a936;
+  text-shadow:0 0 4px rgba(212,169,54,.45);}
+.g-slot-stars .g-star.half{
+  background:linear-gradient(90deg,#d4a936 50%,#3a4a5e 50%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  text-shadow:none;}
+#game-panel.conquest-mode .g-slot-stars{display:block;}
+#game-panel.conquest-mode .g-action-group{
+  flex-direction:row;gap:10px;flex:none;justify-content:center;
+}
+#game-panel.conquest-mode .g-actions{gap:0;}
+#game-panel.conquest-mode #g-spin-team,
+#game-panel.conquest-mode #g-resolve{
+  min-width:150px;padding:11px 20px;font-size:13px;font-weight:600;
+  border-radius:8px;letter-spacing:.4px;
+}
+@keyframes g-action-glow-blue{
+  0%,100%{box-shadow:0 0 0 0 rgba(116,196,255,.50),0 0 0 0 rgba(116,196,255,0);}
+  50%{box-shadow:0 0 18px 4px rgba(116,196,255,.40),0 0 0 2px rgba(116,196,255,.30);}
+}
+@keyframes g-action-glow-red{
+  0%,100%{box-shadow:0 0 0 0 rgba(255,90,90,.55),0 0 0 0 rgba(255,90,90,0);}
+  50%{box-shadow:0 0 20px 5px rgba(255,90,90,.45),0 0 0 2px rgba(255,90,90,.35);}
+}
+#game-panel.conquest-mode #g-spin-team:not(:disabled){animation:g-action-glow-blue 1.6s ease-in-out infinite;}
+#game-panel.conquest-mode #g-resolve:not(:disabled){animation:g-action-glow-red 1.4s ease-in-out infinite;}
+
+/* ──── Events log panel: collapsible top-right card showing the play-by-play ──
+   Was the right-hand column of the lower HUD; pulled out so the lower HUD can
+   focus on the action buttons. Visible whenever the game-panel is open
+   (via the sibling selector below). Sits with matching margin to the top and
+   right edges so it reads as a balanced corner card. */
+#g-events-panel{position:absolute;top:10px;right:10px;width:280px;
+  background:rgba(7,14,23,.97);border:1px solid #2a3f55;border-radius:10px;
+  display:none;flex-direction:column;z-index:24;overflow:hidden;
+  box-shadow:0 6px 18px rgba(0,0,0,.4);
+  max-height:240px;transition:max-height .25s ease;}
+#game-panel.open ~ #g-events-panel{display:flex;}
+#g-events-panel.collapsed{max-height:34px;}
+#g-events-header{padding:8px 12px;font-size:10px;color:#7ab8e8;font-weight:600;
+  letter-spacing:.4px;cursor:pointer;display:flex;justify-content:space-between;
+  align-items:center;border-bottom:1px solid #1a2f40;user-select:none;background:#0a1624;}
+#g-events-header:hover{background:#0d1c2e;}
+#g-events-toggle{color:#7ab8e8;transition:transform .25s;font-size:9px;}
+#g-events-panel.collapsed #g-events-toggle{transform:rotate(-90deg);}
+#g-events-panel.collapsed #g-events-header{border-bottom:none;}
+#g-events-panel #g-log{flex:1;min-height:0;max-height:none;overflow-y:auto;
+  padding:7px 12px;background:transparent;border-radius:0;
+  font-size:11px;line-height:1.5;color:#b8c9d8;}
 .g-log{font-size:13px;color:#cfdaea;flex:1;min-width:0;max-height:110px;overflow-y:auto;
 background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-log-empty{color:#4a6a80;font-style:italic;text-align:center;}
@@ -123,6 +217,76 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 
 
 /* Game Mode Startup Modal */
+/* Hall of Fame: shares the modal-overlay base with the other two. The card
+   itself is wider (640px) because it hosts a 7-column table of past runs. */
+#g-leaderboard-modal{position:absolute;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.6);z-index:50;display:none;justify-content:center;
+  align-items:center;backdrop-filter:blur(4px);}
+#g-leaderboard-modal.open{display:flex;}
+.g-leaderboard-card{background:#0e2034;border:1px solid #2a3f55;border-radius:10px;
+  padding:18px 20px;width:min(720px, 92%);max-height:80vh;display:flex;
+  flex-direction:column;box-shadow:0 12px 32px rgba(0,0,0,.55);}
+.g-leaderboard-header{display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:12px;font-size:18px;font-weight:700;color:#7ab8e8;letter-spacing:.5px;}
+#g-leaderboard-close{background:transparent;border:none;color:#7a9bb5;font-size:18px;
+  cursor:pointer;padding:0 6px;line-height:1;}
+#g-leaderboard-close:hover{color:#fff;}
+.g-leaderboard-tabs{display:flex;gap:4px;margin-bottom:10px;border-bottom:1px solid #1a2f40;}
+.g-leaderboard-tab{padding:8px 14px;background:transparent;border:none;color:#7a9bb5;
+  font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.3px;
+  border-bottom:2px solid transparent;transition:all .15s ease;}
+.g-leaderboard-tab:hover{color:#cfdaea;}
+.g-leaderboard-tab.active{color:#fff;border-bottom-color:#7ab8e8;}
+.g-leaderboard-controls{display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:10px;gap:14px;flex-wrap:wrap;}
+.g-lb-sort-label{display:flex;align-items:center;gap:8px;font-size:11px;
+  color:#7a9bb5;text-transform:uppercase;letter-spacing:.4px;font-weight:600;}
+#g-leaderboard-sort{background:#0a1624;color:#fff;border:1px solid #2a3f55;
+  padding:6px 10px;border-radius:6px;font-size:12px;cursor:pointer;
+  font-family:inherit;}
+#g-leaderboard-sort:focus{outline:none;border-color:#7ab8e8;}
+.g-lb-user-strip{display:flex;align-items:center;gap:10px;font-size:11px;color:#7a9bb5;}
+#g-lb-user-status b{color:#cfdaea;font-weight:600;}
+#g-lb-set-name{padding:5px 10px;font-size:11px;}
+.g-lb-loading{padding:34px 12px;text-align:center;color:#7a9bb5;font-size:12px;}
+.g-lb-error{padding:34px 12px;text-align:center;color:#ff8a8a;font-size:12px;line-height:1.5;}
+.g-lb-rank{font-weight:700;color:#7a9bb5;text-align:center;width:30px;}
+.g-lb-rank.top1{color:#ffd54a;}
+.g-lb-rank.top2{color:#cfdaea;}
+.g-lb-rank.top3{color:#d4a936;}
+.g-lb-username{color:#cfdaea;font-size:11px;}
+.g-lb-username.you{color:#6dd86d;font-weight:600;}
+.g-leaderboard-body{flex:1;overflow-y:auto;margin:-4px -4px 12px;padding:4px;}
+.g-leaderboard-empty{padding:34px 12px;text-align:center;color:#7a9bb5;font-size:13px;line-height:1.5;}
+.g-leaderboard-empty b{color:#cfdaea;display:block;font-size:15px;margin-bottom:6px;}
+.g-leaderboard-table{width:100%;border-collapse:collapse;font-size:12px;}
+.g-leaderboard-table thead th{background:#0a1624;color:#7a9bb5;font-size:10px;
+  text-transform:uppercase;letter-spacing:.5px;padding:8px 8px;text-align:left;
+  border-bottom:1px solid #1a2f40;font-weight:600;position:sticky;top:0;}
+.g-leaderboard-table tbody td{padding:9px 8px;border-bottom:1px solid #14283a;
+  color:#cfdaea;vertical-align:middle;}
+.g-leaderboard-table tbody tr:hover td{background:rgba(122,184,232,.05);}
+.g-lb-flag{width:28px;height:18px;background-size:cover;background-position:center;
+  border:1px solid rgba(255,255,255,0.18);border-radius:2px;display:inline-block;
+  vertical-align:middle;}
+.g-lb-flag.empty{background:#1a2f40;border-style:dashed;}
+.g-lb-country{font-weight:600;color:#fff;}
+.g-lb-result{font-weight:700;letter-spacing:.3px;font-size:11px;text-transform:uppercase;
+  padding:2px 7px;border-radius:10px;display:inline-block;}
+.g-lb-result.victory{background:rgba(109,216,109,.15);color:#6dd86d;border:1px solid rgba(109,216,109,.4);}
+.g-lb-result.eliminated{background:rgba(255,138,138,.15);color:#ff8a8a;border:1px solid rgba(255,138,138,.4);}
+.g-lb-num{font-variant-numeric:tabular-nums;color:#cfdaea;}
+.g-lb-num b{color:#fff;font-weight:600;}
+.g-lb-gd-pos{color:#6dd86d;font-weight:600;}
+.g-lb-gd-neg{color:#ff8a8a;font-weight:600;}
+.g-lb-date{color:#7a9bb5;font-size:11px;white-space:nowrap;}
+.g-lb-elim{color:#ff8a8a;font-size:11px;}
+.g-leaderboard-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  border-top:1px solid #1a2f40;padding-top:12px;margin-top:auto;}
+.g-leaderboard-count{font-size:11px;color:#7a9bb5;letter-spacing:.4px;}
+#g-leaderboard-clear{padding:7px 13px;font-size:11px;color:#ff8a8a;
+  border:1px solid rgba(255,138,138,.3);background:transparent;}
+#g-leaderboard-clear:hover{background:rgba(255,138,138,.1);}
 #g-startup-modal, #g-result-modal{position:absolute;top:0;left:0;width:100%;height:100%;
   background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:50;
   display:none;align-items:center;justify-content:center;}
@@ -155,23 +319,79 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 #g-start-conquest{width:100%;padding:10px;font-size:13px;}
 #g-start-conquest:disabled{opacity:0.4;cursor:not-allowed;}
 
-/* Result Modal */
+/* Result Modal — flags on the sides, score inputs in the center, name + label
+   stacked under each flag. Hero on the left, opponent on the right. */
 .g-result-matchup{display:flex;align-items:center;justify-content:space-between;
-  background:#0e2034;border-radius:8px;padding:16px;margin-bottom:14px;gap:10px;}
-.g-result-team{flex:1;text-align:center;}
-.g-result-team-label{font-size:9px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
-.g-result-team-name{font-size:14px;font-weight:600;color:#fff;margin-bottom:8px;}
-.g-result-score{width:60px;height:50px;font-size:28px;font-weight:700;text-align:center;
+  background:#0e2034;border-radius:8px;padding:18px 16px;margin-bottom:14px;gap:14px;}
+.g-result-team{display:flex;flex-direction:column;align-items:center;gap:7px;
+  width:112px;flex-shrink:0;text-align:center;}
+.g-result-flag{width:80px;height:54px;background-size:cover;background-position:center;
+  border:1px solid rgba(255,255,255,0.2);border-radius:4px;}
+.g-result-flag.empty{background:#1a2f40;border-style:dashed;}
+.g-result-team-name{font-size:14px;font-weight:600;color:#fff;line-height:1.15;margin:0;}
+.g-result-team-label{font-size:9px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;margin:0;}
+/* Country playstyle chip — colour-coded so the player can read the matchup
+   at a glance. Populated by updateResultPreview from teamPlaystyle(). */
+.g-result-style{font-size:10px;font-weight:700;letter-spacing:.3px;
+  padding:2px 7px;border-radius:10px;text-transform:uppercase;margin-top:2px;
+  border:1px solid transparent;}
+.g-result-style[data-style="defensive"]{background:rgba(122,184,232,.15);color:#7ab8e8;border-color:rgba(122,184,232,.4);}
+.g-result-style[data-style="balanced"] {background:rgba(207,218,234,.10);color:#cfdaea;border-color:rgba(207,218,234,.3);}
+.g-result-style[data-style="attacking"]{background:rgba(255,138,138,.15);color:#ff8a8a;border-color:rgba(255,138,138,.4);}
+.g-result-scores{display:flex;align-items:center;gap:10px;flex:1;justify-content:center;}
+.g-result-score{width:62px;height:56px;font-size:28px;font-weight:700;text-align:center;
   background:#0a1624;border:1px solid #2a3f55;color:#fff;border-radius:6px;
   font-variant-numeric:tabular-nums;}
 .g-result-score:focus{outline:none;border-color:#7ab8e8;}
-.g-result-vs{font-size:18px;color:#7a9bb5;font-weight:700;}
+.g-result-vs{font-size:22px;color:#7a9bb5;font-weight:700;}
+/* ── Match preview: live win probability + xG + tactic selector ──
+   Sits between the matchup row and the Simulate CTA. Values update on tactic
+   change (no Simulate needed) so the player sees how each choice tilts odds. */
+.g-result-preview{background:#0a1624;border:1px solid #1a2f40;border-radius:8px;
+  padding:14px 16px;margin-bottom:14px;}
+.g-result-prob-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+.g-result-prob-label{font-size:10px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
+.g-result-prob-value{font-size:20px;font-weight:700;color:#6dd86d;font-variant-numeric:tabular-nums;
+  transition:color .2s ease;}
+.g-result-prob-value.warn{color:#ffd54a;}
+.g-result-prob-value.danger{color:#ff8a8a;}
+.g-result-prob-bar{height:6px;background:#1a2f40;border-radius:3px;overflow:hidden;margin-bottom:10px;}
+.g-result-prob-fill{height:100%;width:0;background:linear-gradient(90deg,#3a8a3a,#6dd86d);
+  transition:width .3s ease, background .3s ease;}
+.g-result-prob-fill.warn{background:linear-gradient(90deg,#8a6a1a,#ffd54a);}
+.g-result-prob-fill.danger{background:linear-gradient(90deg,#702828,#ff8a8a);}
+.g-result-xg-row{font-size:12px;color:#7a9bb5;text-align:center;margin-bottom:12px;letter-spacing:.3px;}
+.g-result-xg-row b{color:#fff;font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;}
+.g-result-xg-dash{margin:0 6px;color:#4a6580;}
+.g-result-tactics{display:flex;align-items:center;gap:10px;}
+.g-result-tactics-label{font-size:10px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;
+  font-weight:600;flex-shrink:0;}
+.g-result-tactic-btns{display:flex;gap:5px;flex:1;}
+.g-tactic-btn{flex:1;padding:8px 10px;background:#162a3e;border:1px solid #2a3f55;color:#cfdaea;
+  font-size:11px;font-weight:600;cursor:pointer;border-radius:6px;transition:all .15s ease;
+  white-space:nowrap;}
+.g-tactic-btn:hover{background:#1d3550;border-color:#3a5570;}
+.g-tactic-btn.active{background:#1e3a5c;border-color:#7ab8e8;color:#fff;
+  box-shadow:0 0 0 1px rgba(122,184,232,.3);}
 .g-result-finish{display:flex;justify-content:center;gap:14px;margin-bottom:14px;color:#cfdaea;font-size:12px;}
 .g-result-finish label{cursor:pointer;display:flex;align-items:center;gap:5px;}
 #g-result-pens-row{text-align:center;color:#cfdaea;font-size:12px;margin-bottom:14px;}
 #g-result-pens-row .g-result-score{width:50px;height:36px;font-size:18px;}
 .g-result-actions{display:flex;gap:8px;justify-content:flex-end;}
 .g-result-actions .g-btn{min-width:100px;padding:10px 16px;font-size:13px;}
+/* Simulate match — prominent CTA above the manual score-entry block.
+   Same red as the splash Play button so the "instant resolve" semantic carries through. */
+.g-sim-btn{width:100%;padding:12px 16px;border-radius:8px;border:1px solid #c8102e;
+  background:#c8102e;color:#fff;font-size:13px;font-weight:600;letter-spacing:0.6px;
+  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  font-family:inherit;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .12s;
+  margin-bottom:10px;}
+.g-sim-btn:hover{background:#d92133;}
+.g-sim-btn:active{transform:translateY(1px);}
+.g-sim-btn .g-sim-icon{font-size:15px;}
+.g-result-or{display:flex;align-items:center;gap:10px;color:#7a9bb5;font-size:9px;
+  letter-spacing:2px;text-transform:uppercase;margin:0 0 14px;}
+.g-result-or::before,.g-result-or::after{content:"";flex:1;height:1px;background:#1a2f40;}
 
 
 @keyframes g-hero-tri-pulse{
@@ -196,6 +416,14 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-hud-row{font-size:13px;color:#cfdaea;line-height:1.5;padding:2px 0;}
 .g-hud-row b{color:#fff;font-weight:700;}
 #g-hud-turn{font-size:12px;color:#7a9bb5;letter-spacing:0.5px;text-transform:uppercase;font-weight:600;}
+/* Campaign stats row: same visual weight as the turn row above it, but with
+   semantic accents — green for W/positive GD, red for L/negative GD. */
+#g-hud-stats{font-size:12px;color:#7a9bb5;letter-spacing:0.5px;text-transform:uppercase;font-weight:600;}
+#g-hud-stats b.w{color:#6dd86d;}
+#g-hud-stats b.l{color:#ff8a8a;}
+#g-hud-stats b.gd-pos{color:#6dd86d;}
+#g-hud-stats b.gd-neg{color:#ff8a8a;}
+#g-hud-stats b.gd-zero{color:#cfdaea;}
 #g-hud-loss{font-size:15px;font-weight:600;}
 #g-hud-loss.warn{color:#ffd54a;}
 #g-hud-loss.danger{color:#ff8a8a;animation:g-hud-pulse 1s ease-in-out infinite;}
@@ -205,6 +433,16 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 #g-hud-last.win b.team{color:#6dd86d;}
 #g-hud-last.loss b.team{color:#ff8a8a;}
 #g-hud-last.over{color:#ffd54a;font-weight:700;font-size:15px;animation:g-hud-pulse 1.2s ease-in-out infinite;}
+/* New Game button — appears inside the HUD when game is over (loss or victory).
+   pointer-events:auto overrides the HUD's pointer-events:none so it's clickable. */
+#g-hud-newgame{display:none;margin-top:12px;padding:9px 22px;background:#c8102e;
+  color:#fff;border:1px solid #c8102e;border-radius:6px;font-size:12px;font-weight:600;
+  letter-spacing:1px;cursor:pointer;pointer-events:auto;font-family:inherit;
+  -webkit-tap-highlight-color:transparent;transition:background .15s,transform .12s;
+  display:none;}
+#g-hud-newgame.show{display:inline-flex;align-items:center;gap:7px;}
+#g-hud-newgame:hover{background:#d92133;}
+#g-hud-newgame:active{transform:translateY(1px);}
 
 
 /* Dramatic Game Over / Victory overlay */
@@ -236,13 +474,34 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 #g-over-dismiss{padding:14px 36px;font-size:14px;letter-spacing:1px;text-transform:uppercase;}
 
 
-/* Light-map theme: pale ocean + adjusted contrast */
-body.map-light #mwrap{background:#d8e4ec;}
+/* Light-map theme: pale ocean + adjusted contrast.
+   All three "blue" surfaces (mwrap bg, ocean corner area, projection sphere) are unified
+   to a single blue #a8c8e0 so there's no visual seam between outer and inner rectangles.
+   The FC checker pattern shows in light mode too — recoloured to a soft dark-navy so it
+   reads on the light bg instead of the red used in dark mode. */
+body.map-light #mwrap{background:#a8c8e0;}
 body.map-light #app{background:#0b1520;} /* keep app chrome dark */
 body.map-light #hdr{background:#0b1520;}
-/* SWITCH THE ACTUAL OCEAN: SVG background rect + Earth sphere */
-body.map-light .ocean-bg{fill:#8fb8d8!important;}
-body.map-light .ocean-sphere{fill:#a8c8e0!important;stroke:#5285a8!important;}
+/* ocean-bg stays transparent in light mode (same as dark) so the pattern shows in the
+   curved corner gaps. ocean-sphere fills the projection ellipse with the unified blue,
+   hiding the pattern inside the map area exactly like dark mode does. */
+body.map-light .ocean-bg{fill:transparent!important;}
+/* Light-mode stroke only — fill comes from the radial gradient (#ocean-grad)
+   whose stops swap via .og-near / .og-far below. */
+body.map-light .ocean-sphere{stroke:#5285a8!important;}
+/* ── Texture pass: subtle 3D feel without going actual 3D ──────────────────
+   Drop-shadow under landmasses raises the continents off the ocean. Radial
+   gradient on the ocean sphere fakes globe-lighting (brighter top-left,
+   darker edges). Stop colours swap with the dark/light theme via these
+   class hooks; the gradient itself is injected in buildMap(). */
+#active-layer{filter:drop-shadow(0 4px 5px rgba(0,0,0,0.55));}
+#inact{filter:drop-shadow(0 3px 4px rgba(0,0,0,0.45));}
+body.map-light #active-layer{filter:drop-shadow(0 4px 5px rgba(0,0,0,0.25));}
+body.map-light #inact{filter:drop-shadow(0 3px 4px rgba(0,0,0,0.18));}
+.og-near{stop-color:#1a3a5c;stop-opacity:1;}
+.og-far{stop-color:#070f1a;stop-opacity:1;}
+body.map-light .og-near{stop-color:#c0d8ea;stop-opacity:1;}
+body.map-light .og-far{stop-color:#7e9cb8;stop-opacity:1;}
 body.map-light #label-layer text{fill:rgba(20,30,45,0.85)!important;stroke:rgba(255,255,255,0.85)!important;}
 body.map-light .inactive-country{fill:#d5dce2!important;stroke:rgba(0,0,0,0.18)!important;}
 /* Slightly darker borders on light bg for better contrast */
@@ -251,12 +510,110 @@ body.map-light .border-seg{stroke:rgba(0,0,0,0.65)!important;}
 body.map-light .g-trail-arrow.g-trail-win path{stroke:rgba(20,30,45,0.55)!important;}
 body.map-light .g-trail-arrow.g-trail-win polygon{fill:rgba(20,30,45,0.75)!important;}
 
+/* ── Splash launcher overlay ─────────────────────────────────── */
+/* Shown when no game is active. Click "Play Conquest" to open the mode-picker modal. */
+#fc-splash{position:absolute;inset:0;display:none;z-index:40;
+  background:rgba(7,14,23,0.55);align-items:center;justify-content:center;}
+body.fc-splash-active #fc-splash{display:flex;}
+/* Blur the live map (group #mg holds all countries + flag badges) while splash is up */
+body.fc-splash-active #mg{filter:blur(6px);transition:filter .25s ease;}
+body.fc-splash-active #hint{display:none;}
+body.fc-splash-active .zc{display:none;}
+/* Hide toolbar buttons that don't apply when on the splash. Modes (View/Erase/Paint/Flags)
+   and the legacy Game button are hidden globally — they're tabled for a future manual-edit mode.
+   Undo/History only hide on the splash and return during gameplay. */
+#btn-view,#btn-erase,#btn-paint,#btn-flags,#btn-game{display:none!important;}
+body.fc-splash-active #btn-undo,
+body.fc-splash-active #btn-history{display:none;}
+/* Logo in the top-left replaces the old "FC Map Editor" text */
+.fc-logo{display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;background:#0a1929;border:1px solid #1a2f40;border-radius:4px;
+  font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;font-weight:bold;
+  color:#c8102e;font-size:15px;line-height:1;letter-spacing:-0.5px;margin-right:4px;}
+/* Splash card */
+.fc-splash-card{position:relative;width:300px;height:300px;background:#0a1929;
+  border:1px solid rgba(212,169,54,0.35);border-radius:12px;overflow:hidden;
+  box-shadow:0 12px 40px rgba(0,0,0,0.7);}
+.fc-splash-card .fc-bg{position:absolute;inset:0;width:100%;height:100%;}
+.fc-splash-card .fc-corner-tl{position:absolute;top:13px;left:15px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;
+  color:#f4ead5;opacity:0.5;letter-spacing:2px;}
+.fc-splash-card .fc-corner-br{position:absolute;bottom:11px;right:15px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:8px;
+  color:#f4ead5;opacity:0.4;letter-spacing:1.5px;}
+.fc-splash-content{position:relative;height:100%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:24px;gap:14px;}
+.fc-splash-badge{width:38px;height:38px;background:#0a1929;
+  border:1px solid rgba(212,169,54,0.5);border-radius:5px;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;font-weight:bold;
+  color:#c8102e;font-size:22px;line-height:1;}
+.fc-splash-wordmark{color:#f4ead5;font-size:11px;font-weight:700;letter-spacing:3.5px;
+  text-align:center;margin-bottom:14px;}
+.fc-play-btn{padding:12px 30px;border-radius:6px;border:1px solid #c8102e;
+  background:#c8102e;color:#fff;font-size:13px;font-weight:600;letter-spacing:1px;
+  cursor:pointer;display:inline-flex;align-items:center;gap:9px;font-family:inherit;
+  animation:fc-pulse-glow 2.4s ease-in-out infinite;
+  -webkit-tap-highlight-color:transparent;transition:transform .15s;}
+.fc-play-btn:hover{transform:translateY(-1px);animation-duration:1.6s;}
+.fc-play-btn:active{transform:translateY(0);}
+@keyframes fc-pulse-glow{
+  0%,100%{box-shadow:0 0 18px rgba(200,16,46,0.35),0 0 36px rgba(200,16,46,0.15);}
+  50%{box-shadow:0 0 30px rgba(200,16,46,0.75),0 0 60px rgba(200,16,46,0.35);}
+}
+/* Pulse rings behind the card */
+.fc-pulse-rings{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:340px;height:340px;pointer-events:none;}
+.fc-pulse-rings circle{transform-origin:170px 170px;animation:fc-ring 2.4s ease-out infinite;}
+.fc-pulse-rings circle:nth-child(2){animation-delay:1.2s;}
+@keyframes fc-ring{
+  0%{transform:scale(0.85);opacity:0.6;}
+  100%{transform:scale(1.4);opacity:0;}
+}
+/* Secondary "Load saved game" button on the splash — below PLAY CONQUEST */
+.fc-load-btn{margin-top:14px;padding:7px 18px;border-radius:5px;
+  border:1px solid rgba(212,169,54,0.35);background:transparent;color:#f4ead5;
+  opacity:0.75;font-size:10px;font-weight:500;letter-spacing:1.5px;cursor:pointer;
+  font-family:inherit;display:inline-flex;align-items:center;gap:7px;
+  -webkit-tap-highlight-color:transparent;transition:all .15s;}
+.fc-load-btn:hover{opacity:1;border-color:rgba(212,169,54,0.6);
+  background:rgba(212,169,54,0.08);}
+.fc-load-btn:active{transform:translateY(1px);}
+/* Hamburger menu in the top-right toolbar */
+.fc-menu-wrap{position:relative;display:inline-flex;}
+.fc-menu-btn{padding:4px 9px!important;font-size:14px!important;line-height:1!important;}
+.fc-menu-popover{position:absolute;top:calc(100% + 4px);right:0;
+  background:#0a1624;border:1px solid #2a3f55;border-radius:8px;padding:4px;
+  min-width:190px;z-index:35;box-shadow:0 6px 18px rgba(0,0,0,0.55);
+  display:none;font-size:11px;}
+.fc-menu-popover.open{display:block;}
+.fc-menu-item{display:flex;align-items:center;gap:9px;padding:8px 11px;
+  color:#cfdaea;cursor:pointer;border-radius:4px;
+  -webkit-tap-highlight-color:transparent;transition:background .12s;
+  user-select:none;}
+.fc-menu-item:hover{background:#14283a;color:#fff;}
+.fc-menu-item .fc-menu-icon{font-size:13px;width:16px;display:inline-flex;
+  justify-content:center;flex-shrink:0;}
+.fc-menu-item.danger{color:#c76b6b;}
+.fc-menu-item.danger:hover{color:#e07070;background:#2a1414;}
+.fc-menu-sep{height:1px;background:#1a2f40;margin:4px 8px;}
+/* Menu items only available while a game is in progress. Hidden by default;
+   the hamburger handler adds .fc-game-on to the popover when GAME.active. */
+.fc-menu-game-only{display:none;}
+.fc-menu-popover.fc-game-on .fc-menu-game-only{display:flex;}
+/* Hide certain items while a World Conquest game is in progress — they'd break game state. */
+.fc-menu-popover.fc-conquest-active .fc-menu-hide-in-conquest{display:none;}
+/* The old toolbar buttons stay in the DOM (so existing click handlers keep
+   working) but are hidden — their actions are exposed via the splash or
+   the hamburger menu now. */
+#btn-save,#btn-load,#btn-theme,#btn-reset{display:none!important;}
+
 </style>
 </head>
 <body>
 <div id="app">
   <div id="hdr">
-    <span class="htitle">FC Map Editor</span>
+    <span class="fc-logo" aria-label="Football Conquest">FC</span>
     <div class="modes">
       <button class="mbtn active" id="btn-view">👁 View<span class="kbadge">V</span></button>
       <button class="mbtn" id="btn-erase">✏ Erase<span class="kbadge">E</span></button>
@@ -279,9 +636,36 @@ body.map-light .g-trail-arrow.g-trail-win polygon{fill:rgba(20,30,45,0.75)!impor
       <button class="abtn" id="btn-load">📂 Load</button>
       <button class="abtn" id="btn-theme" title="Toggle light/dark map">☀️ Light</button>
       <button class="abtn" id="btn-reset" title="Clear all changes (can undo)">⟳ Reset</button>
+      <div class="fc-menu-wrap">
+        <button class="abtn fc-menu-btn" id="fc-menu-btn" type="button" aria-label="Menu" aria-haspopup="true" aria-expanded="false">☰</button>
+        <div class="fc-menu-popover" id="fc-menu" role="menu">
+          <div class="fc-menu-item" id="fc-menu-save" role="menuitem"><span class="fc-menu-icon">💾</span><span>Save game</span></div>
+          <div class="fc-menu-item fc-menu-game-only" id="fc-menu-end" role="menuitem"><span class="fc-menu-icon">🎲</span><span>New game</span></div>
+          <div class="fc-menu-item" id="fc-menu-leaderboard" role="menuitem"><span class="fc-menu-icon">🏆</span><span>Hall of Fame</span></div>
+          <div class="fc-menu-item" id="fc-menu-theme" role="menuitem"><span class="fc-menu-icon">☀</span><span id="fc-menu-theme-label">Light map</span></div>
+          <div class="fc-menu-sep"></div>
+          <div class="fc-menu-item danger fc-menu-hide-in-conquest" id="fc-menu-reset" role="menuitem"><span class="fc-menu-icon">⟳</span><span>Reset map</span></div>
+        </div>
+      </div>
     </div>
   </div>
   <div id="mwrap">
+    <!-- FC checker pattern behind the map. Sits behind the SVG ocean fill, so it only shows
+         through the corner gaps and letterbox strips outside the map projection. -->
+    <svg id="fc-bg-pattern" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <filter id="fc-checker-blur" x="-10%" y="-10%" width="120%" height="120%">
+          <feGaussianBlur stdDeviation="3.5"/>
+        </filter>
+        <pattern id="fc-checker-pat" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+          <text x="50"  y="50"  text-anchor="middle" dy="0.35em" font-family="Impact, 'Arial Black', Haettenschweiler, sans-serif" font-weight="900" font-size="54" fill="#c8102e" opacity="0.22">FC</text>
+          <text x="150" y="50"  text-anchor="middle" dy="0.35em" font-family="Impact, 'Arial Black', Haettenschweiler, sans-serif" font-weight="900" font-size="28" fill="#c8102e" opacity="0.16">FC</text>
+          <text x="50"  y="150" text-anchor="middle" dy="0.35em" font-family="Impact, 'Arial Black', Haettenschweiler, sans-serif" font-weight="900" font-size="28" fill="#c8102e" opacity="0.16">FC</text>
+          <text x="150" y="150" text-anchor="middle" dy="0.35em" font-family="Impact, 'Arial Black', Haettenschweiler, sans-serif" font-weight="900" font-size="54" fill="#c8102e" opacity="0.22">FC</text>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#fc-checker-pat)" filter="url(#fc-checker-blur)"/>
+    </svg>
     <svg id="msvg" viewBox="0 0 10000 5000" xmlns="http://www.w3.org/2000/svg">
       <g id="mg"></g>
     </svg>
@@ -289,6 +673,49 @@ body.map-light .g-trail-arrow.g-trail-win polygon{fill:rgba(20,30,45,0.75)!impor
     <div id="flag-handles" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;"></div>
     <div id="hint">Scroll/pinch to zoom · Drag to pan</div>
     <div class="tip" id="tip"></div>
+
+    <!-- ── Splash launcher: front door when no game is active ─────────────── -->
+    <div id="fc-splash" aria-hidden="false">
+      <svg class="fc-pulse-rings" viewBox="0 0 340 340" aria-hidden="true">
+        <circle cx="170" cy="170" r="80" fill="none" stroke="#d4a936" stroke-width="1.5" opacity="0.6"/>
+        <circle cx="170" cy="170" r="80" fill="none" stroke="#d4a936" stroke-width="1.5" opacity="0.6"/>
+      </svg>
+      <div class="fc-splash-card" role="dialog" aria-label="Football Conquest launcher">
+        <svg class="fc-bg" viewBox="0 0 300 300" fill="none" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+          <rect width="300" height="300" fill="#0a1929"/>
+          <rect width="300" height="300" fill="#1a3b5c" opacity="0.25"/>
+          <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+            <line x1="0" y1="100" x2="300" y2="100"/>
+            <line x1="0" y1="200" x2="300" y2="200"/>
+            <line x1="100" y1="0" x2="100" y2="300"/>
+            <line x1="200" y1="0" x2="200" y2="300"/>
+          </g>
+          <g opacity="0.55">
+            <path d="M32 75 Q16 91 22 118 L27 150 Q38 166 64 161 L86 139 Q97 123 86 107 L75 91 Q59 70 43 70 Z" fill="#c8102e"/>
+            <path d="M77 177 Q70 209 77 236 L88 257 Q99 263 107 255 L113 230 Q116 204 107 177 Z" fill="#d4a936"/>
+            <path d="M127 70 L150 67 L167 80 L164 102 L145 107 L129 99 Z" fill="#f4ead5"/>
+            <path d="M131 123 Q127 147 139 177 L155 201 L167 197 L171 166 L165 142 L153 126 Z" fill="#1a3b5c"/>
+            <path d="M182 65 Q207 63 246 78 L279 90 L284 107 L268 118 L238 110 L198 96 L177 84 Z" fill="#c8102e"/>
+            <path d="M238 139 L243 163 L252 180 L259 164 L252 139 Z" fill="#d4a936"/>
+            <path d="M252 214 Q241 230 252 248 L273 257 L289 251 L284 233 L270 220 Z" fill="#1a3b5c"/>
+          </g>
+        </svg>
+        <div class="fc-corner-tl">ED. 01 · GLOBAL</div>
+        <div class="fc-corner-br">BROADCAST PREVIEW</div>
+        <div class="fc-splash-content">
+          <span class="fc-splash-badge">FC</span>
+          <div class="fc-splash-wordmark">FOOTBALL CONQUEST</div>
+          <button class="fc-play-btn" id="fc-splash-play" type="button">
+            <span style="font-size:11px;">▶</span>
+            <span>PLAY CONQUEST</span>
+          </button>
+          <button class="fc-load-btn" id="fc-splash-load" type="button">
+            <span style="font-size:11px;opacity:0.8;">📂</span>
+            <span>LOAD SAVED GAME</span>
+          </button>
+        </div>
+      </div>
+    </div>
     
     <div id="g-startup-modal" style="display:none;">
       <div class="g-start-card">
@@ -314,20 +741,90 @@ body.map-light .g-trail-arrow.g-trail-win polygon{fill:rgba(20,30,45,0.75)!impor
       </div>
     </div>
 
+    <!-- Hall of Fame: persistent campaign history. Records survive in localStorage
+         under key 'fc-leaderboard'. Auto-populated on Victory and Game-Over events. -->
+    <div id="g-leaderboard-modal" style="display:none;">
+      <div class="g-leaderboard-card">
+        <div class="g-leaderboard-header">
+          <span>🏆 Hall of Fame</span>
+          <button id="g-leaderboard-close" type="button" aria-label="Close">✕</button>
+        </div>
+        <!-- Tabs let the player swap between their own browser-local records
+             and the global server-side rankings. -->
+        <div class="g-leaderboard-tabs" role="tablist">
+          <button class="g-leaderboard-tab active" data-tab="local"  type="button" role="tab">📁 Your Runs</button>
+          <button class="g-leaderboard-tab"        data-tab="global" type="button" role="tab">🌍 Global Rankings</button>
+        </div>
+        <!-- Global-tab controls: sort selector + display-name strip. Hidden on local tab. -->
+        <div class="g-leaderboard-controls" id="g-leaderboard-controls" style="display:none;">
+          <label class="g-lb-sort-label">
+            Sort by
+            <select id="g-leaderboard-sort">
+              <option value="wins">Most Wins</option>
+              <option value="fastest_victory">Fastest Victory</option>
+              <option value="gd">Best Goal Difference</option>
+              <option value="gf">Most Goals Scored</option>
+              <option value="recent">Most Recent</option>
+            </select>
+          </label>
+          <div class="g-lb-user-strip">
+            <span id="g-lb-user-status"></span>
+            <button id="g-lb-set-name" class="g-btn ghost" type="button">Set name</button>
+          </div>
+        </div>
+        <div class="g-leaderboard-body" id="g-leaderboard-body">
+          <!-- Populated by renderLeaderboard() or renderGlobalLeaderboard() -->
+        </div>
+        <div class="g-leaderboard-footer">
+          <span id="g-leaderboard-count" class="g-leaderboard-count"></span>
+          <button id="g-leaderboard-clear" class="g-btn ghost" type="button">Clear local records</button>
+        </div>
+      </div>
+    </div>
     <div id="g-result-modal" style="display:none;">
       <div class="g-result-card">
         <div class="g-result-title">Match Result</div>
+        <button class="g-sim-btn" id="g-result-sim" type="button">
+          <span class="g-sim-icon">🎲</span>
+          <span>Simulate match instantly</span>
+        </button>
+        <div class="g-result-or"><span>or enter manually</span></div>
         <div class="g-result-matchup">
           <div class="g-result-team">
-            <div class="g-result-team-label">YOU</div>
+            <div class="g-result-flag empty" id="g-result-hero-flag"></div>
             <div class="g-result-team-name" id="g-result-hero">—</div>
-            <input type="number" min="0" max="99" value="0" class="g-result-score" id="g-result-hero-score">
+            <div class="g-result-team-label">YOU</div>
+            <div class="g-result-style" id="g-result-hero-style">—</div>
           </div>
-          <div class="g-result-vs">—</div>
-          <div class="g-result-team">
-            <div class="g-result-team-label">OPPONENT</div>
-            <div class="g-result-team-name" id="g-result-opp">—</div>
+          <div class="g-result-scores">
+            <input type="number" min="0" max="99" value="0" class="g-result-score" id="g-result-hero-score">
+            <span class="g-result-vs">–</span>
             <input type="number" min="0" max="99" value="0" class="g-result-score" id="g-result-opp-score">
+          </div>
+          <div class="g-result-team">
+            <div class="g-result-flag empty" id="g-result-opp-flag"></div>
+            <div class="g-result-team-name" id="g-result-opp">—</div>
+            <div class="g-result-team-label">OPPONENT</div>
+            <div class="g-result-style" id="g-result-opp-style">—</div>
+          </div>
+        </div>
+        <!-- Match preview: live win probability + xG that responds to the tactic choice below. -->
+        <div class="g-result-preview" id="g-result-preview">
+          <div class="g-result-prob-row">
+            <span class="g-result-prob-label">Win probability</span>
+            <span class="g-result-prob-value" id="g-result-prob-pct">—</span>
+          </div>
+          <div class="g-result-prob-bar"><div class="g-result-prob-fill" id="g-result-prob-fill"></div></div>
+          <div class="g-result-xg-row">
+            Expected goals: <b id="g-result-xg-hero">—</b> <span class="g-result-xg-dash">–</span> <b id="g-result-xg-opp">—</b>
+          </div>
+          <div class="g-result-tactics">
+            <span class="g-result-tactics-label">Tactic</span>
+            <div class="g-result-tactic-btns" id="g-result-tactic-btns">
+              <button class="g-tactic-btn" data-tactic="defensive" type="button">🛡️ Defensive</button>
+              <button class="g-tactic-btn active" data-tactic="balanced" type="button">⚖️ Balanced</button>
+              <button class="g-tactic-btn" data-tactic="attacking" type="button">⚔️ Attacking</button>
+            </div>
           </div>
         </div>
         <div class="g-result-finish">
@@ -361,8 +858,10 @@ body.map-light .g-trail-arrow.g-trail-win polygon{fill:rgba(20,30,45,0.75)!impor
     <!-- Floating turn HUD (World Conquest mode) -->
     <div id="g-hud" style="display:none;">
       <div class="g-hud-row" id="g-hud-turn"></div>
+      <div class="g-hud-row" id="g-hud-stats" style="display:none;"></div>
       <div class="g-hud-row" id="g-hud-loss" style="display:none;"></div>
       <div class="g-hud-row" id="g-hud-last" style="display:none;"></div>
+      <button id="g-hud-newgame" type="button"><span>🎲</span><span>New Game</span></button>
     </div>
 
     <div id="game-panel">
@@ -401,12 +900,14 @@ body.map-light .g-trail-arrow.g-trail-win polygon{fill:rgba(20,30,45,0.75)!impor
             <div class="g-slot-label">Attacker</div>
             <div class="g-slot-flag" id="g-attacker-flag"></div>
             <div class="g-slot-val" id="g-attacker">—</div>
+            <div class="g-slot-stars" id="g-attacker-stars"></div>
           </div>
           <div class="g-middle" id="g-middle"><span class="g-vs">vs</span></div>
           <div class="g-slot">
             <div class="g-slot-label">Defender</div>
             <div class="g-slot-flag" id="g-defender-flag"></div>
             <div class="g-slot-val" id="g-defender">—</div>
+            <div class="g-slot-stars" id="g-defender-stars"></div>
           </div>
         </div>
         <div class="g-action-group">
@@ -415,12 +916,21 @@ body.map-light .g-trail-arrow.g-trail-win polygon{fill:rgba(20,30,45,0.75)!impor
             <button class="g-btn primary" id="g-spin-arrow" disabled>➤ Spin arrow</button>
           </div>
           <div class="g-actions">
-            <button class="g-btn danger" id="g-resolve" disabled>⚔️ Resolve battle</button>
+            <button class="g-btn danger" id="g-resolve" disabled>⚔️ Play Match</button>
             <button class="g-btn ghost" id="g-skip" disabled>Skip turn</button>
           </div>
         </div>
-        <div class="g-log" id="g-log"><div class="g-log-empty">Click Pick attacker to begin.</div></div>
       </div>
+    </div>
+    <!-- Events log panel: separated from the lower HUD so the action buttons can be
+         the focal point. Collapsible — click the header to fold/expand. Visible via
+         CSS sibling selector whenever #game-panel is open. -->
+    <div id="g-events-panel">
+      <div id="g-events-header">
+        <span>🕘 Events</span>
+        <span id="g-events-toggle">▼</span>
+      </div>
+      <div id="g-log"><div class="g-log-empty">Click Pick attacker to begin.</div></div>
     </div>
     <div id="history-panel">
       <div id="history-header">
@@ -950,10 +1460,116 @@ const FIFA_POINTS={
   "San Marino":635,
   // Tiny/rare nations default
   "Vatican City":600,"Monaco":600,"Sealand":600,"Greenland":600,
-  "Bonaire":750,"Falkland Islands":700
+  "Bonaire":750,"Falkland Islands":700,
+  // ── Aliases for NATIONS-array names ──
+  // The NATIONS array uses abbreviated / locally-styled names that don't match
+  // the canonical FIFA spelling. Without these aliases, fifaRating() falls back
+  // to 1000 → teamStars() returns 1.5★ (silent failure). Each alias points to
+  // the same value as its canonical twin elsewhere in this table.
+  "Bosnia":1450,                  // "Bosnia and Herzegovina"
+  "Czech Rep.":1475,              // "Czech Republic" / "Czechia"
+  "Faroe Is.":1055,               // "Faroe Islands"
+  "N. Macedonia":1345,            // "North Macedonia"
+  "N. Ireland":1360,              // "Northern Ireland"
+  "Antigua":970,                  // "Antigua and Barbuda"
+  "British VI":680,               // "British Virgin Islands"
+  "Cayman Is.":685,               // "Cayman Islands"
+  "Curaçao":1285,                 // "Curacao" (NATIONS uses the ç form)
+  "Dominican Rep.":1025,          // "Dominican Republic"
+  "St. Kitts":960,                // "St. Kitts and Nevis"
+  "St. Vincent":860,              // "St. Vincent and the Grenadines"
+  "Trinidad":1190,                // "Trinidad and Tobago"
+  "Turks & Caicos":690,           // "Turks and Caicos Islands"
+  "US Virgin Is.":675,            // "U.S. Virgin Islands"
+  "Cabo Verde":1290,              // "Cape Verde"
+  "CAR":1030,                     // "Central African Republic"
+  "Eq. Guinea":865,               // "Equatorial Guinea"
+  "São Tomé":700,                 // "Sao Tome and Principe"
+  "S. Korea":1588.66,             // "South Korea"  ← the bug from the screenshot
+  "Solomon Is.":830,              // "Solomon Islands"
+  // ── Estimated values for nations not in the official FIFA April 2026 list ──
+  // These are NATIONS-array members with no canonical FIFA entry to alias to.
+  // Estimates anchored to typical historical rank position; revise if a real
+  // FIFA points figure becomes available.
+  "Congo":1130,                   // Republic of Congo (not DR Congo) — historic rank ~115-125
+  "Namibia":1180,                 // historic rank ~105-115
+  "North Korea":1180,             // DPR Korea — historic rank ~110-120
+  "NMI":600                       // Northern Mariana Islands — not a FIFA member, floor value
 };
 function fifaRating(teamName){
   return FIFA_POINTS[teamName] || 1000; // fallback for any unmatched
+}
+// Each country's real-world playstyle identity. Three buckets:
+//   'defensive' — parks the bus, low block, counter-attack (Morocco, Iran, Switzerland)
+//   'balanced'  — possession-based, controls midfield (Spain, Germany, Japan) ← default
+//   'attacking' — high press, attacking flair, fast transitions (Brazil, Netherlands)
+// Only teams with a clear identity are listed; everyone else falls through to
+// 'balanced' via teamPlaystyle(). Editable: feel free to recategorize as
+// historical play patterns shift (e.g., Italy modern is more attacking than
+// the catenaccio cliche; included as 'attacking' here).
+const TEAM_PLAYSTYLE={
+  // Attacking identities
+  "Brazil":"attacking","Argentina":"attacking","Netherlands":"attacking",
+  "England":"attacking","Portugal":"attacking","Croatia":"attacking","Italy":"attacking",
+  "Türkiye":"attacking","Turkey":"attacking","Norway":"attacking","Serbia":"attacking",
+  "Belgium":"attacking","Mexico":"attacking","Colombia":"attacking","Uruguay":"attacking",
+  "Ecuador":"attacking","Chile":"attacking","Venezuela":"attacking",
+  "Senegal":"attacking","Nigeria":"attacking","Cameroon":"attacking",
+  "Cote d'Ivoire":"attacking","Ivory Coast":"attacking","Ghana":"attacking",
+  "Egypt":"attacking","Algeria":"attacking","Tunisia":"attacking","Mali":"attacking",
+  "Australia":"attacking","Japan":"attacking","Saudi Arabia":"attacking",
+  "South Korea":"attacking","S. Korea":"attacking",
+  // Defensive identities (parks the bus / counter-attack / minnow-by-necessity)
+  "Iran":"defensive","Morocco":"defensive","Switzerland":"defensive",
+  "Slovakia":"defensive","Greece":"defensive","Iceland":"defensive",
+  "Northern Ireland":"defensive","N. Ireland":"defensive","Wales":"defensive",
+  "Albania":"defensive","Costa Rica":"defensive","Honduras":"defensive",
+  "Madagascar":"defensive","Mauritania":"defensive","Bahrain":"defensive",
+  "Yemen":"defensive","Oman":"defensive","Kuwait":"defensive","Vietnam":"defensive",
+  "North Korea":"defensive","Faroe Is.":"defensive","Faroe Islands":"defensive",
+  "Andorra":"defensive","San Marino":"defensive","Liechtenstein":"defensive",
+  "Malta":"defensive","Gibraltar":"defensive"
+  // All other 150+ countries: balanced (the default in teamPlaystyle())
+};
+function teamPlaystyle(teamName){
+  return TEAM_PLAYSTYLE[teamName] || 'balanced';
+}
+// FC 26–style 1.0–5.0 star rating in 0.5 increments, derived from FIFA Men's
+// World Ranking points. Anchors: top 10 → 5★; Türkiye (1599) / Denmark (1620) → 4.5★.
+// Bucket thresholds tuned so the cutoffs feel intuitive against the current
+// April 2026 FIFA table — adjust here if the table refreshes meaningfully.
+function teamStars(teamName){
+  const pts=fifaRating(teamName);
+  if(pts>=1720) return 5.0;
+  if(pts>=1580) return 4.5;
+  if(pts>=1490) return 4.0;
+  if(pts>=1380) return 3.5;
+  if(pts>=1280) return 3.0;
+  if(pts>=1170) return 2.5;
+  if(pts>=1060) return 2.0;
+  if(pts>=920)  return 1.5;
+  return 1.0;
+}
+// Update a slot's star-row to reflect a team's rating. Renders 5 independent
+// <span class="g-star ..."> children with full / half / empty state per star —
+// no width-clip math, no glyph-width assumptions. The half threshold is 0.5
+// (anything ≥X.5 lights up the half-star), since teamStars() always returns
+// values rounded to .0 or .5 anyway.
+function setSlotStars(elId, team){
+  const el=document.getElementById(elId);
+  if(!el) return;
+  if(!team){el.innerHTML='';el.removeAttribute('title');return;}
+  const r=teamStars(team.name);
+  let html='';
+  for(let i=1;i<=5;i++){
+    let cls;
+    if(r>=i)         cls='full';
+    else if(r>=i-0.5)cls='half';
+    else             cls='empty';
+    html+='<span class="g-star '+cls+'">★</span>';
+  }
+  el.innerHTML=html;
+  el.title=team.name+' · '+r.toFixed(1)+'★ · '+Math.round(fifaRating(team.name))+' FIFA pts';
 }
 
 let mode='view',worldTopo,proj,pg,zoomBeh,svgSel;
@@ -985,6 +1601,10 @@ let flagDragId=null,flagDragStart=null,flagDragging=false;
 let selectedFlagId=null;
 const flagScales={};
 const defaultFlagScaleById={}; // id → area-based default scale
+const wvBoost={}; // id → world-view boost multiplier, based on territory bbox dimensions
+                  // Multiplies the default scale at k=1 so large countries (Russia/Canada/etc.)
+                  // get dramatically bigger flags at fully zoomed-out view. Fades cubically to
+                  // 1.0 by REF_K so mid-zoom and zoomed-in behavior is unchanged.
 let resizing=false,resizeData=null;
 const TAP_PX=16;
 let activePid=null;
@@ -1368,6 +1988,19 @@ function restoreBorder(pair){
   if(el) el.setAttribute('opacity','1');
 }
 
+// Audit faded borders: restore any border in fadedPairs whose two isos no longer share
+// an owner. Needed when territory transfers piecemeal between two surviving teams (e.g.
+// conquest retreat), where borders faded under one regime are now cross-team and should
+// be visible again. Idempotent — safe to call after any territory transfer.
+function auditFadedBorders(){
+  [...fadedPairs].forEach(pair=>{
+    const [iso1,iso2]=pair.split('|');
+    if(GAME.ownerOf[iso1]!==GAME.ownerOf[iso2]){
+      restoreBorder(pair);
+    }
+  });
+}
+
 // ── Badges ────────────────────────────────────────────────────
 function drawBadge(parent,team,cx,cy){
   const g=parent.append('g')
@@ -1434,18 +2067,21 @@ function densityScale(id){
 // Dynamic scale: grow with map up to REF_K zoom, then hold constant screen size
 function effS(s,k){
   // At k <= REF_K: natural scale grows with the map (flag keeps proportional size to map)
-  // At k >  REF_K: flag SHRINKS in screen space so zooming in doesn't pile flags on top of each other
+  // At k >  REF_K: flag stays at constant pixel size on screen (exponent = 1.0).
+  //               Cleaner than aggressive shrink (overshot small) or sub-1 grow (overshot big).
   let natural;
   if(k<=REF_K){
     natural=s*FLAG_SCALE*k/REF_K; // simple proportional growth up to REF_K
     const damp=Math.pow(k/REF_K,0.45); // damping at low zoom
     natural*=damp;
   } else {
-    // Past REF_K, shrink with (REF_K/k)^1.3 — stronger than constant-screen-size
-    // At k=REF_K: natural = s*FLAG_SCALE*1.0
-    // At k=5:    natural = s*FLAG_SCALE*(2.5/5)^1.3 ≈ s*FLAG_SCALE*0.41  (screen ~20% of before)
-    // At k=10:   natural = s*FLAG_SCALE*(2.5/10)^1.3 ≈ s*FLAG_SCALE*0.166 (screen ~8% of before)
-    natural=s*FLAG_SCALE*Math.pow(REF_K/k,1.3);
+    // Past REF_K: (REF_K/k)^1.0 — constant-screen-size behavior.
+    // On-screen pixel size of a flag = scale * k = s*FLAG_SCALE*REF_K, independent of k.
+    // At k=REF_K: natural = s*FLAG_SCALE*1.0     (continuous with the k<=REF branch)
+    // At k=5:     natural = s*FLAG_SCALE*0.50
+    // At k=10:    natural = s*FLAG_SCALE*0.25
+    // At k=20:    natural = s*FLAG_SCALE*0.125
+    natural=s*FLAG_SCALE*Math.pow(REF_K/k,1.0);
   }
   const floor=0.3/k; // ~9px minimum screen width (reduced from 16px — flags can stay small when zoomed in)
   return Math.max(natural,floor);
@@ -1552,9 +2188,40 @@ function scaleBadges(k){
     // Above REF_K, taper density effect back toward 0. At k=2*REF (~5), weight is 0.5. At k=10, near 0.
     densityWeight=Math.max(0, 1 - (k-REF)/(REF*2));
   }
+  // boostWeight: how much of the area-based size boost (s_raw above 1.0) to apply at this zoom.
+  // Designed to fix mid-zoom oversize on huge countries (Russia, Canada, USA, China, Australia):
+  //   k = 1     (world view): full boost → big countries dramatically larger
+  //   k = REF_K (~2.5):       minimum boost → big flags shrink back toward median behavior
+  //   k > REF_K (zoomed in):  partial recovery (effS already shrinks aggressively)
+  let boostWeight;
+  if(k<=1){
+    boostWeight=1.0;
+  } else if(k<=REF){
+    const t=(k-1)/(REF-1); // 0 → 1
+    boostWeight=1.0-0.6*t; // 1.0 at k=1 → 0.4 at REF_K
+  } else {
+    const t=Math.min(1,(k-REF)/(REF*1.5)); // 0 → 1 over k=REF..2.5*REF
+    boostWeight=0.4+0.2*t; // 0.4 at REF_K → 0.6 at high zoom
+  }
+  // wvFade: world-view bbox-based multiplicative boost.
+  //   k = 1     → full boost (huge countries fill ~50% of their bbox)
+  //   k = REF_K → no boost (returns to area-based + mid-zoom-corrected behavior)
+  // Cubic falloff so the boost vanishes faster than effS grows, preventing any peak between
+  // world view and mid-zoom.
+  let wvFade;
+  if(k<=1) wvFade=1.0;
+  else if(k>=REF) wvFade=0.0;
+  else wvFade=Math.pow(1-(k-1)/(REF-1),3);
   d3.select('#badge-layer').selectAll('.fbadge').attr('transform',function(){
     const id=parseInt(this.getAttribute('data-badge-id'));
-    const s=getScale(id);
+    const s_raw=getScale(id);
+    // Apply boost-weight only to the EXCESS above 1.0 (i.e., oversized flags from area-based sizing).
+    // Flags at or below the median (s_raw <= 1.0) pass through unchanged.
+    const s_bw=s_raw>1.0?(1.0+(s_raw-1.0)*boostWeight):s_raw;
+    // Apply world-view bbox boost as a multiplier on top, fading to 1.0 by REF_K
+    const wvB=wvBoost[id]||1.0;
+    const wvMult=1.0+(wvB-1.0)*wvFade;
+    const s=s_bw*wvMult;
     // Blend density dampener with zoom: full effect at zoomed-in views, less at world view
     const d=densityScale(id);
     const blended=1-(1-d)*densityWeight;
@@ -2003,9 +2670,22 @@ function buildMap(world){
   const g=d3.select('#mg');g.selectAll('*').remove();
   const byIso={};teams.forEach(t=>byIso[t.iso]=t);
 
-  g.append('rect').attr('width',10000).attr('height',5000).attr('fill','#0e2034').attr('class','ocean-bg');
+  // Transparent ocean rect: lets the FC checker pattern in #fc-bg-pattern (sitting behind
+  // #msvg in mwrap) show through the entire map area. Kept as an empty rect for any code
+  // that still queries .ocean-bg, but with no visual fill.
+  g.append('rect').attr('width',10000).attr('height',5000).attr('fill','transparent').attr('class','ocean-bg');
+  // ── Defs for the texture pass: a radial gradient that gives the ocean sphere
+  // a soft "globe-lit" appearance. Stop colours come from .og-near / .og-far CSS,
+  // which swap with the dark/light theme automatically. cx/cy place the highlight
+  // toward the upper-left so it reads as light-from-above.
+  g.append('defs').html(
+    `<radialGradient id="ocean-grad" cx="0.35" cy="0.28" r="0.85">
+       <stop class="og-near" offset="0%"/>
+       <stop class="og-far"  offset="100%"/>
+     </radialGradient>`
+  );
   g.append('path').datum({type:'Sphere'}).attr('d',pg)
-    .attr('fill','#163045').attr('stroke','#1e3d5c').attr('stroke-width',3).attr('pointer-events','none').attr('class','ocean-sphere');
+    .attr('fill','url(#ocean-grad)').attr('stroke','#1e3d5c').attr('stroke-width',3).attr('pointer-events','none').attr('class','ocean-sphere');
 
   const countries=topojson.feature(world,world.objects.countries);
   g.append('g').attr('id','inact').selectAll('path')
@@ -2013,13 +2693,26 @@ function buildMap(world){
     .attr('fill','#1a3550').attr('stroke','rgba(255,255,255,0.12)').attr('stroke-width',1.5).attr('pointer-events','none').attr('class','inactive-country');
 
   const al=g.append('g').attr('id','active-layer');
+  // Resolve the display name for a hovered country path. In an active game, the
+  // territory's current owner takes precedence over the static team assignment
+  // — so a country that's been conquered shows the conqueror's name in the tooltip.
+  function currentOwnerName(el){
+    const iso=el.getAttribute('data-iso');
+    if(GAME&&GAME.active&&GAME.ownerOf&&GAME.ownerOf[iso]!==undefined){
+      const owner=GAME.state[GAME.ownerOf[iso]];
+      if(owner) return owner.name;
+    }
+    const t=teams[+el.getAttribute('data-team')];
+    return t?t.name:null;
+  }
+
   // Helper: attach the standard hover/paint handlers to a newly-created path element
   function wireCountryPath(node, isoStr, teamId){
     node.attr('class','cp').attr('data-iso',isoStr).attr('data-team',String(teamId))
       .on('mouseover',function(ev){
         if(mode!=='view')return;
-        const t=teams[+this.getAttribute('data-team')];if(!t)return;
-        $('tip').textContent=t.name;$('tip').style.display='block';
+        const name=currentOwnerName(this);if(!name)return;
+        $('tip').textContent=name;$('tip').style.display='block';
       })
       .on('mousemove',ev=>{const b=mwrap.getBoundingClientRect();$('tip').style.left=(ev.clientX-b.left+10)+'px';$('tip').style.top=(ev.clientY-b.top-30)+'px';})
       .on('mouseout',()=>$('tip').style.display='none');
@@ -2128,8 +2821,8 @@ function buildMap(world){
               .attr('class','cp').attr('data-iso',isoStr).attr('data-team',String(t.id))
               .on('mouseover',function(ev){
                 if(mode!=='view')return;
-                const tm=teams[+this.getAttribute('data-team')];if(!tm)return;
-                $('tip').textContent=tm.name;$('tip').style.display='block';
+                const name=currentOwnerName(this);if(!name)return;
+                $('tip').textContent=name;$('tip').style.display='block';
               })
               .on('mousemove',ev=>{const b=mwrap.getBoundingClientRect();$('tip').style.left=(ev.clientX-b.left+10)+'px';$('tip').style.top=(ev.clientY-b.top-30)+'px';})
               .on('mouseout',()=>$('tip').style.display='none')
@@ -2233,8 +2926,49 @@ function buildMap(world){
       const sqrtA=areaMap[String(t.iso)];
       if(sqrtA==null){defaultFlagScaleById[t.id]=1.0;return;}
       const raw=sqrtA/median;
-      const clamped=Math.max(0.25,Math.min(1.6,Math.sqrt(raw)));
+      const clamped=Math.max(0.25,Math.min(3.0,Math.sqrt(raw)));
       defaultFlagScaleById[t.id]=clamped;
+    });
+  }
+  // ── World-view bbox boost ─────────────────────────────────────
+  // For each country, find the LARGEST sub-polygon (avoids outliers like Alaska, French Guiana,
+  // Svalbard, Greenland) and use its bounding box to compute how much to boost the flag at
+  // fully zoomed-out view (k=1). Target: flag width fills WV_TARGET_FRAC of the smaller bbox
+  // dimension at k=1, so huge countries like Russia get a flag proportional to their territory.
+  // Capped at WV_MAX_BOOST to prevent unreasonable values.
+  {
+    const WV_TARGET_FRAC=0.5;   // flag should fill ~50% of smaller bbox dim at k=1
+    const WV_MAX_BOOST=6.0;     // hard cap on per-team multiplier
+    // At k=1: effS(s,1) ≈ 0.185*s, so on-screen flag width = BW * 0.185 * s
+    // Required s = WV_TARGET_FRAC * minDim / (BW * 0.185)
+    const K1_EFFS_FACTOR=0.185;
+    countries.features.forEach(f=>{
+      const team=byIso[+f.id];if(!team)return;
+      const geom=f.geometry;if(!geom)return;
+      let polys=[];
+      if(geom.type==='Polygon') polys=[geom.coordinates[0]];
+      else if(geom.type==='MultiPolygon') polys=geom.coordinates.map(p=>p[0]);
+      if(polys.length===0) return;
+      // Find largest sub-polygon by projected bbox area
+      let bestW=0,bestH=0,bestArea=0;
+      polys.forEach(ring=>{
+        let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+        ring.forEach(pt=>{
+          const p=proj(pt);if(!p||isNaN(p[0]))return;
+          if(p[0]<minX)minX=p[0];if(p[0]>maxX)maxX=p[0];
+          if(p[1]<minY)minY=p[1];if(p[1]>maxY)maxY=p[1];
+        });
+        if(minX===Infinity)return;
+        const w=maxX-minX,h=maxY-minY,area=w*h;
+        if(area>bestArea){bestArea=area;bestW=w;bestH=h;}
+      });
+      if(bestArea<=0)return;
+      const minDim=Math.min(bestW,bestH);
+      const sDef=defaultFlagScaleById[team.id]||1.0;
+      const sNeeded=WV_TARGET_FRAC*minDim/(BW*K1_EFFS_FACTOR);
+      // Boost is the multiplier needed to scale s_default up to s_needed.
+      // Math.max(1.0,...) ensures small countries aren't shrunk.
+      wvBoost[team.id]=Math.max(1.0,Math.min(WV_MAX_BOOST,sNeeded/sDef));
     });
   }
   // Compute neighborhood density once for adaptive flag sizing
@@ -2243,10 +2977,11 @@ function buildMap(world){
   const badgeG=g.append('g').attr('id','badge-layer').attr('pointer-events','none');
   g.append('g').attr('id','conquest-trail-layer').attr('pointer-events','none');
   g.append('g').attr('id','game-layer').attr('pointer-events','none');
-  // Game overlay layer — lives INSIDE #mg so it inherits the D3 zoom transform.
-  // Previously we had a separate fixed SVG overlay, but that caused misalignment.
-  g.append('g').attr('id','conquest-trail-layer').attr('pointer-events','none');
-  g.append('g').attr('id','game-layer').attr('pointer-events','none');
+  // Hero glow layer renders ABOVE the game-layer so the yellow indicator triangles
+  // around the hero flag stay visible even when the spin-arrow dial is on screen.
+  // (Previously the glow shared conquest-trail-layer, which renders BELOW the
+  // spin dial, so the dial's cream fill obscured the triangles.)
+  g.append('g').attr('id','hero-glow-layer').attr('pointer-events','none');
   // handle-layer now uses HTML overlay (#flag-handles div)
   const initK=d3.zoomTransform(svgSel?svgSel.node():document.getElementById('msvg')).k||1;
   teams.forEach(t=>{
@@ -2570,6 +3305,14 @@ function gSlots(){
       dfEl.classList.remove('empty');
     } else {dfEl.style.backgroundImage='';dfEl.classList.add('empty');}
   }
+  // Star ratings (FC 26-style, conquest mode only — see .g-slot-stars CSS).
+  // Empty slots collapse to a 0-width fill so just the grey ☆☆☆☆☆ shows.
+  // Wrapped in try/catch so a star-render bug can never block game startup
+  // or any other slot refresh.
+  try{
+    setSlotStars('g-attacker-stars', a);
+    setSlotStars('g-defender-stars', d);
+  }catch(e){console.warn('setSlotStars failed (non-fatal):',e);}
   // Middle area: reset to "vs" unless a score is showing
   const mid=document.getElementById('g-middle');
   if(mid&&!mid.dataset.showingScore){
@@ -2629,6 +3372,22 @@ function gameInit(){
 
 function gameRender(){
   gStats();gSlots();gBtnState();
+  syncConquestBadges();
+}
+// Defensive cleanup: any team marked alive=false should NOT have a flag on the
+// map. This handles edge cases where the per-action badge.remove() in
+// handleConquestWin missed (History panel replay, save/load, future bugs).
+// Idempotent — safe to call as often as we like. The ray-cast already skips
+// !alive teams, so a phantom flag misleads the player into expecting a fight
+// against a country whose territory has actually transferred to someone else.
+function syncConquestBadges(){
+  if(!GAME||!GAME.active||!GAME.state) return;
+  teams.forEach(t=>{
+    const st=GAME.state[t.id];
+    if(!st||st.alive) return;
+    const badge=document.querySelector(`.fbadge[data-badge-id="${t.id}"]`);
+    if(badge) badge.remove();
+  });
 }
 
 function clearGameOverlay(){
@@ -2737,13 +3496,55 @@ function panTo(target,zoom){
   const newT=d3.zoomIdentity.translate(tx,ty).scale(k);
   svgSel.transition().duration(800).ease(d3.easeCubicInOut).call(zoomBeh.transform,newT);
 }
+// Pan + zoom-out the camera so every point in `points` ends up inside the viewport
+// with a small padding margin. Capped at `maxK` (defaults to current zoom) so this
+// function will only ever zoom OUT — never zoom in by surprise. Used after the spin
+// arrow lands so a far-away defender becomes visible alongside the hero.
+function panToFitPoints(points,opts){
+  if(!svgSel||!zoomBeh||!points||!points.length)return;
+  opts=opts||{};
+  const padding=opts.padding!=null?opts.padding:0.18;          // 18% margin per side
+  const minK=opts.minK||1.2;                                    // never zoom out past this
+  const maxK=opts.maxK!=null?opts.maxK:currentK();              // never zoom IN past this
+  const duration=opts.duration||850;
+  let mnX=Infinity,mnY=Infinity,mxX=-Infinity,mxY=-Infinity,have=false;
+  points.forEach(p=>{
+    if(!p||p[0]==null||p[1]==null||isNaN(p[0])||isNaN(p[1]))return;
+    if(p[0]<mnX)mnX=p[0]; if(p[0]>mxX)mxX=p[0];
+    if(p[1]<mnY)mnY=p[1]; if(p[1]>mxY)mxY=p[1];
+    have=true;
+  });
+  if(!have)return;
+  const cx=(mnX+mxX)/2, cy=(mnY+mxY)/2;
+  const dx=mxX-mnX, dy=mxY-mnY;
+  // Required scale so the bounding span fits with padding on both sides.
+  const kx=dx>1?VW/(dx*(1+2*padding)):Infinity;
+  const ky=dy>1?VH/(dy*(1+2*padding)):Infinity;
+  let k=Math.min(kx,ky);
+  if(!isFinite(k)) k=maxK;
+  k=Math.max(minK,Math.min(k,maxK));
+  const tx=VW/2 - k*cx;
+  const ty=VH/2 - k*cy;
+  const newT=d3.zoomIdentity.translate(tx,ty).scale(k);
+  svgSel.transition().duration(duration).ease(d3.easeCubicInOut).call(zoomBeh.transform,newT);
+}
 
 // ── Spin the arrow to find a defender ──
 function gameSpinArrow(){
   if(!GAME.active||GAME.phase!=='picked-att')return;
+  // Re-entry guard: if a spin animation is already in flight, ignore additional clicks.
+  // The button's disabled attribute should prevent this, but in conquest mode the visible
+  // "Spin Arrow" is actually g-spin-team (relabeled), and a stray render-cycle could
+  // momentarily re-enable it. This flag is the authoritative lock.
+  if(window._fcSpinning) return;
+  window._fcSpinning=true;
   const attC=teamCentroid(GAME.attacker.id);
-  if(!attC){gLog('Could not locate attacker.');return;}
+  if(!attC){gLog('Could not locate attacker.');window._fcSpinning=false;return;}
   const btn=document.getElementById('g-spin-arrow');btn.disabled=true;
+  // In conquest mode the visible "Spin Arrow" is the relabeled g-spin-team button.
+  // Disable it explicitly here — gBtnState() won't re-evaluate until the animation ends.
+  const teamBtn=document.getElementById('g-spin-team');
+  if(teamBtn) teamBtn.disabled=true;
 
   // Pick a RANDOM direction first — the arrow will end pointing in this direction.
   // Then ray-cast along that direction to find whoever gets hit.
@@ -2752,6 +3553,7 @@ function gameSpinArrow(){
   if(!pick){
     gLog('⚠️ <b>'+GAME.attacker.name+'</b> has no one to attack! Turn skipped.');
     GAME.phase='idle';GAME.turn++;
+    window._fcSpinning=false;
     gameRender();
     return;
   }
@@ -2855,10 +3657,17 @@ function gameSpinArrow(){
       p.setAttribute('transform',`rotate(${normalizedTarget})`);
       GAME.defender=defender;
       GAME.phase='picked-def';
+      window._fcSpinning=false;
       gLog('➤ Arrow points at <b>'+defender.name+'</b>!');
       highlightDefender(defC);
       drawAttackLine(attC,defC);
       gameRender();
+      // Frame the matchup: zoom out (if needed) so the attacker, the ray's hit
+      // point, AND the defender's flag are all visible. Capped at current zoom,
+      // so close-range attacks don't surprise-zoom. The hero pan that runs on
+      // win/loss resolution (Math.max(6, currentK())) puts the camera back.
+      const defFlagC=teamCentroid(defender.id);
+      panToFitPoints([attC,defC,defFlagC]);
       // Refresh HUD so loss tally appears if we have prior losses vs this defender
       if(typeof refreshConquestHud==='function') refreshConquestHud();
       // In conquest mode, the spin itself is undoable — gives the player a clean way
@@ -3195,11 +4004,16 @@ function _ringsFor(iso){
   }
   // Standard countries — use the polygon as-is
   const rings=[];
-  // Sanity threshold: discard any single polygon ring whose projected bbox is wider than
-  // 40% of map width. These are almost always antimeridian-crossing multipolygons where raw
-  // coordinates weren't split cleanly (e.g. Fiji islands at +179° and -179° interpreted as a
-  // single ring spanning the whole Pacific, which projects as a horizontal band across the map).
-  const MAX_RING_WIDTH=VW*0.4;
+  // Antimeridian handling: when a polygon's geometry crosses 180°E/180°W, the
+  // projection produces ONE spurious edge that jumps across the entire viewport
+  // (e.g., a vertex at lon 179.9°E and the next at lon 179.9°W project to
+  // opposite ends of viewBox X). Russia (Chukotka), Fiji, Kiribati and a few
+  // others have this. PREVIOUSLY we discarded any polygon containing such a
+  // jump — but that threw away Russia's entire mainland polygon, so ray-casts
+  // from Asia toward Europe couldn't see Russia.
+  // NEW: keep the polygon intact, but flag the offending edges so _rayHitsRing
+  // can skip them. Real edges around the rest of the perimeter still get tested.
+  const WRAP_JUMP=VW*0.5;
   polys.forEach(poly=>{
     if(!poly||!poly.length) return;
     const outer=poly[0];
@@ -3212,9 +4026,16 @@ function _ringsFor(iso){
       if(p[0]<minX)minX=p[0];if(p[1]<minY)minY=p[1];
       if(p[0]>maxX)maxX=p[0];if(p[1]>maxY)maxY=p[1];
     });
-    if(pts.length>=3 && (maxX-minX)<MAX_RING_WIDTH){
-      rings.push({points:pts,bbox:{minX,minY,maxX,maxY}});
+    if(pts.length<3) return;
+    // Build the set of edges (i → i+1, mod N) that span more than half the
+    // map width — these are the antimeridian-wrap artifacts. Stored as a Set
+    // of starting-vertex indices for O(1) lookup during ray testing.
+    const skipEdges=new Set();
+    for(let i=0;i<pts.length;i++){
+      const j=(i+1)%pts.length;
+      if(Math.abs(pts[j][0]-pts[i][0]) > WRAP_JUMP) skipEdges.add(i);
     }
+    rings.push({points:pts,bbox:{minX,minY,maxX,maxY},skipEdges});
   });
   return _isoRings[iso]=rings;
 }
@@ -3237,10 +4058,16 @@ function _rayHitsRing(rayX,rayY,dx,dy,maxDist,ring){
     tmax=Math.min(tmax,Math.max(ty1,ty2));
   } else if(rayY<bb.minY||rayY>bb.maxY) return null;
   if(tmin>tmax||tmax<0) return null;
-  // Now test each polygon edge for intersection; return smallest positive t
+  // Now test each polygon edge for intersection; return smallest positive t.
+  // ring.skipEdges (built by _ringsFor) holds indices of antimeridian-wrap
+  // spurious edges that we must NOT test — without this, Russia's polygon
+  // would have a single fake edge spanning the entire viewport that the ray
+  // could "hit" first and pull the closest-hit answer to a phantom location.
   const pts=ring.points;
+  const skip=ring.skipEdges;
   let bestT=Infinity;
   for(let i=0;i<pts.length;i++){
+    if(skip && skip.has(i)) continue;
     const a=pts[i], b=pts[(i+1)%pts.length];
     // Ray: (rayX+t*dx, rayY+t*dy). Segment: a + u*(b-a).
     const ex=b[0]-a[0], ey=b[1]-a[1];
@@ -3540,6 +4367,10 @@ function gameEnd(){
   GAME.active=false;GAME.phase='idle';
   clearGameOverlay();
   gameRender();
+  // Close the game panel and return to the splash launcher.
+  const _gp=document.getElementById('game-panel');
+  if(_gp) _gp.classList.remove('open');
+  if(typeof window.fcShowSplash==='function') window.fcShowSplash();
 }
 
 // Merge all internal borders for a team (fade borders between its owned isos)
@@ -3741,6 +4572,8 @@ fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json')
 function openConquestStartup(){
   const modal=document.getElementById('g-startup-modal');
   if(!modal)return;
+  // Any entry path to the mode picker should clear the splash first.
+  if(typeof window.fcHideSplash==='function') window.fcHideSplash();
   modal.classList.add('open');
   modal.style.display='flex';
   // Reset selection state
@@ -3754,6 +4587,15 @@ function openConquestStartup(){
 function closeConquestStartup(){
   const modal=document.getElementById('g-startup-modal');
   if(modal){modal.classList.remove('open');modal.style.display='none';}
+  // If the user cancelled the mode picker (no game started), bring the splash back
+  // and close the game panel in case an earlier entry path (like the 'g' key) opened it.
+  // Note: GAME is `const`-declared at script top-level, so it's NOT on window —
+  // reference the lexical binding directly.
+  if(!GAME.active){
+    const _gp=document.getElementById('game-panel');
+    if(_gp) _gp.classList.remove('open');
+    if(typeof window.fcShowSplash==='function') window.fcShowSplash();
+  }
 }
 let _selectedConquestTeamId=null;
 function renderTeamList(filter){
@@ -3805,10 +4647,33 @@ function wireStartupModal(){
 }
 
 function startGameInMode(mode,heroId){
+  // Splash should disappear the moment we know a game is starting.
+  if(typeof window.fcHideSplash==='function') window.fcHideSplash();
+  // Ensure the game panel is open so its action buttons (Spin Team, Spin Arrow,
+  // Resolve, Skip, etc.) are visible. Previously this relied on the old toolbar
+  // Game button calling setMode('game') → gameOpen(), but the splash path
+  // bypasses that, so we open the panel here directly.
+  const _gp=document.getElementById('game-panel');
+  if(_gp){
+    _gp.classList.add('open');
+    // Conquest-mode styling (huge glowing buttons, hidden stats/gear) is opt-in via
+    // a class so imperialism mode keeps its compact 4-button layout.
+    _gp.classList.toggle('conquest-mode', mode==='conquest');
+  }
   GAME.mode=mode;
   GAME.heroTeamId=mode==='conquest'?heroId:null;
   GAME.conquestStack=[];
   GAME.lossCounts={};
+  // Campaign tally — fresh per run. Mutated by handleConquestWin / handleConquestLoss,
+  // decremented by undoConquestWin so the HUD always reflects the visible board state.
+  GAME.stats={wins:0,losses:0,gf:0,ga:0};
+  // Tactical choice for the current matchup. Three values: 'defensive', 'balanced',
+  // 'attacking'. Resets on every Spin Arrow (new opponent), preserved across modal
+  // open/close. Modifies the Poisson lambdas + a small effective-FIFA bias.
+  GAME.matchTactic='balanced';
+  // Campaign timer — used to send a plausibility floor (clientDtMs) to the
+  // global-leaderboard API. Server rejects sub-5-second campaigns.
+  GAME.campaignStartMs=Date.now();
   gameInit();
   // Update the panel title
   const title=document.getElementById('g-mode-title');
@@ -3844,6 +4709,10 @@ window.gameSpinTeam=function(){
     if(!GAME.attacker) GAME.attacker=teams.find(t=>t.id===GAME.heroTeamId);
     GAME.phase='picked-att';
     GAME.defender=null;
+    // Fresh matchup → fresh tactic. Defaults back to Balanced so the player has
+    // to deliberately pick aggressive/defensive each time rather than carrying
+    // a stale choice from a previous opponent.
+    GAME.matchTactic='balanced';
     // Clear winner/loser highlights from previous battle
     document.querySelectorAll('.g-slot.winner,.g-slot.loser').forEach(el=>el.classList.remove('winner','loser'));
     const mid=document.getElementById('g-middle');
@@ -3866,6 +4735,353 @@ window.gameResolve=function(){
   return _origGameResolve.apply(this,arguments);
 };
 
+// ── Hall of Fame / Leaderboard ────────────────────────────────────────────
+// Persistent record of past World Conquest campaigns. Stored in localStorage
+// under FC_LEADERBOARD_KEY. Auto-saved on Victory or Game-Over events.
+// Schema per entry: {dateISO, heroId, heroName, result:'victory'|'eliminated',
+//                    wins, losses, gf, ga, turns, territoriesOwned, eliminatedBy}
+const FC_LEADERBOARD_KEY='fc-leaderboard';
+const FC_LEADERBOARD_MAX=500; // hard cap so localStorage doesn't bloat forever
+// Global-leaderboard integration. Same-origin POSTs to the Cloudflare Worker
+// route mounted at /api/* (see leaderboard/wrangler.toml).
+const FC_API_BASE='/api';
+const FC_DEVICE_KEY='fc-device-id';     // stable per-browser pseudonymous ID
+const FC_USERNAME_KEY='fc-username';    // display name; null until user sets one
+// Lazily generate + persist a UUID-like device ID on first access. Used as the
+// unique identifier for global submissions so a player's runs cluster cleanly
+// even if they change display names.
+function fcDeviceId(){
+  try{
+    let id=localStorage.getItem(FC_DEVICE_KEY);
+    if(!id){
+      id=(crypto.randomUUID?crypto.randomUUID():'fc-'+Math.random().toString(36).slice(2)+Date.now().toString(36));
+      localStorage.setItem(FC_DEVICE_KEY,id);
+    }
+    return id;
+  }catch(e){return 'fc-anon-'+Date.now().toString(36);}
+}
+function fcUsername(){
+  try{ return localStorage.getItem(FC_USERNAME_KEY)||''; }catch(e){return '';}
+}
+function fcSetUsername(name){
+  const clean=String(name||'').trim().slice(0,24);
+  try{
+    if(clean) localStorage.setItem(FC_USERNAME_KEY,clean);
+    else localStorage.removeItem(FC_USERNAME_KEY);
+  }catch(e){}
+  return clean;
+}
+function loadLeaderboard(){
+  try{
+    const raw=localStorage.getItem(FC_LEADERBOARD_KEY);
+    if(!raw) return [];
+    const arr=JSON.parse(raw);
+    return Array.isArray(arr)?arr:[];
+  }catch(e){return [];}
+}
+function saveLeaderboard(arr){
+  try{
+    // Most-recent-first ordering, capped to avoid unbounded growth.
+    const trimmed=arr.slice(0,FC_LEADERBOARD_MAX);
+    localStorage.setItem(FC_LEADERBOARD_KEY,JSON.stringify(trimmed));
+  }catch(e){console.warn('Leaderboard save failed:',e);}
+}
+// Capture the current campaign's final state into a leaderboard entry.
+// Called once from handleConquestWin's victory branch and once from
+// handleConquestLoss's game-over branch. Safe to call from elsewhere too —
+// idempotent guard via the resultGuard flag prevents double-recording.
+let _fcLastRecordedResultAt=0;
+function recordCampaignResult(result, extras){
+  if(!GAME||!GAME.active && result!=='eliminated' && result!=='victory') return;
+  if(GAME.mode!=='conquest') return;
+  const hero=teams.find(t=>t.id===GAME.heroTeamId);
+  if(!hero) return;
+  // Re-entry guard: handleConquestWin's victory path runs gameRender → some
+  // chained calls could re-enter. Within ~250ms, ignore duplicates.
+  const now=Date.now();
+  if(now-_fcLastRecordedResultAt<250) return;
+  _fcLastRecordedResultAt=now;
+  const stats=GAME.stats||{wins:0,losses:0,gf:0,ga:0};
+  const heroState=GAME.state[hero.id];
+  const territoriesOwned=heroState?heroState.ownedIsos.size:0;
+  const entry={
+    dateISO:new Date().toISOString(),
+    heroId:hero.id,
+    heroName:hero.name,
+    result:result,
+    wins:stats.wins,
+    losses:stats.losses,
+    gf:stats.gf,
+    ga:stats.ga,
+    turns:GAME.turn||0,
+    territoriesOwned:territoriesOwned,
+    eliminatedBy:(extras&&extras.eliminatedBy)||null
+  };
+  const board=loadLeaderboard();
+  board.unshift(entry);
+  saveLeaderboard(board);
+  // Fire-and-forget global submission. Only sends if the player has set a
+  // username (opt-in). Failures are silently logged — local save already
+  // happened, so no user-visible regression.
+  submitRunToGlobalLeaderboard(entry, extras);
+}
+function submitRunToGlobalLeaderboard(entry, extras){
+  const username=fcUsername();
+  if(!username) return; // user hasn't opted in by setting a name yet
+  const payload={
+    deviceId:fcDeviceId(),
+    username:username,
+    heroName:entry.heroName,
+    result:entry.result,
+    wins:entry.wins,
+    losses:entry.losses,
+    gf:entry.gf,
+    ga:entry.ga,
+    turns:entry.turns,
+    territoriesOwned:entry.territoriesOwned,
+    eliminatedBy:entry.eliminatedBy,
+    clientDtMs:GAME.campaignStartMs?Date.now()-GAME.campaignStartMs:0
+  };
+  fetch(FC_API_BASE+'/submit',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  }).then(r=>{
+    if(!r.ok) console.warn('Global leaderboard submit failed:',r.status);
+  }).catch(err=>console.warn('Global leaderboard submit error:',err));
+}
+// Render the table into #g-leaderboard-body. Sorted by date descending.
+function renderLeaderboard(){
+  const body=document.getElementById('g-leaderboard-body');
+  const count=document.getElementById('g-leaderboard-count');
+  if(!body) return;
+  const board=loadLeaderboard();
+  if(count) count.textContent=board.length===0?'':`${board.length} run${board.length===1?'':'s'}`;
+  if(board.length===0){
+    body.innerHTML=`<div class="g-leaderboard-empty">
+      <b>No records yet</b>
+      Finish a World Conquest run (Victory or Elimination) and it'll be saved here automatically.
+    </div>`;
+    return;
+  }
+  const fmtDate=iso=>{
+    try{
+      const d=new Date(iso);
+      const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+      return `${m} ${d.getDate()}`;
+    }catch(e){return '—';}
+  };
+  const rows=board.map(e=>{
+    const flagBg=FLAG_B64[e.heroName]?`background-image:url(data:image/png;base64,${FLAG_B64[e.heroName]})`:'';
+    const flagCls=FLAG_B64[e.heroName]?'g-lb-flag':'g-lb-flag empty';
+    const gd=e.gf-e.ga;
+    const gdCls=gd>0?'g-lb-gd-pos':(gd<0?'g-lb-gd-neg':'');
+    const gdStr=(gd>0?'+':'')+gd;
+    const resultLabel=e.result==='victory'?'🏆 Victory':'💀 Eliminated';
+    const elimRow=e.result==='eliminated'&&e.eliminatedBy
+      ?`<div class="g-lb-elim">by ${e.eliminatedBy}</div>`:'';
+    return `<tr>
+      <td><span class="${flagCls}" style="${flagBg}"></span></td>
+      <td><div class="g-lb-country">${e.heroName}</div>${elimRow}</td>
+      <td><span class="g-lb-result ${e.result}">${resultLabel}</span></td>
+      <td class="g-lb-num"><b>${e.wins}</b>–<b>${e.losses}</b></td>
+      <td class="g-lb-num"><b>${e.gf}</b>–<b>${e.ga}</b> <span class="${gdCls}">(${gdStr})</span></td>
+      <td class="g-lb-num"><b>${e.turns}</b></td>
+      <td class="g-lb-num"><b>${e.territoriesOwned}</b></td>
+      <td class="g-lb-date">${fmtDate(e.dateISO)}</td>
+    </tr>`;
+  }).join('');
+  body.innerHTML=`<table class="g-leaderboard-table">
+    <thead><tr>
+      <th></th><th>Country</th><th>Result</th><th>W–L</th><th>Goals</th>
+      <th>Turns</th><th>Territories</th><th>Date</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+// Current tab and current global sort, persisted in module state so the modal
+// remembers between opens. (We could persist to localStorage; v1 doesn't.)
+let _fcLbTab='local';
+let _fcLbGlobalSort='wins';
+function openLeaderboardModal(){
+  const m=document.getElementById('g-leaderboard-modal');
+  if(!m) return;
+  // Sync tab visual + render the current tab's data.
+  document.querySelectorAll('.g-leaderboard-tab').forEach(b=>{
+    b.classList.toggle('active', b.getAttribute('data-tab')===_fcLbTab);
+  });
+  document.getElementById('g-leaderboard-controls').style.display=
+    _fcLbTab==='global'?'flex':'none';
+  document.getElementById('g-leaderboard-clear').style.display=
+    _fcLbTab==='local'?'inline-flex':'none';
+  if(_fcLbTab==='local') renderLeaderboard();
+  else { syncUserStrip(); renderGlobalLeaderboard(); }
+  m.classList.add('open');
+  m.style.display='flex';
+}
+// Refresh the "Logged in as X" / "Set a name" strip on the global tab.
+function syncUserStrip(){
+  const statusEl=document.getElementById('g-lb-user-status');
+  const btnEl=document.getElementById('g-lb-set-name');
+  if(!statusEl||!btnEl) return;
+  const name=fcUsername();
+  if(name){
+    statusEl.innerHTML=`Submitting as <b>${escapeHtml(name)}</b>`;
+    btnEl.textContent='Change name';
+  } else {
+    statusEl.innerHTML='Pick a name to appear here';
+    btnEl.textContent='Set name';
+  }
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,c=>(
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+// Fetch + render the global rankings. Caches nothing — re-fetches each open.
+async function renderGlobalLeaderboard(){
+  const body=document.getElementById('g-leaderboard-body');
+  const count=document.getElementById('g-leaderboard-count');
+  if(!body) return;
+  body.innerHTML='<div class="g-lb-loading">Loading global rankings…</div>';
+  if(count) count.textContent='';
+  let data;
+  try{
+    const res=await fetch(`${FC_API_BASE}/leaderboard?sort=${encodeURIComponent(_fcLbGlobalSort)}&limit=50`);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    data=await res.json();
+  }catch(err){
+    body.innerHTML=`<div class="g-lb-error">
+      Couldn't reach the global leaderboard.<br>
+      <small>${escapeHtml(String(err.message||err))}</small><br><br>
+      Your local records are unaffected — switch to the "Your Runs" tab.
+    </div>`;
+    return;
+  }
+  const rows=data.rows||[];
+  if(count) count.textContent=rows.length===0?'':`${rows.length} run${rows.length===1?'':'s'}`;
+  if(rows.length===0){
+    body.innerHTML=`<div class="g-leaderboard-empty">
+      <b>No global runs yet</b>
+      Be the first to submit one — set a display name above and finish a campaign.
+    </div>`;
+    return;
+  }
+  const fmtDate=iso=>{
+    try{
+      const d=new Date(iso);
+      const m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+      return `${m} ${d.getDate()}`;
+    }catch(e){return '—';}
+  };
+  const me=fcDeviceId();
+  // For the username highlight, the server omits device_id in public rows —
+  // so we can't precisely mark "you", but we CAN match on username if the user
+  // has set one (cheap heuristic; collisions tolerated).
+  const myName=fcUsername();
+  const html=rows.map((r,i)=>{
+    const rank=i+1;
+    const rankCls=rank===1?'top1':(rank===2?'top2':(rank===3?'top3':''));
+    const flagBg=FLAG_B64[r.hero_name]?`background-image:url(data:image/png;base64,${FLAG_B64[r.hero_name]})`:'';
+    const flagCls=FLAG_B64[r.hero_name]?'g-lb-flag':'g-lb-flag empty';
+    const gd=r.gd!=null?r.gd:(r.gf-r.ga);
+    const gdCls=gd>0?'g-lb-gd-pos':(gd<0?'g-lb-gd-neg':'');
+    const gdStr=(gd>0?'+':'')+gd;
+    const resLabel=r.result==='victory'?'🏆 Victory':'💀 Eliminated';
+    const elim=r.result==='eliminated'&&r.eliminated_by?`<div class="g-lb-elim">by ${escapeHtml(r.eliminated_by)}</div>`:'';
+    const isYou=myName && r.username===myName;
+    const userCls=isYou?'g-lb-username you':'g-lb-username';
+    return `<tr>
+      <td class="g-lb-rank ${rankCls}">${rank}</td>
+      <td><span class="${flagCls}" style="${flagBg}"></span></td>
+      <td>
+        <div class="g-lb-country">${escapeHtml(r.hero_name)}</div>
+        <div class="${userCls}">${escapeHtml(r.username)}${isYou?' · you':''}</div>
+        ${elim}
+      </td>
+      <td><span class="g-lb-result ${r.result}">${resLabel}</span></td>
+      <td class="g-lb-num"><b>${r.wins}</b>–<b>${r.losses}</b></td>
+      <td class="g-lb-num"><b>${r.gf}</b>–<b>${r.ga}</b> <span class="${gdCls}">(${gdStr})</span></td>
+      <td class="g-lb-num"><b>${r.turns}</b></td>
+      <td class="g-lb-date">${fmtDate(r.submitted_at)}</td>
+    </tr>`;
+  }).join('');
+  body.innerHTML=`<table class="g-leaderboard-table">
+    <thead><tr>
+      <th>#</th><th></th><th>Country / Player</th><th>Result</th>
+      <th>W–L</th><th>Goals</th><th>Turns</th><th>Date</th>
+    </tr></thead>
+    <tbody>${html}</tbody>
+  </table>`;
+}
+function closeLeaderboardModal(){
+  const m=document.getElementById('g-leaderboard-modal');
+  if(m){m.classList.remove('open');m.style.display='none';}
+}
+function wireLeaderboardModal(){
+  const closeBtn=document.getElementById('g-leaderboard-close');
+  if(closeBtn) closeBtn.addEventListener('click',closeLeaderboardModal);
+  const clearBtn=document.getElementById('g-leaderboard-clear');
+  if(clearBtn) clearBtn.addEventListener('click',()=>{
+    if(!confirm('Clear ALL local leaderboard records? This cannot be undone.\n\nNote: this does NOT remove your global submissions.')) return;
+    saveLeaderboard([]);
+    renderLeaderboard();
+  });
+  // Tab switching — clicking a tab re-renders the matching view.
+  document.querySelectorAll('.g-leaderboard-tab').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const t=btn.getAttribute('data-tab');
+      if(!t||t===_fcLbTab) return;
+      _fcLbTab=t;
+      document.querySelectorAll('.g-leaderboard-tab').forEach(b=>{
+        b.classList.toggle('active', b.getAttribute('data-tab')===t);
+      });
+      document.getElementById('g-leaderboard-controls').style.display=
+        t==='global'?'flex':'none';
+      document.getElementById('g-leaderboard-clear').style.display=
+        t==='local'?'inline-flex':'none';
+      if(t==='local') renderLeaderboard();
+      else { syncUserStrip(); renderGlobalLeaderboard(); }
+    });
+  });
+  // Sort dropdown on global tab.
+  const sortSel=document.getElementById('g-leaderboard-sort');
+  if(sortSel) sortSel.addEventListener('change',()=>{
+    _fcLbGlobalSort=sortSel.value;
+    renderGlobalLeaderboard();
+  });
+  // Set/change display name — uses a plain prompt() for v1.
+  const setNameBtn=document.getElementById('g-lb-set-name');
+  if(setNameBtn) setNameBtn.addEventListener('click',()=>{
+    const current=fcUsername();
+    const next=prompt(
+      current
+        ? `Change your display name (max 24 chars):`
+        : `Pick a display name to appear on the global leaderboard (max 24 chars):`,
+      current
+    );
+    if(next===null) return; // user cancelled
+    const cleaned=fcSetUsername(next);
+    syncUserStrip();
+    // If they JUST opted in by setting a name, give a one-line nudge.
+    if(cleaned && !current){
+      console.info('Display name set. Future campaigns will auto-submit globally.');
+    }
+  });
+  // Esc closes (only when this modal is the topmost open one — won't interfere
+  // with the result/startup modals which have their own handlers).
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){
+      const m=document.getElementById('g-leaderboard-modal');
+      if(m&&m.classList.contains('open')) closeLeaderboardModal();
+    }
+  });
+}
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',wireLeaderboardModal);
+} else {
+  wireLeaderboardModal();
+}
+
 // ── Result modal ──
 function openResultModal(){
   const modal=document.getElementById('g-result-modal');
@@ -3873,19 +5089,194 @@ function openResultModal(){
   const hero=GAME.attacker, opp=GAME.defender;
   document.getElementById('g-result-hero').textContent=hero.name;
   document.getElementById('g-result-opp').textContent=opp.name;
+  // Paint each side's flag from the FLAG_B64 base64 table. Falls back to the
+  // dashed-border .empty state if the team has no flag asset (shouldn't happen
+  // for the 212 NATIONS but guarded for safety).
+  const heroFlagEl=document.getElementById('g-result-hero-flag');
+  const oppFlagEl=document.getElementById('g-result-opp-flag');
+  if(heroFlagEl){
+    if(hero&&FLAG_B64[hero.name]){
+      heroFlagEl.style.backgroundImage=`url(data:image/png;base64,${FLAG_B64[hero.name]})`;
+      heroFlagEl.classList.remove('empty');
+    } else {heroFlagEl.style.backgroundImage='';heroFlagEl.classList.add('empty');}
+  }
+  if(oppFlagEl){
+    if(opp&&FLAG_B64[opp.name]){
+      oppFlagEl.style.backgroundImage=`url(data:image/png;base64,${FLAG_B64[opp.name]})`;
+      oppFlagEl.classList.remove('empty');
+    } else {oppFlagEl.style.backgroundImage='';oppFlagEl.classList.add('empty');}
+  }
   document.getElementById('g-result-hero-score').value=0;
   document.getElementById('g-result-opp-score').value=0;
   document.getElementById('g-result-pens-hero').value=0;
   document.getElementById('g-result-pens-opp').value=0;
   document.querySelector('input[name=finish][value=normal]').checked=true;
   document.getElementById('g-result-pens-row').style.display='none';
+  // Refresh live preview (win prob + xG + tactic-button active state) for the
+  // new matchup. Reads GAME.matchTactic which was reset to 'balanced' on spin.
+  if(typeof updateResultPreview==='function') updateResultPreview();
   modal.classList.add('open');
   modal.style.display='flex';
   setTimeout(()=>document.getElementById('g-result-hero-score').select(),50);
 }
 function closeResultModal(){
+  // Cancel any pending auto-confirm from the Simulate button if user backed out.
+  if(_simAutoConfirmTimer){clearTimeout(_simAutoConfirmTimer);_simAutoConfirmTimer=null;}
   const modal=document.getElementById('g-result-modal');
   if(modal){modal.classList.remove('open');modal.style.display='none';}
+}
+let _simAutoConfirmTimer=null;
+// Poisson sampler — Knuth's algorithm. Fine for the small lambdas (~1-3) we work with.
+function _poissonSample(lambda){
+  const L=Math.exp(-lambda);
+  let k=0,p=1;
+  do{k++;p*=Math.random();}while(p>L);
+  return k-1;
+}
+// Compute simulated scores for the current hero vs opp matchup, weighted by FIFA rating
+// and empire size (same inputs as the imperialism Elo formula).
+// ── Tactical-modifier system (rock-paper-scissors style) ──────────────────
+// THE TRIANGLE: Defense counters Attack (catch them on the break).
+//               Attack overwhelms Balanced (overload midfield).
+//               Balanced patience breaks down Defense.
+// Each cell of MATCHUP_BONUS gives the hero's effective-FIFA modifier when
+// they pick `tactic` against an opponent whose playstyle is `oppStyle`.
+const MATCHUP_BONUS={
+  defensive:{defensive: 0, balanced:-30, attacking:+30},
+  balanced :{defensive:+30, balanced:  0, attacking:-30},
+  attacking:{defensive:-30, balanced:+30, attacking:  0}
+};
+// Lambda multiplier from the average aggressiveness of BOTH sides. Def=0,
+// Bal=1, Att=2 numerically; average → multiplier on baseLambda 1.4.
+// Def-vs-Def = boring 0-0 grind; Att-vs-Att = open goalfest.
+function _styleScore(s){ return s==='defensive'?0 : (s==='attacking'?2:1); }
+function _lambdaMultFor(heroTactic, oppStyle){
+  const avg=(_styleScore(heroTactic)+_styleScore(oppStyle))/2;
+  // 0 → 0.5, 0.5 → 0.7, 1 → 1.0, 1.5 → 1.2, 2 → 1.5
+  return [0.5,0.7,1.0,1.2,1.5][Math.round(avg*2)];
+}
+// Identity bonus: the hero gains +5 effective FIFA when playing a tactic that
+// matches their country's natural style (Brazil going attacking, Morocco going
+// defensive). Going against type costs −5. Balanced identity or balanced
+// tactic = no identity bonus.
+function _identityBonus(heroStyle, tactic){
+  if(heroStyle==='balanced' || tactic==='balanced') return 0;
+  return heroStyle===tactic ? +5 : -5;
+}
+// Compute the full per-match Poisson model for the current matchup + tactic.
+// Returns {heroEff, oppEff, heroLambda, oppLambda, pHeroWin, oppStyle, heroStyle}
+// — used by both the live preview render and the actual score simulation, so
+// the preview never lies about what Simulate will produce.
+function computeMatchModel(tactic){
+  const hero=GAME.attacker, opp=GAME.defender;
+  if(!hero||!opp) return null;
+  const t=tactic||GAME.matchTactic||'balanced';
+  const heroStyle=teamPlaystyle(hero.name);
+  const oppStyle =teamPlaystyle(opp.name);
+  const matchupBonus=MATCHUP_BONUS[t][oppStyle];
+  const idBonus=_identityBonus(heroStyle,t);
+  const lambdaMult=_lambdaMultFor(t,oppStyle);
+  const heroFifa=fifaRating(hero.name);
+  const oppFifa=fifaRating(opp.name);
+  const heroSize=GAME.state[hero.id].ownedIsos.size;
+  const oppSize=GAME.state[opp.id].ownedIsos.size;
+  const heroEff=heroFifa+heroSize*5+matchupBonus+idBonus;
+  const oppEff=oppFifa+oppSize*5;
+  const avg=(heroEff+oppEff)/2;
+  const baseLambda=1.4*lambdaMult;
+  const heroLambda=baseLambda*Math.pow(10,(heroEff-avg)/800);
+  const oppLambda=baseLambda*Math.pow(10,(oppEff-avg)/800);
+  // Win-probability uses the same Elo curve as the auto-resolve in gameResolve,
+  // so the preview value matches the implicit odds of the simulator output.
+  const pHeroWin=1/(1+Math.pow(10,(oppEff-heroEff)/450));
+  return {heroEff,oppEff,heroLambda,oppLambda,pHeroWin,heroStyle,oppStyle,matchupBonus,idBonus};
+}
+// Realistic-blowout cap: in real football, only true mismatches produce 7-8 goal
+// margins. Poisson's long tail occasionally rolls them between evenly-matched
+// teams, which feels absurd ("Brazil 8-1 Saudi Arabia"). Clamp the scoreline
+// based on the effective-FIFA gap so the model can't escape into fantasy land.
+// Tiers picked to roughly mirror historical national-team results.
+function _matchScoreCap(ratingDiff){
+  const g=Math.abs(ratingDiff);
+  if(g<100) return {winner:4, loser:3}; // close-rated → tight result
+  if(g<250) return {winner:5, loser:3}; // mild gap → 3-1 / 4-2 territory
+  if(g<450) return {winner:6, loser:2}; // clear favorite → up to 5-1
+  if(g<700) return {winner:7, loser:2}; // strong mismatch → 6-1 / 7-0
+  return {winner:9, loser:1};            // true minnow → 8-0 / 9-0 OK
+}
+function simulateConquestScores(){
+  const m=computeMatchModel();
+  if(!m) return null;
+  let heroGoals=_poissonSample(m.heroLambda);
+  let oppGoals=_poissonSample(m.oppLambda);
+  // Knockout format: no draws. Break ties with a coin weighted toward higher xG.
+  if(heroGoals===oppGoals){
+    const heroWinsBreak=Math.random()<m.heroLambda/(m.heroLambda+m.oppLambda);
+    if(heroWinsBreak) heroGoals++; else oppGoals++;
+  }
+  // Cap by realistic ceiling — winner gets the higher cap, loser the lower.
+  // This clamps the Poisson long tail (8-9 goal blowouts vs decent opposition)
+  // without changing the typical outcome of close or moderate-gap matches.
+  const cap=_matchScoreCap(m.heroEff - m.oppEff);
+  if(heroGoals>oppGoals){
+    heroGoals=Math.min(heroGoals, cap.winner);
+    oppGoals =Math.min(oppGoals,  cap.loser);
+  } else {
+    oppGoals =Math.min(oppGoals,  cap.winner);
+    heroGoals=Math.min(heroGoals, cap.loser);
+  }
+  return {heroGoals,oppGoals};
+}
+// Render the live preview row inside the result modal. Reads GAME.matchTactic
+// for the current choice. Safe to call repeatedly — idempotent DOM update.
+function updateResultPreview(){
+  const pctEl=document.getElementById('g-result-prob-pct');
+  const fillEl=document.getElementById('g-result-prob-fill');
+  const xgHeroEl=document.getElementById('g-result-xg-hero');
+  const xgOppEl=document.getElementById('g-result-xg-opp');
+  const heroStyleEl=document.getElementById('g-result-hero-style');
+  const oppStyleEl=document.getElementById('g-result-opp-style');
+  // Render the playstyle chip for a slot. Icons match the tactic-button row.
+  const styleIcon={defensive:'🛡️',balanced:'⚖️',attacking:'⚔️'};
+  const styleLabel={defensive:'Defensive',balanced:'Balanced',attacking:'Attacking'};
+  const m=computeMatchModel();
+  if(!m){
+    if(pctEl){pctEl.textContent='—';pctEl.className='g-result-prob-value';}
+    if(fillEl){fillEl.style.width='0';fillEl.className='g-result-prob-fill';}
+    if(xgHeroEl)xgHeroEl.textContent='—';
+    if(xgOppEl)xgOppEl.textContent='—';
+    if(heroStyleEl){heroStyleEl.textContent='—';heroStyleEl.removeAttribute('data-style');}
+    if(oppStyleEl){oppStyleEl.textContent='—';oppStyleEl.removeAttribute('data-style');}
+    return;
+  }
+  if(heroStyleEl){
+    heroStyleEl.textContent=styleIcon[m.heroStyle]+' '+styleLabel[m.heroStyle];
+    heroStyleEl.setAttribute('data-style',m.heroStyle);
+  }
+  if(oppStyleEl){
+    oppStyleEl.textContent=styleIcon[m.oppStyle]+' '+styleLabel[m.oppStyle];
+    oppStyleEl.setAttribute('data-style',m.oppStyle);
+  }
+  const pct=Math.round(m.pHeroWin*100);
+  if(pctEl){
+    pctEl.textContent=pct+'%';
+    pctEl.classList.remove('warn','danger');
+    if(pct<35) pctEl.classList.add('danger');
+    else if(pct<55) pctEl.classList.add('warn');
+  }
+  if(fillEl){
+    fillEl.style.width=pct+'%';
+    fillEl.classList.remove('warn','danger');
+    if(pct<35) fillEl.classList.add('danger');
+    else if(pct<55) fillEl.classList.add('warn');
+  }
+  if(xgHeroEl) xgHeroEl.textContent=m.heroLambda.toFixed(1);
+  if(xgOppEl)  xgOppEl.textContent=m.oppLambda.toFixed(1);
+  // Sync the active class on the tactic buttons in case the function was
+  // called after a programmatic tactic change.
+  document.querySelectorAll('#g-result-tactic-btns .g-tactic-btn').forEach(b=>{
+    b.classList.toggle('active', b.getAttribute('data-tactic')===GAME.matchTactic);
+  });
 }
 function wireResultModal(){
   // Esc closes the modal
@@ -3902,6 +5293,42 @@ function wireResultModal(){
       document.getElementById('g-result-pens-row').style.display=
         r.value==='pens'&&r.checked?'block':'none';
     });
+  });
+  // Tactic buttons — clicking one updates GAME.matchTactic, re-renders the live
+  // preview (win % + xG shift in real time), and visually highlights the chosen
+  // button. Manual entry ignores the tactic; only Simulate uses it.
+  document.querySelectorAll('#g-result-tactic-btns .g-tactic-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const t=btn.getAttribute('data-tactic');
+      if(!t) return;
+      GAME.matchTactic=t;
+      if(typeof updateResultPreview==='function') updateResultPreview();
+    });
+  });
+  // Simulate match button — fills the score inputs from the FIFA-weighted Poisson model
+  // and auto-confirms after a short reveal pause. Respects the existing "click to reveal"
+  // setting: when on, the sim only fills the inputs and waits for the user to confirm.
+  const simBtn=document.getElementById('g-result-sim');
+  if(simBtn) simBtn.addEventListener('click',()=>{
+    const result=simulateConquestScores();
+    if(!result) return;
+    document.getElementById('g-result-hero-score').value=result.heroGoals;
+    document.getElementById('g-result-opp-score').value=result.oppGoals;
+    // Simmed matches always finish in normal time. Manual entry retains FT/AET/Pens.
+    document.querySelector('input[name=finish][value=normal]').checked=true;
+    document.getElementById('g-result-pens-row').style.display='none';
+    if(window.GAME_SETTINGS?.clickToReveal){
+      // Dramatic-pacing mode — let the user hit Confirm themselves.
+      return;
+    }
+    if(_simAutoConfirmTimer) clearTimeout(_simAutoConfirmTimer);
+    // Reveal pause before auto-confirming — long enough for the player to
+    // read the final scoreline before the conquest paint/retreat fires.
+    // Tuned through playtesting: 400ms → 1400ms → 900ms → 650ms.
+    _simAutoConfirmTimer=setTimeout(()=>{
+      _simAutoConfirmTimer=null;
+      document.getElementById('g-result-confirm').click();
+    },650);
   });
   document.getElementById('g-result-cancel').addEventListener('click',closeResultModal);
   document.getElementById('g-result-confirm').addEventListener('click',()=>{
@@ -4019,7 +5446,14 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   drawConquestTrailArrow(fromX,fromY,newPos[0],newPos[1],{class:'g-trail-arrow g-trail-win'});
   // Reset loss counts (those were per-opponent; opponent is now dead)
   delete GAME.lossCounts[opp.id];
-  // Push undo record for this win
+  // Bump campaign tally — wins, plus goals for/against from this match.
+  if(GAME.stats){
+    GAME.stats.wins++;
+    GAME.stats.gf+=heroScore;
+    GAME.stats.ga+=oppScore;
+  }
+  // Push undo record for this win. heroScore/oppScore stored explicitly so
+  // undoConquestWin can rewind the stats tally cleanly (no string parsing).
   undoStack.push({
     type:'conquest-win',
     heroId:hero.id, oppId:opp.id, oppName:opp.name,
@@ -4028,6 +5462,7 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
     paintColor:paintColor,
     heroFromX:fromX, heroFromY:fromY,
     heroToX:newPos[0], heroToY:newPos[1],
+    heroScore:heroScore, oppScore:oppScore,
     scoreLine:`${hero.name} ${heroScore}–${oppScore}${suffix} ${opp.name}`
   });
   if(typeof renderHistory==='function') renderHistory();
@@ -4051,10 +5486,18 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
     gLog(`🏆 <b>${hero.name} has conquered the world!</b>`);
     showGameOverOverlay({victory:true,hero:hero.name,turns:GAME.turn});
     GAME.phase='idle';
+    // Persist this run to the Hall of Fame so the player can revisit it later.
+    if(typeof recordCampaignResult==='function') recordCampaignResult('victory');
   }
 }
 
 function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
+  // Bump campaign tally — loss + goals on both sides.
+  if(GAME.stats){
+    GAME.stats.losses++;
+    GAME.stats.gf+=heroScore;
+    GAME.stats.ga+=oppScore;
+  }
   // Capture current hero position before retreat (for undo)
   const heroBadgeNow=document.querySelector(`.fbadge[data-badge-id="${hero.id}"]`);
   const fromX=heroBadgeNow?parseFloat(heroBadgeNow.getAttribute('data-cx')):0;
@@ -4068,6 +5511,9 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
     gLog(`💀 <b>Game over!</b> ${opp.name} has eliminated ${hero.name}.`);
     refreshConquestHud({lastResult:{type:'loss',hero:hero.name,opp:opp.name,score:`${heroScore}–${oppScore}`,gameOver:true}});
     showGameOverOverlay({victory:false,hero:hero.name,opp:opp.name,score:`${heroScore}–${oppScore}`});
+    // Persist this run to the Hall of Fame before flipping GAME.active off,
+    // since recordCampaignResult reads from GAME state.
+    if(typeof recordCampaignResult==='function') recordCampaignResult('eliminated',{eliminatedBy:opp.name});
     GAME.phase='idle';
     GAME.active=false;
     gameRender();
@@ -4107,6 +5553,10 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   });
   // Merge opp's borders now that they have new territories
   if(typeof mergeBordersFor==='function') mergeBordersFor(opp.id);
+  // Restore borders that used to be hero–hero (faded) but are now hero–opp (should be
+  // visible) — e.g. the border between the retreating territory and the hero's adjacent
+  // remaining territory needs to re-appear so the two sides are distinguishable.
+  auditFadedBorders();
   // The "lastConquest.opponentId" team comes back alive too — recreate their flag
   // Actually wait, this is a previously-defeated team. Let me re-think.
   // 
@@ -4176,6 +5626,14 @@ function undoConquestSpin(op){
 function undoConquestWin(op){
   const hero=GAME.state[op.heroId], opp=GAME.state[op.oppId];
   if(!hero||!opp)return;
+  // 0. Rewind the campaign tally for this match (W and the goals from it).
+  // op.heroScore/oppScore were stashed at push-time so we don't have to parse
+  // the scoreLine. clamp at 0 in case stats was reset mid-stack.
+  if(GAME.stats){
+    GAME.stats.wins=Math.max(0,GAME.stats.wins-1);
+    if(typeof op.heroScore==='number') GAME.stats.gf=Math.max(0,GAME.stats.gf-op.heroScore);
+    if(typeof op.oppScore==='number')  GAME.stats.ga=Math.max(0,GAME.stats.ga-op.oppScore);
+  }
   // 1. Restore loser's alive state
   opp.alive=true;
   // 2. Give back the conquered isos to opp
@@ -4273,6 +5731,10 @@ function undoConquestLoss(op){
     if(el){colorOverrides[iso]=heroPaint;el.setAttribute('fill',heroPaint);}
   });
   if(typeof mergeBordersFor==='function') mergeBordersFor(op.heroId);
+  // Symmetric audit: after returning the territory to hero, any border that became
+  // hero-hero needs to be faded (mergeBordersFor above handles that), and any border
+  // that was opp-opp during the loss is now opp-hero and should be visible again.
+  auditFadedBorders();
   // 3. Move hero's flag forward again to position before retreat
   const heroBadge=document.querySelector(`.fbadge[data-badge-id="${op.heroId}"]`);
   if(heroBadge){
@@ -4358,11 +5820,27 @@ function updateConquestHud(state){
   }
   hud.style.display='block';
   const turnEl=document.getElementById('g-hud-turn');
+  const statsEl=document.getElementById('g-hud-stats');
   const lossEl=document.getElementById('g-hud-loss');
   const lastEl=document.getElementById('g-hud-last');
   // Turn row — always show
   const remaining=Object.values(GAME.state).filter(t=>t.alive&&t.id!==GAME.heroTeamId).length;
   turnEl.innerHTML=`Turn <b>${GAME.turn}</b> · <b>${remaining}</b> remaining`;
+  // Campaign stats row — show as soon as the hero has played a single match.
+  // Stays visible alongside the turn counter; no fade. Format mirrors the turn
+  // row prose: "Record 3–1 · Goals 8–3 (+5)". GD coloured green/red/neutral.
+  if(statsEl){
+    const s=GAME.stats||{wins:0,losses:0,gf:0,ga:0};
+    if((s.wins+s.losses)>0){
+      const gd=s.gf-s.ga;
+      const gdClass=gd>0?'gd-pos':(gd<0?'gd-neg':'gd-zero');
+      const gdStr=(gd>0?'+':'')+gd;
+      statsEl.style.display='block';
+      statsEl.innerHTML=`Record <b class="w">${s.wins}</b>–<b class="l">${s.losses}</b> · Goals <b>${s.gf}</b>–<b>${s.ga}</b> (<b class="${gdClass}">${gdStr}</b>)`;
+    } else {
+      statsEl.style.display='none';
+    }
+  }
   // Loss row — show if hero has 1+ losses against the CURRENT opponent
   if(state&&state.lossOpponent&&state.lossCount>0){
     lossEl.style.display='block';
@@ -4390,6 +5868,12 @@ function updateConquestHud(state){
   } else {
     lastEl.style.display='none';
   }
+  // New Game button — visible only when the game is over (loss or victory).
+  const newGameBtn=document.getElementById('g-hud-newgame');
+  if(newGameBtn){
+    const gameOver=!!(state&&state.lastResult&&state.lastResult.gameOver);
+    newGameBtn.classList.toggle('show',gameOver);
+  }
   // Show + start fade timer
   hud.classList.add('visible');
   if(_hudFadeTimer){clearTimeout(_hudFadeTimer);}
@@ -4408,20 +5892,23 @@ function updateConquestHud(state){
 function refreshConquestHud(extra){
   if(GAME.mode!=='conquest')return;
   let lossOpponent=null, lossCount=0;
-  // Show the highest loss count against any single opponent
-  Object.keys(GAME.lossCounts).forEach(oppId=>{
-    const cnt=GAME.lossCounts[oppId];
-    if(cnt>lossCount){
+  // Only show losses against the CURRENT defender (the team we're about to attack).
+  // Between battles (no defender set yet), the losses row stays hidden so the HUD
+  // doesn't dwell on a past opponent's count.
+  if(GAME.defender){
+    const cnt=GAME.lossCounts[GAME.defender.id]||0;
+    if(cnt>0){
       lossCount=cnt;
-      const t=GAME.state[oppId];
-      lossOpponent=t?t.name:null;
+      lossOpponent=GAME.defender.name;
     }
-  });
+  }
   updateConquestHud(Object.assign({lossOpponent,lossCount},extra||{}));
 }
 
 function updateHeroGlow(){
-  const layer=document.getElementById('conquest-trail-layer');
+  // Target the dedicated hero-glow-layer (above game-layer) so the triangles stay
+  // visible even when the spin-arrow dial is overlaid on the hero flag.
+  const layer=document.getElementById('hero-glow-layer');
   if(!layer)return;
   const existing=document.getElementById('g-hero-glow');
   if(existing) existing.remove();
@@ -4438,9 +5925,10 @@ function updateHeroGlow(){
   wrap.setAttribute('transform',`translate(${cx},${cy}) scale(${invK})`);
   // Four triangles pointing inward toward the flag, one at each corner.
   // Each triangle is equilateral, with its TIP pointing at the flag center.
-  // The flag itself occupies roughly ±60 SVG units (in counter-scaled space) — triangles sit just outside that.
+  // dist is set to 300 so the triangle bases sit comfortably outside the spin-arrow
+  // dial (which has radius ~200), preventing overlap during spins.
   // Corner positions are NE, SE, SW, NW relative to flag center.
-  const dist=200;        // distance from flag center to triangle tip
+  const dist=300;        // distance from flag center to triangle tip (X/Y component)
   const triSize=90;      // size of each triangle side — larger for better visibility
   const corners=[
     {tipX: dist, tipY:-dist, baseAngle:135},  // NE corner, points SW toward flag
@@ -4623,6 +6111,170 @@ if(document.readyState==='loading'){
     // Apply visual modes from persisted settings
     document.body.classList.toggle('map-light',!!window.GAME_SETTINGS.lightMap);
   }catch(e){}
+})();
+
+// ── Start-new-game flow (shared by HUD button and hamburger menu) ─────
+// Ends the current game silently (without flashing the splash) and opens the mode
+// picker directly. If the user cancels the mode picker, closeConquestStartup brings
+// the splash back, so this also acts as a "quit to launcher" path.
+function startNewGameFlow(){
+  // Reset game state without showing the splash (openConquestStartup will hide it
+  // immediately anyway, so skipping the show avoids a one-frame flash).
+  GAME.active=false;GAME.phase='idle';
+  if(typeof clearGameOverlay==='function') clearGameOverlay();
+  if(typeof gameRender==='function') gameRender();
+  const _gp=document.getElementById('game-panel');
+  if(_gp) _gp.classList.remove('open');
+  // Hide the HUD's New Game button until the next game-over fires it.
+  const _newBtn=document.getElementById('g-hud-newgame');
+  if(_newBtn) _newBtn.classList.remove('show');
+  // Hide the lingering game-over overlay if it's still up.
+  if(typeof hideGameOverOverlay==='function') hideGameOverOverlay();
+  if(typeof openConquestStartup==='function') openConquestStartup();
+}
+
+// Wire the HUD's in-place New Game button to the shared flow.
+(function(){
+  const hudBtn=document.getElementById('g-hud-newgame');
+  if(hudBtn) hudBtn.addEventListener('click',startNewGameFlow);
+})();
+
+// Wire the events panel header to toggle collapsed state.
+(function(){
+  const hdr=document.getElementById('g-events-header');
+  const panel=document.getElementById('g-events-panel');
+  if(!hdr||!panel)return;
+  hdr.addEventListener('click',()=>{
+    panel.classList.toggle('collapsed');
+  });
+})();
+
+// ── Splash launcher wiring ─────────────────────────────────────
+// The splash is shown whenever no game is active. Clicking PLAY CONQUEST
+// hides the splash and opens the existing mode-picker modal (Random
+// Imperialism vs World Conquest). Cancelling the modal brings the splash
+// back. Ending a game also brings the splash back. The show/hide calls
+// are injected directly into startGameInMode, gameEnd, and closeConquestStartup
+// (rather than wrapped here) for reliability with hoisted function declarations.
+(function(){
+  const splash=document.getElementById('fc-splash');
+  const playBtn=document.getElementById('fc-splash-play');
+  if(!splash||!playBtn)return;
+
+  window.fcShowSplash=function(){
+    document.body.classList.add('fc-splash-active');
+    splash.setAttribute('aria-hidden','false');
+  };
+  window.fcHideSplash=function(){
+    document.body.classList.remove('fc-splash-active');
+    splash.setAttribute('aria-hidden','true');
+  };
+
+  playBtn.addEventListener('click',()=>{
+    window.fcHideSplash();
+    if(typeof openConquestStartup==='function') openConquestStartup();
+  });
+
+  // Splash "Load saved game" button — opens the existing file-picker flow.
+  const loadBtn=document.getElementById('fc-splash-load');
+  if(loadBtn){
+    loadBtn.addEventListener('click',()=>{
+      if(typeof doLoad==='function') doLoad();
+    });
+  }
+
+  // Initial state: show splash if there's no active game.
+  // Reference the lexical GAME (const-declared, not on window).
+  if(!GAME.active) window.fcShowSplash();
+})();
+
+// ── Hamburger menu wiring ──────────────────────────────────────
+// Menu items delegate to the existing (now-hidden) toolbar buttons so we
+// reuse their handlers — including the theme toggle's label-updating IIFE.
+(function(){
+  const btn=document.getElementById('fc-menu-btn');
+  const pop=document.getElementById('fc-menu');
+  if(!btn||!pop)return;
+
+  const close=()=>{
+    pop.classList.remove('open');
+    btn.setAttribute('aria-expanded','false');
+  };
+  const toggle=()=>{
+    // "New game" is visible whenever we're in any game session — both during active
+    // play AND in the post-game-over view (which leaves GAME.active=false but keeps
+    // the panel/HUD up until the user picks what's next). The splash-state check
+    // covers both cases: if the splash isn't showing, we're in a game session.
+    const inGameSession=!document.body.classList.contains('fc-splash-active');
+    pop.classList.toggle('fc-game-on', inGameSession);
+    // Hide items that would break an active World Conquest (e.g., Reset map calls
+    // gameInit() which doesn't preserve hero/losses state).
+    pop.classList.toggle('fc-conquest-active', !!(GAME.active && GAME.mode==='conquest'));
+    const isOpen=pop.classList.toggle('open');
+    btn.setAttribute('aria-expanded',isOpen?'true':'false');
+  };
+
+  btn.addEventListener('click',e=>{e.stopPropagation();toggle();});
+  document.addEventListener('click',e=>{
+    if(!pop.contains(e.target)&&e.target!==btn) close();
+  });
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+
+  // Save game → delegate to the hidden btn-save.
+  const saveItem=document.getElementById('fc-menu-save');
+  if(saveItem) saveItem.addEventListener('click',()=>{
+    close();
+    if(typeof doSave==='function') doSave();
+  });
+
+  // New game → confirm (only if a game is actively in progress), then end the current
+  // game silently and open the mode picker. Skips the splash flash so the modal opens
+  // directly. Shared with the HUD's New Game button via startNewGameFlow().
+  const newGameItem=document.getElementById('fc-menu-end');
+  if(newGameItem) newGameItem.addEventListener('click',()=>{
+    close();
+    // Confirm only when a game is actively being played — no need to confirm if it's
+    // already over (Game Over screen is up).
+    if(GAME.active && !confirm('Start a new game? Current progress will be lost.')) return;
+    if(typeof startNewGameFlow==='function') startNewGameFlow();
+  });
+
+  // Theme toggle → click the hidden btn-theme so its IIFE handler runs
+  // (which updates persistence, the gear-popover checkbox, and the label).
+  // We mirror the label here so the menu shows the next action (Light/Dark).
+  const themeItem=document.getElementById('fc-menu-theme');
+  const themeLabel=document.getElementById('fc-menu-theme-label');
+  const themeIcon=themeItem?themeItem.querySelector('.fc-menu-icon'):null;
+  function syncThemeLabel(){
+    const isLight=document.body.classList.contains('map-light');
+    if(themeLabel) themeLabel.textContent=isLight?'Dark map':'Light map';
+    if(themeIcon)  themeIcon.textContent =isLight?'🌙':'☀';
+  }
+  syncThemeLabel();
+  if(themeItem) themeItem.addEventListener('click',()=>{
+    close();
+    const tb=document.getElementById('btn-theme');
+    if(tb) tb.click();
+    // The btn-theme IIFE toggles body.map-light synchronously, so this reads
+    // the new state immediately.
+    setTimeout(syncThemeLabel,0);
+  });
+
+  // Reset map → delegate to the hidden btn-reset.
+  const resetItem=document.getElementById('fc-menu-reset');
+  if(resetItem) resetItem.addEventListener('click',()=>{
+    close();
+    const rb=document.getElementById('btn-reset');
+    if(rb) rb.click();
+  });
+
+  // Hall of Fame → open the leaderboard modal. Available always (not game-only)
+  // so the player can browse past records before / between / after campaigns.
+  const lbItem=document.getElementById('fc-menu-leaderboard');
+  if(lbItem) lbItem.addEventListener('click',()=>{
+    close();
+    if(typeof openLeaderboardModal==='function') openLeaderboardModal();
+  });
 })();
 
 </script>

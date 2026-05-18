@@ -1,0 +1,20 @@
+# Cloudflare Pages config — declares the D1 binding the Functions need.
+# Without this (or the equivalent binding configured in the Pages dashboard),
+# /api/submit and /api/leaderboard would fail with "DB is not defined".
+#
+# Run `wrangler d1 create fc-leaderboard` ONCE, paste the printed database_id
+# below, commit, and push. Cloudflare Pages reads this file on every deploy.
+
+name = "footballconquest"
+compatibility_date = "2026-05-01"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "fc-leaderboard"
+database_id = "<PASTE-FROM-wrangler-d1-create-OUTPUT>"
+
+# IP_SALT is set via the Cloudflare dashboard:
+#   Pages project → Settings → Environment variables → Production
+#   Variable name: IP_SALT     Type: Secret     Value: any random 32+ char string
+# It's referenced in functions/api/submit.js as env.IP_SALT.
