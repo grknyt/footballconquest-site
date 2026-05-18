@@ -335,15 +335,74 @@ img, svg { display: block; max-width: 100%; height: auto; }
   background: rgba(7, 14, 23, 0.7);
   border: 1px solid rgba(244, 234, 213, 0.12);
   border-radius: 8px;
-  padding: 24px;
+  /* Padding removed so the embedded simulator iframe fills the frame edge-to-edge. */
+  padding: 0;
   aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   box-shadow:
     0 1px 0 rgba(255,255,255,0.05) inset,
     12px 12px 0 var(--red);
-  backdrop-filter: blur(1px);
+}
+
+/* Live-preview link + iframe + hover overlay. The iframe loads the simulator
+   directly (NOT play.html — we want the bare game without the play-page chrome).
+   pointer-events:none on the iframe makes it a non-interactive poster; the
+   wrapping <a> handles clicks. */
+.hero-preview-link {
+  display: block;
+  text-decoration: none;
+  position: relative;
+  width: 100%;
+}
+.hero-preview-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;
+  background: var(--navy);
+  /* Slight desaturation so the homepage hero feels like a poster vs. the live
+     game — and so the foreground headline pops more. */
+  filter: saturate(0.92) brightness(0.95);
+  transition: filter .25s ease;
+}
+.hero-preview-link:hover .hero-preview-iframe {
+  filter: saturate(1.05) brightness(1.02);
+}
+.hero-preview-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(7,14,23,0) 60%, rgba(7,14,23,0.35) 100%);
+  transition: background .2s ease;
+}
+.hero-preview-link:hover .hero-preview-overlay {
+  background: linear-gradient(180deg, rgba(7,14,23,0.15) 0%, rgba(7,14,23,0.55) 100%);
+}
+.hero-preview-cta {
+  font-family: var(--display);
+  font-size: 18px;
+  letter-spacing: 4px;
+  color: var(--paper);
+  background: var(--red);
+  padding: 14px 32px;
+  border-radius: 4px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .2s ease, transform .2s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+.hero-preview-link:hover .hero-preview-cta,
+.hero-preview-link:focus-visible .hero-preview-cta {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .hero-map-img {
