@@ -62,16 +62,20 @@
       </div>
     </div>
     <div class="hero-right">
-      <div class="hero-map-frame">
-        <img src="/assets/hero-map.svg" alt="World map preview" class="hero-map-img">
-        <div class="hero-arrow">
-          <svg viewBox="0 0 100 100" class="compass">
-            <circle cx="50" cy="50" r="42" fill="#f4ead5" stroke="#0a1929" stroke-width="3"/>
-            <path d="M50 12 L55 50 L50 88 L45 50 Z" fill="#c8102e"/>
-            <circle cx="50" cy="50" r="5" fill="#0a1929"/>
-          </svg>
+      <!-- Live simulator preview: the actual game running in an iframe. Click
+           anywhere on it to jump straight into /play.html. pointer-events on
+           the iframe itself are disabled so the homepage CTAs above stay the
+           primary action and the iframe acts as a moving poster. loading="lazy"
+           defers the 1.9MB simulator until the user scrolls near the hero
+           (often instantly, but skipped for bots / cached-only views). -->
+      <a href="/play.html" class="hero-preview-link" aria-label="Open the live simulator">
+        <div class="hero-map-frame">
+          <iframe src="/simulator.html" class="hero-preview-iframe" title="Football Conquest live preview" loading="lazy" scrolling="no" tabindex="-1" aria-hidden="true"></iframe>
+          <div class="hero-preview-overlay">
+            <span class="hero-preview-cta">▶ ENTER</span>
+          </div>
         </div>
-      </div>
+      </a>
     </div>
   </div>
   <div class="hero-marquee">
