@@ -4674,6 +4674,11 @@ function startGameInMode(mode,heroId){
   // Campaign timer — used to send a plausibility floor (clientDtMs) to the
   // global-leaderboard API. Server rejects sub-5-second campaigns.
   GAME.campaignStartMs=Date.now();
+  // Most-recently-lost-to opponent. Used by refreshConquestHud as a fallback
+  // when GAME.defender is null (between spins) so the "Losses to X: Y/3"
+  // warning row stays visible after a loss, instead of vanishing until the
+  // next spin happens to land on the same team. Cleared by any conquest win.
+  GAME.lastLossOppId=null;
   gameInit();
   // Update the panel title
   const title=document.getElementById('g-mode-title');
@@ -5452,6 +5457,10 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
     GAME.stats.gf+=heroScore;
     GAME.stats.ga+=oppScore;
   }
+  // Any win clears the lingering "you just lost to X" HUD warning — the player
+  // has recovered momentum, so the danger row should disappear until they
+  // lose to someone new.
+  GAME.lastLossOppId=null;
   // Push undo record for this win. heroScore/oppScore stored explicitly so
   // undoConquestWin can rewind the stats tally cleanly (no string parsing).
   undoStack.push({
@@ -5498,6 +5507,9 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
     GAME.stats.gf+=heroScore;
     GAME.stats.ga+=oppScore;
   }
+  // Remember this opponent so the HUD keeps showing their loss count even
+  // after GAME.defender is cleared by the retreat below.
+  GAME.lastLossOppId=opp.id;
   // Capture current hero position before retreat (for undo)
   const heroBadgeNow=document.querySelector(`.fbadge[data-badge-id="${hero.id}"]`);
   const fromX=heroBadgeNow?parseFloat(heroBadgeNow.getAttribute('data-cx')):0;
@@ -5892,14 +5904,26 @@ function updateConquestHud(state){
 function refreshConquestHud(extra){
   if(GAME.mode!=='conquest')return;
   let lossOpponent=null, lossCount=0;
-  // Only show losses against the CURRENT defender (the team we're about to attack).
-  // Between battles (no defender set yet), the losses row stays hidden so the HUD
-  // doesn't dwell on a past opponent's count.
+  // Primary: show losses against the CURRENT defender (the team about to be
+  // attacked). This is the active threat while spinning is resolved.
   if(GAME.defender){
     const cnt=GAME.lossCounts[GAME.defender.id]||0;
     if(cnt>0){
       lossCount=cnt;
       lossOpponent=GAME.defender.name;
+    }
+  } else if(GAME.lastLossOppId!=null){
+    // Fallback: between spins, keep showing the team we just lost to so the
+    // player sees their updated count (e.g., "Losses to Spain: 2/3")
+    // immediately after the retreat, not just on the next spin if the same
+    // team comes up. Cleared by handleConquestWin.
+    const cnt=GAME.lossCounts[GAME.lastLossOppId]||0;
+    if(cnt>0){
+      const t=teams.find(x=>x.id===GAME.lastLossOppId);
+      if(t){
+        lossCount=cnt;
+        lossOpponent=t.name;
+      }
     }
   }
   updateConquestHud(Object.assign({lossOpponent,lossCount},extra||{}));
