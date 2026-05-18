@@ -12,7 +12,7 @@ pages_build_output_dir = "."
 [[d1_databases]]
 binding = "DB"
 database_name = "fc-leaderboard"
-database_id = "<PASTE-FROM-wrangler-d1-create-OUTPUT>"
+database_id = "63c08277-a7bf-41e1-9b77-e047abe11d0f"
 
 # IP_SALT is set via the Cloudflare dashboard:
 #   Pages project → Settings → Environment variables → Production
