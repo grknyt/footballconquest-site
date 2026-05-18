@@ -80,9 +80,13 @@ export function validateSubmission(body) {
   if (turns > MAX_TURNS) return { error: 'turns_too_large' };
   if (tOwned > MAX_TERRITORIES_OWNED) return { error: 'territories_too_large' };
 
-  // Each turn is one match → wins + losses must reconcile with turn count.
-  // +1 slack for in-flight spin states.
-  if (wins + losses > turns + 1) return { error: 'turns_mismatch', detail: `${wins}+${losses}>${turns}+1` };
+// In World Conquest, GAME.turn only increments on WINS (each successful
+  // conquest moves the hero forward by one turn). Losses retreat the hero
+  // without advancing the turn counter, so the relationship is roughly
+  // `turns ≈ wins + 1` regardless of how many losses occurred. A claim of
+  // more wins than turns is impossible; losses are unconstrained relative
+  // to turns (a player can lose many times in a row before getting eliminated).
+  if (wins > turns + 1) return { error: 'turns_mismatch', detail: `${wins}>${turns}+1` };
 
   if (result === 'victory' && tOwned !== MAX_TERRITORIES_OWNED) {
     return { error: 'victory_without_full_map', detail: `tOwned=${tOwned}` };
