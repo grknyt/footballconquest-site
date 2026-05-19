@@ -235,16 +235,16 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
 #game-panel.conquest-mode #g-spin-team:not(:disabled){animation:g-action-glow-blue 1.6s ease-in-out infinite;}
 #game-panel.conquest-mode #g-resolve:not(:disabled){animation:g-action-glow-red 1.4s ease-in-out infinite;}
 
-/* ──── Events log panel: collapsible top-right card showing the play-by-play ──
-   Was the right-hand column of the lower HUD; pulled out so the lower HUD can
-   focus on the action buttons. Visible whenever the game-panel is open
-   (via the sibling selector below). Sits with matching margin to the top and
-   right edges so it reads as a balanced corner card. */
-#g-events-panel{position:absolute;top:10px;right:10px;width:280px;
+/* ──── Events log panel: collapsible bottom-right card showing the play-by-play ──
+   Pinned to the bottom-right, sharing the bottom row with the game-panel
+   (centered) and the conquest HUD (bottom-left). Width + max-height tuned
+   to mirror the conquest HUD on the opposite side so the three elements
+   form a balanced bottom triptych. */
+#g-events-panel{position:absolute;bottom:32px;right:14px;width:300px;
   background:rgba(7,14,23,.97);border:1px solid #2a3f55;border-radius:10px;
   display:none;flex-direction:column;z-index:24;overflow:hidden;
   box-shadow:0 6px 18px rgba(0,0,0,.4);
-  max-height:240px;transition:max-height .25s ease;}
+  max-height:260px;transition:max-height .25s ease;}
 #game-panel.open ~ #g-events-panel{display:flex;}
 #g-events-panel.collapsed{max-height:34px;}
 #g-events-header{padding:8px 12px;font-size:10px;color:#7ab8e8;font-weight:600;
@@ -255,8 +255,8 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
 #g-events-panel.collapsed #g-events-toggle{transform:rotate(-90deg);}
 #g-events-panel.collapsed #g-events-header{border-bottom:none;}
 #g-events-panel #g-log{flex:1;min-height:0;max-height:none;overflow-y:auto;
-  padding:7px 12px;background:transparent;border-radius:0;
-  font-size:11px;line-height:1.5;color:#b8c9d8;}
+  padding:8px 13px;background:transparent;border-radius:0;
+  font-size:12px;line-height:1.55;color:#b8c9d8;}
 .g-log{font-size:13px;color:#cfdaea;flex:1;min-width:0;max-height:110px;overflow-y:auto;
 background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-log-empty{color:#4a6a80;font-style:italic;text-align:center;}
@@ -507,13 +507,17 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
   filter:drop-shadow(0 0 10px rgba(255,213,74,0.95));}
 
 
-/* Floating Conquest HUD */
-#g-hud{position:absolute;top:80px;left:50%;transform:translateX(-50%);
-  background:rgba(7,14,23,0.78);backdrop-filter:blur(8px);
-  border:1px solid rgba(122,184,232,0.25);border-radius:12px;
-  padding:10px 22px;z-index:24;pointer-events:none;
-  box-shadow:0 4px 20px rgba(0,0,0,0.5);
-  min-width:260px;text-align:center;
+/* Floating Conquest HUD — anchored bottom-left to mirror the Events panel
+   on the right. Width / max-height / box-shadow match #g-events-panel for
+   visual symmetry so the three elements (HUD · game-panel · Events) form
+   a balanced bottom row. */
+#g-hud{position:absolute;bottom:32px;left:14px;
+  background:rgba(7,14,23,0.97);backdrop-filter:blur(8px);
+  border:1px solid #2a3f55;border-radius:10px;
+  padding:14px 18px;z-index:24;pointer-events:none;
+  box-shadow:0 6px 18px rgba(0,0,0,.4);
+  width:300px;max-height:260px;overflow-y:auto;
+  text-align:center;
   font-family:-apple-system,sans-serif;
   transition:opacity 0.5s ease,transform 0.5s ease;
   opacity:0;}
@@ -745,6 +749,32 @@ body.web-build .g-result-actions{justify-content:center;}
    read as the unmistakable CTA. */
 body.web-build .g-sim-btn{margin-bottom:8px;}
 
+/* Score reveal — big centered scoreline that appears between the two flags
+   after the user clicks Simulate, so they SEE the result before the modal
+   auto-closes for the next turn. Default hidden; toggled via .shown class
+   on click. Only renders in web-build mode (offline keeps the inputs). */
+.g-result-score-reveal{display:none;flex:0 0 auto;align-items:center;justify-content:center;
+  gap:12px;font-variant-numeric:tabular-nums;color:#fff;font-weight:800;
+  font-size:48px;line-height:1;letter-spacing:1px;padding:0 14px;}
+body.web-build .g-result-score-reveal.shown{display:flex;
+  animation:g-reveal-pop .42s cubic-bezier(.34,1.56,.64,1) both;}
+.g-reveal-num{display:inline-block;min-width:48px;text-align:center;
+  text-shadow:0 0 14px rgba(212,169,54,.45);}
+.g-reveal-dash{color:#7a9bb5;font-weight:600;}
+.g-reveal-num.win{color:#9dffa3;text-shadow:0 0 18px rgba(109,216,109,.7);}
+.g-reveal-num.loss{color:#ff8a8a;text-shadow:0 0 18px rgba(255,80,80,.7);}
+@keyframes g-reveal-pop{
+  0%   {opacity:0;transform:scale(.4);}
+  60%  {opacity:1;transform:scale(1.15);}
+  100% {opacity:1;transform:scale(1);}
+}
+/* When the score is revealed, dim the preview row + tactic buttons + sim
+   button so the score is the unmistakable focal point. */
+body.web-build .g-result-card.revealed .g-result-preview,
+body.web-build .g-result-card.revealed .g-sim-btn{
+  opacity:.18;pointer-events:none;transition:opacity .25s ease;
+}
+
 </style>
 </head>
 <!-- web-build = simulate-only public site. Remove the class to enable
@@ -925,7 +955,7 @@ body.web-build .g-sim-btn{margin-bottom:8px;}
         <div class="g-result-title">Match Result</div>
         <button class="g-sim-btn" id="g-result-sim" type="button">
           <span class="g-sim-icon">🎲</span>
-          <span>Simulate match instantly</span>
+          <span>Simulate Match</span>
         </button>
         <div class="g-result-or"><span>or enter manually</span></div>
         <div class="g-result-matchup">
@@ -939,6 +969,15 @@ body.web-build .g-sim-btn{margin-bottom:8px;}
             <input type="number" min="0" max="99" value="0" class="g-result-score" id="g-result-hero-score">
             <span class="g-result-vs">–</span>
             <input type="number" min="0" max="99" value="0" class="g-result-score" id="g-result-opp-score">
+          </div>
+          <!-- Score reveal — shown only in web-build mode, after Simulate is
+               clicked, so the player sees the result in the modal itself before
+               it closes for the next turn. Offline build keeps the inputs
+               (above) which are already self-evidently the scoreline. -->
+          <div class="g-result-score-reveal" id="g-result-score-reveal">
+            <span class="g-reveal-num" id="g-result-reveal-hero">0</span>
+            <span class="g-reveal-dash">–</span>
+            <span class="g-reveal-num" id="g-result-reveal-opp">0</span>
           </div>
           <div class="g-result-team">
             <div class="g-result-flag empty" id="g-result-opp-flag"></div>
@@ -5515,6 +5554,17 @@ function openResultModal(){
   document.getElementById('g-result-pens-opp').value=0;
   document.querySelector('input[name=finish][value=normal]').checked=true;
   document.getElementById('g-result-pens-row').style.display='none';
+  // Reset the score reveal state — fresh modal, no result yet.
+  const revealBox=document.getElementById('g-result-score-reveal');
+  if(revealBox){
+    revealBox.classList.remove('shown');
+    const rh=document.getElementById('g-result-reveal-hero');
+    const ro=document.getElementById('g-result-reveal-opp');
+    if(rh){rh.textContent='0';rh.classList.remove('win','loss');}
+    if(ro){ro.textContent='0';ro.classList.remove('win','loss');}
+  }
+  const card=document.querySelector('.g-result-card');
+  if(card) card.classList.remove('revealed');
   // Refresh live preview (win prob + xG + tactic-button active state) for the
   // new matchup. Reads GAME.matchTactic which was reset to 'balanced' on spin.
   if(typeof updateResultPreview==='function') updateResultPreview();
@@ -5748,18 +5798,41 @@ function wireResultModal(){
     // Simmed matches always finish in normal time. Manual entry retains FT/AET/Pens.
     document.querySelector('input[name=finish][value=normal]').checked=true;
     document.getElementById('g-result-pens-row').style.display='none';
+    // ── Score reveal: show the result IN the modal before it auto-closes
+    // so the player actually sees what happened. Only matters in web-build
+    // (offline still has the visible input fields). The .revealed class on
+    // the card dims everything except the score itself.
+    const revealHero=document.getElementById('g-result-reveal-hero');
+    const revealOpp =document.getElementById('g-result-reveal-opp');
+    const revealBox =document.getElementById('g-result-score-reveal');
+    const card     =document.querySelector('.g-result-card');
+    if(revealHero && revealOpp && revealBox){
+      revealHero.textContent=result.heroGoals;
+      revealOpp.textContent =result.oppGoals;
+      revealHero.classList.remove('win','loss');
+      revealOpp.classList.remove('win','loss');
+      if(result.heroGoals > result.oppGoals){
+        revealHero.classList.add('win');
+        revealOpp.classList.add('loss');
+      } else if(result.heroGoals < result.oppGoals){
+        revealHero.classList.add('loss');
+        revealOpp.classList.add('win');
+      }
+      revealBox.classList.add('shown');
+    }
+    if(card) card.classList.add('revealed');
     if(window.GAME_SETTINGS?.clickToReveal){
       // Dramatic-pacing mode — let the user hit Confirm themselves.
       return;
     }
     if(_simAutoConfirmTimer) clearTimeout(_simAutoConfirmTimer);
-    // Reveal pause before auto-confirming — long enough for the player to
-    // read the final scoreline before the conquest paint/retreat fires.
-    // Tuned through playtesting: 400ms → 1400ms → 900ms → 650ms.
+    // Reveal pause before auto-confirming. Bumped from 650ms → 1400ms now
+    // that the score is displayed in the modal — the player needs enough
+    // time to register it before the modal closes for the next turn.
     _simAutoConfirmTimer=setTimeout(()=>{
       _simAutoConfirmTimer=null;
       document.getElementById('g-result-confirm').click();
-    },650);
+    },1400);
   });
   document.getElementById('g-result-cancel').addEventListener('click',closeResultModal);
   document.getElementById('g-result-confirm').addEventListener('click',()=>{
