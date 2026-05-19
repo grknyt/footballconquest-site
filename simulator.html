@@ -1898,26 +1898,32 @@ function computeWinValue(hero, opp, heroScore, oppScore, streak){
 }
 // computeLossFraction: fraction of momentumProgress wiped by a loss.
 // Same gap-first philosophy: losing as a heavy favorite is devastating;
-// losing as an underdog is expected and barely registers.
-// Anchor examples (streak=0, 0-1 loss):
-//   Brazil losing to Cuba    → gap +995 → ~16% of progress wiped
-//   Brazil losing to Chile   → gap +325 → ~12%
-//   Brazil losing to Argentina → gap +50 → ~9%
-//   Cuba losing to Brazil    → gap -995 → ~3% (a near-no-op)
+// losing as an underdog is expected and barely registers. The numbers below
+// are tuned so the prior "Italy 0–2 Tunisia → 12% morale hit" feels closer
+// to a real-world upset weight (~25% in that scenario).
+// Anchor examples (streak=0, 0-1 loss unless noted):
+//   Italy (1700) → Tunisia (1380), 0-2     → gap +320 → ~25% (big upset hit)
+//   Brazil (1850) → Cuba (855), 0-1        → gap +995 → ~30%
+//   Brazil → Cuba 0-3, streak 5            → gap +995 → ~75% (cap, ruinous)
+//   Brazil → Argentina (peer), 1-2         → gap  +50 → ~14%
+//   Cuba   → Brazil, 0-3                   → gap -995 → ~5%  (underdog, forgiven)
 function computeLossFraction(hero, opp, heroScore, oppScore, prevStreak){
   const heroFifa = fifaRating(hero.name);
   const oppFifa  = fifaRating(opp.name);
   const gap = heroFifa - oppFifa;
-  // Gap-driven penalty multiplier. Losing as a favorite is bad; losing as
-  // an underdog is forgiven. Continuous, capped both sides.
+  // Gap-driven penalty multiplier. Losing as a favorite is bad — scaled
+  // steeper than the win-side curve so upsets really sting. Up to 2.5×.
+  // Underdog losses cap low (0.35×) so they barely register.
   let gapMult;
-  if(gap >= 0) gapMult = 1.0 + Math.min(1.0, gap/700);   // up to 2.0×
-  else         gapMult = Math.max(0.4, 1.0 + gap/600);    // down to 0.4×
-  const baseFraction = 0.08 + Math.min(prevStreak||0, 15) * 0.025;
-  // Margin penalty — each loss-goal beyond the first adds 15%, capped +80%.
+  if(gap >= 0) gapMult = 1.0 + Math.min(1.5, gap/400);
+  else         gapMult = Math.max(0.35, 1.0 + gap/500);
+  // Higher base — even a streak-0 loss to a clearly weaker team is a
+  // notable hit (was 0.08, now 0.12). Streak still compounds.
+  const baseFraction = 0.12 + Math.min(prevStreak||0, 15) * 0.025;
+  // Margin penalty — each loss-goal beyond the first adds 15%, capped +90%.
   const lossMargin = Math.max(0, oppScore - heroScore);
-  const marginMult = 1.0 + Math.min(0.8, Math.max(0, lossMargin - 1) * 0.15);
-  return Math.min(0.70, baseFraction * gapMult * marginMult);
+  const marginMult = 1.0 + Math.min(0.9, Math.max(0, lossMargin - 1) * 0.15);
+  return Math.min(0.75, baseFraction * gapMult * marginMult);
 }
 function getHeroMomentumBonus(hero){
   if(!hero || !GAME || GAME.mode!=='conquest') return 0;
@@ -4010,20 +4016,33 @@ function highlightAttacker(){
 }
 
 // Smooth pan to an SVG coordinate
+// Bottom UI (game-panel + conquest HUD + events panel) occludes the bottom
+// ~22% of the viewport. The auto-pan functions below treat the UPPER ~78%
+// as the usable area — so the target point lands in the visual center of
+// what the player can actually see, not the geometric center of the SVG.
+// Tuned by eyeballing the typical desktop layout; ratio is stable enough
+// across viewport sizes (1280–1920) that a fixed fraction works fine.
+const VIEWPORT_BOTTOM_OCCLUDED = 0.22;
+const VIEWPORT_USABLE_H_FRAC   = 1 - VIEWPORT_BOTTOM_OCCLUDED;          // 0.78
+const VIEWPORT_VISUAL_CY_FRAC  = VIEWPORT_USABLE_H_FRAC / 2;            // 0.39 — middle of unobscured area
 function panTo(target,zoom){
   if(!svgSel||!zoomBeh)return;
   const k=zoom||currentK();
-  // SVG viewBox is 0 0 VW VH (=10000 5000). D3 zoom transform is applied in that SVG space.
-  // To center `target` in the viewport: translate so that k*target + t = VW/2, VH/2
+  // SVG viewBox is 0 0 VW VH (=10000 5000). D3 zoom transform is applied in
+  // that SVG space. We want `target` to land at the visual center of the
+  // unobscured area (above the bottom UI), so center on VH * 0.39 instead
+  // of VH/2.
   const tx=VW/2 - k*target[0];
-  const ty=VH/2 - k*target[1];
+  const ty=VH*VIEWPORT_VISUAL_CY_FRAC - k*target[1];
   const newT=d3.zoomIdentity.translate(tx,ty).scale(k);
   svgSel.transition().duration(800).ease(d3.easeCubicInOut).call(zoomBeh.transform,newT);
 }
-// Pan + zoom-out the camera so every point in `points` ends up inside the viewport
-// with a small padding margin. Capped at `maxK` (defaults to current zoom) so this
-// function will only ever zoom OUT — never zoom in by surprise. Used after the spin
-// arrow lands so a far-away defender becomes visible alongside the hero.
+// Pan + zoom-out the camera so every point in `points` ends up inside the
+// USABLE area (above the bottom UI) with a small padding margin. Capped at
+// `maxK` (defaults to current zoom) so this function will only ever zoom
+// OUT — never zoom in by surprise. Used after the spin arrow lands so a
+// far-away defender becomes visible alongside the hero, without one of
+// them ending up hidden behind the bottom HUD.
 function panToFitPoints(points,opts){
   if(!svgSel||!zoomBeh||!points||!points.length)return;
   opts=opts||{};
@@ -4042,13 +4061,15 @@ function panToFitPoints(points,opts){
   const cx=(mnX+mxX)/2, cy=(mnY+mxY)/2;
   const dx=mxX-mnX, dy=mxY-mnY;
   // Required scale so the bounding span fits with padding on both sides.
+  // Vertical fit uses the USABLE height (0.78 * VH), not the full VH —
+  // otherwise a tall span can end up partially clipped under the bottom UI.
   const kx=dx>1?VW/(dx*(1+2*padding)):Infinity;
-  const ky=dy>1?VH/(dy*(1+2*padding)):Infinity;
+  const ky=dy>1?(VH*VIEWPORT_USABLE_H_FRAC)/(dy*(1+2*padding)):Infinity;
   let k=Math.min(kx,ky);
   if(!isFinite(k)) k=maxK;
   k=Math.max(minK,Math.min(k,maxK));
   const tx=VW/2 - k*cx;
-  const ty=VH/2 - k*cy;
+  const ty=VH*VIEWPORT_VISUAL_CY_FRAC - k*cy;
   const newT=d3.zoomIdentity.translate(tx,ty).scale(k);
   svgSel.transition().duration(duration).ease(d3.easeCubicInOut).call(zoomBeh.transform,newT);
 }
@@ -6711,53 +6732,28 @@ function updateConquestHud(state){
     }
   }
   if(lossEl) lossEl.style.display='none';
-  // Last result row
-  if(state&&state.lastResult){
-    lastEl.style.display='block';
-    lastEl.classList.remove('win','loss','over');
-    if(state.lastResult.gameOver){
-      lastEl.classList.add('over');
-      lastEl.innerHTML=`💀 ${state.lastResult.opp} has eliminated ${state.lastResult.hero}`;
-    } else if(state.lastResult.type==='win'){
-      lastEl.classList.add('win');
-      lastEl.innerHTML=`✅ Beat <b class="team">${state.lastResult.opp}</b> ${state.lastResult.score}`;
-    } else {
-      lastEl.classList.add('loss');
-      lastEl.innerHTML=`❌ Lost to <b class="team">${state.lastResult.opp}</b> ${state.lastResult.score}`;
-    }
-  } else {
-    lastEl.style.display='none';
-  }
+  // Last-result toast retired — every match result is already visible in
+  // the Events panel (right side), so the floating "Beat X 3–0" pill was
+  // redundant noise. Just keep the element hidden in case any other code
+  // path tries to flip its display.
+  if(lastEl) lastEl.style.display='none';
   // New Game button — visible only when the game is over (loss or victory).
   const newGameBtn=document.getElementById('g-hud-newgame');
   if(newGameBtn){
     const gameOver=!!(state&&state.lastResult&&state.lastResult.gameOver);
     newGameBtn.classList.toggle('show',gameOver);
   }
-  // Floating HUD now only carries the last-result toast + game-over button.
-  // Loss warning lives in the game panel; record/turn moved out earlier.
-  // When neither row is showing, hide the HUD entirely.
-  const hasLastResult = lastEl && lastEl.style.display!=='none';
+  // Floating HUD now ONLY carries the game-over "New Game" button.
+  // Everything else (record, turn, losses, last-result) lives elsewhere.
+  // When the game isn't over, hide the HUD entirely.
   const hasGameOverBtn = newGameBtn && newGameBtn.classList.contains('show');
-  if(hasLastResult || hasGameOverBtn){
+  if(hasGameOverBtn){
     hud.classList.add('visible');
   } else {
     hud.classList.remove('visible');
     setTimeout(()=>{if(!hud.classList.contains('visible'))hud.style.display='none';},500);
   }
-  if(_hudFadeTimer){clearTimeout(_hudFadeTimer);}
-  // Auto-fade the lastResult row after 6s and re-evaluate HUD visibility
-  // so the whole card hides if the game-over button isn't also showing.
-  _hudFadeTimer=setTimeout(()=>{
-    if(lastEl&&!lastEl.classList.contains('over')){
-      lastEl.style.display='none';
-      const stillHasGameOver = newGameBtn && newGameBtn.classList.contains('show');
-      if(!stillHasGameOver){
-        hud.classList.remove('visible');
-        setTimeout(()=>{if(!hud.classList.contains('visible'))hud.style.display='none';},500);
-      }
-    }
-  },6000);
+  if(_hudFadeTimer){clearTimeout(_hudFadeTimer);_hudFadeTimer=null;}
 }
 
 // Convenience: refresh HUD with current GAME state
