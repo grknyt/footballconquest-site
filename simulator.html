@@ -562,6 +562,17 @@ body.map-light .g-trail-arrow.g-trail-win polygon{fill:rgba(20,30,45,0.75)!impor
 #fc-splash{position:absolute;inset:0;display:none;z-index:40;
   background:rgba(7,14,23,0.55);align-items:center;justify-content:center;}
 body.fc-splash-active #fc-splash{display:flex;}
+/* Demo mode: simulator embedded as a non-interactive preview (e.g., on the
+   homepage hero iframe via /simulator.html?demo=1). Strips all chrome so
+   only the world map renders — no splash card, no toolbar, no edge HUDs. */
+body.fc-demo-mode #fc-splash,
+body.fc-demo-mode #hdr,
+body.fc-demo-mode #hint,
+body.fc-demo-mode .zc,
+body.fc-demo-mode #g-hud,
+body.fc-demo-mode #g-events-panel,
+body.fc-demo-mode #history-panel{display:none!important;}
+body.fc-demo-mode #mg{filter:none!important;}
 /* Blur the live map (group #mg holds all countries + flag badges) while splash is up */
 body.fc-splash-active #mg{filter:blur(6px);transition:filter .25s ease;}
 body.fc-splash-active #hint{display:none;}
@@ -6576,9 +6587,20 @@ function startNewGameFlow(){
     });
   }
 
-  // Initial state: show splash if there's no active game.
-  // Reference the lexical GAME (const-declared, not on window).
-  if(!GAME.active) window.fcShowSplash();
+  // Demo mode: the homepage hero iframe loads /simulator.html?demo=1 so the
+  // map renders as a clean broadcast-preview poster (no splash card, no
+  // toolbar). When that flag is present, skip the splash entirely.
+  let isDemoMode=false;
+  try{
+    isDemoMode = new URLSearchParams(window.location.search).get('demo')==='1';
+  }catch(e){}
+  if(isDemoMode){
+    document.body.classList.add('fc-demo-mode');
+  } else if(!GAME.active){
+    // Initial state: show splash if there's no active game.
+    // Reference the lexical GAME (const-declared, not on window).
+    window.fcShowSplash();
+  }
 })();
 
 // ── Hamburger menu wiring ──────────────────────────────────────
