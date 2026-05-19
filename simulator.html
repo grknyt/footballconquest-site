@@ -149,7 +149,7 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
    aligned the same way on consecutive renders. */
 .g-slot-overall{display:block;text-align:center;margin:4px auto 0;
   font-size:15px;font-weight:700;color:#d4a936;letter-spacing:.5px;
-  font-variant-numeric:tabular-nums;line-height:1;
+  font-variant-numeric:tabular-nums;line-height:1;position:relative;
   text-shadow:0 0 6px rgba(212,169,54,.35);}
 @keyframes g-ovr-pulse{
   0%   {color:#d4a936;transform:scale(1);text-shadow:0 0 6px rgba(212,169,54,.35);}
@@ -157,6 +157,50 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
   100% {color:#d4a936;transform:scale(1);text-shadow:0 0 6px rgba(212,169,54,.35);}
 }
 .g-slot-overall.pulse{animation:g-ovr-pulse .7s ease-out;}
+/* Red pulse for OVR tick-down — same shape as the green pulse but in damage
+   red. Triggered after a loss so the player physically sees their rating
+   take a hit at the moment of the result reveal. */
+@keyframes g-ovr-pulse-down{
+  0%   {color:#d4a936;transform:scale(1);text-shadow:0 0 6px rgba(212,169,54,.35);}
+  35%  {color:#ff8a8a;transform:scale(1.18);text-shadow:0 0 16px rgba(255,80,80,.85);}
+  100% {color:#d4a936;transform:scale(1);text-shadow:0 0 6px rgba(212,169,54,.35);}
+}
+.g-slot-overall.pulse-down{animation:g-ovr-pulse-down 1.1s ease-out;}
+/* OVR delta indicator — appears inline next to the OVR badge for a few
+   seconds after a match so the swing is immediately readable from the
+   slot itself. .up = green ▲N (morale boost); .down = red ▼N (morale hit). */
+.g-ovr-delta{
+  display:inline-block;margin-left:6px;vertical-align:middle;
+  font-size:12px;font-weight:800;letter-spacing:.5px;
+  font-variant-numeric:tabular-nums;
+  padding:2px 7px;border-radius:9px;line-height:1;
+  pointer-events:none;white-space:nowrap;
+  opacity:0;transform:translateX(-4px) scale(.85);
+  animation:g-ovr-delta-show 3.2s ease-out forwards;
+}
+.g-ovr-delta.up{
+  background:rgba(109,216,109,.2);color:#9dffa3;
+  border:1px solid rgba(109,216,109,.6);
+  box-shadow:0 0 10px rgba(109,216,109,.45);
+}
+.g-ovr-delta.down{
+  background:rgba(255,80,80,.2);color:#ff8a8a;
+  border:1px solid rgba(255,80,80,.6);
+  box-shadow:0 0 10px rgba(255,80,80,.45);
+}
+@keyframes g-ovr-delta-show{
+  0%   {opacity:0;transform:translateX(-4px) scale(.85);}
+  10%  {opacity:1;transform:translateX(0) scale(1.2);}
+  22%  {transform:translateX(0) scale(1);}
+  78%  {opacity:1;transform:translateX(0) scale(1);}
+  100% {opacity:0;transform:translateX(6px) scale(1);}
+}
+/* Loser slot now also gets a red glow so the demoralization is unambiguous
+   alongside the existing grayscale dim. */
+.g-slot.loser{
+  box-shadow:0 0 18px 0 rgba(200,16,46,.35), inset 0 0 0 2px #8c1d1d;
+  border-color:#8c1d1d;
+}
 /* Star rating row — visible in BOTH Imperialism and Conquest now. The
    conquest-mode rule below is kept as a no-op for explicitness in case we
    later want to scope behavior differently per mode. */
@@ -331,12 +375,26 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
   letter-spacing:.5px;margin-bottom:18px;text-align:center;}
 .g-start-modes{display:flex;gap:14px;flex-direction:column;}
 .g-mode-btn{background:#0e2034;border:1px solid #1a2f40;border-radius:8px;padding:18px;
-  cursor:pointer;color:#cfdaea;text-align:left;transition:all .15s;}
+  cursor:pointer;color:#cfdaea;text-align:left;transition:all .15s;position:relative;}
 .g-mode-btn:hover{border-color:#7ab8e8;background:#13283e;}
 .g-mode-btn.selected{border-color:#7ab8e8;background:#13283e;}
+/* Primary mode: World Conquest — bigger, gold-accented hero button */
+.g-mode-btn.primary{padding:28px 26px;border-color:#d4a936;background:linear-gradient(180deg,#13283e 0%,#0e2034 100%);}
+.g-mode-btn.primary:hover{border-color:#f0c660;background:linear-gradient(180deg,#1a334d 0%,#13283e 100%);}
+.g-mode-btn.primary .g-mode-icon{font-size:44px;margin-bottom:10px;}
+.g-mode-btn.primary .g-mode-name{font-size:22px;color:#f4d77a;margin-bottom:6px;}
+.g-mode-btn.primary .g-mode-desc{font-size:13px;color:#bcc9d8;}
+/* Compact mode: Random Imperialism — smaller, secondary visual weight */
+.g-mode-btn.compact{padding:12px 14px;}
+.g-mode-btn.compact .g-mode-icon{font-size:20px;margin-bottom:2px;display:inline-block;margin-right:8px;vertical-align:middle;}
+.g-mode-btn.compact .g-mode-name{font-size:13px;display:inline-block;vertical-align:middle;}
+.g-mode-btn.compact .g-mode-desc{font-size:10px;margin-top:4px;}
 .g-mode-icon{font-size:28px;margin-bottom:6px;}
 .g-mode-name{font-size:16px;font-weight:600;color:#fff;margin-bottom:4px;}
 .g-mode-desc{font-size:11px;color:#7a9bb5;line-height:1.4;}
+/* BETA badge for in-development modes */
+.g-mode-beta{position:absolute;top:8px;right:10px;background:#c8102e;color:#fff;font-size:9px;
+  font-weight:700;letter-spacing:1px;padding:2px 6px;border-radius:3px;line-height:1;}
 #g-conquest-team-picker{margin-top:18px;border-top:1px solid #1a2f40;padding-top:18px;}
 .g-pick-label{font-size:11px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
 .g-team-search{width:100%;background:#0e2034;border:1px solid #1a2f40;border-radius:6px;
@@ -669,9 +727,29 @@ body.fc-splash-active #btn-history{display:none;}
    Leaderboards button stay visible on the toolbar at all times. */
 #btn-save,#btn-load,#btn-reset{display:none!important;}
 
+/* ── Web build: simulate-only Match Result modal ────────────────────────
+   The public site (footballconquest.com) hides every manual-entry control
+   so players resolve matches via the Simulate button exclusively. To
+   ship an OFFLINE build (for Gürkan / content creators who want to play
+   matches in FC 26 and key in real scores), remove `class="web-build"`
+   from <body> below and everything below re-appears. */
+body.web-build .g-result-or,
+body.web-build .g-result-scores,
+body.web-build .g-result-finish,
+body.web-build #g-result-pens-row,
+body.web-build #g-result-confirm{display:none!important;}
+/* With Confirm gone, Cancel sits alone — recenter it and dim it as a
+   secondary "back out" rather than a primary action. */
+body.web-build .g-result-actions{justify-content:center;}
+/* The Simulate button graduates to the only primary action — make it
+   read as the unmistakable CTA. */
+body.web-build .g-sim-btn{margin-bottom:8px;}
+
 </style>
 </head>
-<body>
+<!-- web-build = simulate-only public site. Remove the class to enable
+     manual score entry for offline / creator builds. -->
+<body class="web-build">
 <div id="app">
   <div id="hdr">
     <span class="fc-logo" aria-label="Football Conquest">FC</span>
@@ -781,15 +859,16 @@ body.fc-splash-active #btn-history{display:none;}
       <div class="g-start-card">
         <div class="g-start-title">Choose Game Mode</div>
         <div class="g-start-modes">
-          <button class="g-mode-btn" data-mode="imperialism">
+          <button class="g-mode-btn primary" data-mode="conquest">
+            <div class="g-mode-icon">⚔️</div>
+            <div class="g-mode-name">World Conquest</div>
+            <div class="g-mode-desc">Pick one team. Conquer all 211 others. Lose three times to the same opponent and your run ends.</div>
+          </button>
+          <button class="g-mode-btn compact" data-mode="imperialism">
+            <span class="g-mode-beta">BETA</span>
             <div class="g-mode-icon">🌍</div>
             <div class="g-mode-name">Random Imperialism</div>
             <div class="g-mode-desc">All 212 nations battle randomly. AI-driven attackers, FIFA-rated results.</div>
-          </button>
-          <button class="g-mode-btn" data-mode="conquest">
-            <div class="g-mode-icon">⚔️</div>
-            <div class="g-mode-name">World Conquest</div>
-            <div class="g-mode-desc">Pick one team. Play the matches yourself in FC, enter results manually.</div>
           </button>
         </div>
         <div id="g-conquest-team-picker" style="display:none;">
@@ -1712,25 +1791,52 @@ function teamCurrentOverall(team){
   return teamOverall(baseFifa + bonus);
 }
 // Render an OVR badge for a slot. Tracks the previous value via a data-prev
-// attribute so we can flash green when the number ticks up after a win.
+// attribute so we can flash green when the number ticks up after a win,
+// and red when it ticks down after a loss. Also injects a delta pill
+// (▲N / ▼N) inline next to the badge so the morale swing is immediately
+// readable from the slot itself — not just buried in the events log.
+//
+// We mutate the text node (rather than el.textContent =) so an existing
+// delta-pill child survives subsequent slot re-renders during the same turn
+// (the pill removes itself via setTimeout after ~3.4s).
 function setSlotOverall(elId, team){
   const el = document.getElementById(elId);
   if(!el) return;
+  // Helper: get-or-create the leading text node for the "OVR N" label.
+  function setLabel(text){
+    let txt = el.firstChild;
+    if(!txt || txt.nodeType !== 3 /* TEXT_NODE */){
+      txt = document.createTextNode('');
+      el.insertBefore(txt, el.firstChild);
+    }
+    txt.nodeValue = text;
+  }
   if(!team){
-    el.textContent='OVR —';
-    el.classList.remove('pulse');
+    // Clear everything — no team, no pill, no pulse state.
+    el.innerHTML = '';
+    setLabel('OVR —');
+    el.classList.remove('pulse','pulse-down');
     el.removeAttribute('data-prev');
     return;
   }
   const ovr = teamCurrentOverall(team);
   const prev = parseInt(el.getAttribute('data-prev')||'-1');
-  el.textContent = 'OVR ' + ovr;
+  setLabel('OVR ' + ovr);
   el.setAttribute('data-prev', String(ovr));
-  // Pulse green when OVR ticked up from a real previous value (not first paint).
-  if(ovr > prev && prev >= 0){
-    el.classList.remove('pulse');
-    void el.offsetWidth; // force reflow so the animation restarts
-    el.classList.add('pulse');
+  if(prev >= 0 && ovr !== prev){
+    const delta = ovr - prev;
+    // Reset prior pulse animations so they restart from frame 0.
+    el.classList.remove('pulse','pulse-down');
+    void el.offsetWidth; // force reflow
+    el.classList.add(delta > 0 ? 'pulse' : 'pulse-down');
+    // Drop in a fresh delta pill — clear any stale one first so they
+    // don't stack if the player rapid-fires matches.
+    el.querySelectorAll('.g-ovr-delta').forEach(n => n.remove());
+    const pill = document.createElement('span');
+    pill.className = 'g-ovr-delta ' + (delta > 0 ? 'up' : 'down');
+    pill.textContent = (delta > 0 ? '▲' : '▼') + Math.abs(delta);
+    el.appendChild(pill);
+    setTimeout(() => { if(pill.parentNode) pill.parentNode.removeChild(pill); }, 3400);
   }
 }
 // Update a slot's star-row to reflect a team's rating. Renders 5 independent

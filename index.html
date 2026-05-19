@@ -148,23 +148,11 @@
     <h2 class="section-title">Two ways to play.</h2>
   </div>
 
-  <div class="modes-grid">
-    <article class="mode-card mode-imperialism">
-      <div class="mode-icon">🌍</div>
-      <div class="mode-tag">CLASSIC FORMAT</div>
-      <h3>Random Imperialism</h3>
-      <p>All 212 nations battle. The simulator picks attackers and defenders at random, the arrow decides the matchup, and FIFA ratings determine the winner. Sit back, watch the chaos, see who survives.</p>
-      <ul class="mode-features">
-        <li>AI-driven attacker selection</li>
-        <li>Auto-resolved battles</li>
-        <li>Watch-mode for content</li>
-      </ul>
-      <a href="/play.html?mode=imperialism" class="mode-link">Start Imperialism →</a>
-    </article>
-
-    <article class="mode-card mode-conquest">
+  <div class="modes-stack">
+    <!-- Primary: World Conquest — hero-sized, sits on top -->
+    <article class="mode-card mode-conquest mode-primary">
       <div class="mode-icon">⚔️</div>
-      <div class="mode-tag">CREATOR MODE</div>
+      <div class="mode-tag">FLAGSHIP MODE</div>
       <h3>World Conquest</h3>
       <p>Pick a single team. Always be the attacker. Play the matches yourself in FC 26, then enter the scores manually. Lose three times to the same opponent and your campaign ends.</p>
       <ul class="mode-features">
@@ -172,7 +160,20 @@
         <li>Manual score entry</li>
         <li>3-strikes elimination rule</li>
       </ul>
-      <a href="/play.html?mode=conquest" class="mode-link">Start Conquest →</a>
+      <a href="/play.html?mode=conquest" class="mode-link mode-link-lg">Start Conquest →</a>
+    </article>
+
+    <!-- Secondary: Random Imperialism — compact button, BETA flag -->
+    <article class="mode-card mode-imperialism mode-compact">
+      <span class="mode-beta">BETA</span>
+      <div class="mode-compact-inner">
+        <span class="mode-icon-sm">🌍</span>
+        <div class="mode-compact-text">
+          <h3>Random Imperialism</h3>
+          <p>All 212 nations battle randomly. AI-driven attackers, FIFA-rated results.</p>
+        </div>
+        <a href="/play.html?mode=imperialism" class="mode-link mode-link-sm">Open →</a>
+      </div>
     </article>
   </div>
 </section>
