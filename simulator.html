@@ -249,11 +249,44 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
 #g-events-panel.collapsed{max-height:34px;}
 #g-events-header{padding:8px 12px;font-size:10px;color:#7ab8e8;font-weight:600;
   letter-spacing:.4px;cursor:pointer;display:flex;justify-content:space-between;
-  align-items:center;border-bottom:1px solid #1a2f40;user-select:none;background:#0a1624;}
+  align-items:center;gap:10px;border-bottom:1px solid #1a2f40;user-select:none;background:#0a1624;}
 #g-events-header:hover{background:#0d1c2e;}
-#g-events-toggle{color:#7ab8e8;transition:transform .25s;font-size:9px;}
+.g-events-title{flex-shrink:0;}
+/* Turn summary chip — small pill sitting between the "Events" label and the
+   toggle chevron. Stays visible even when the panel is collapsed so the
+   player can read "Turn 9 · 203 LEFT" at a glance from anywhere. */
+.g-events-turn-summary{flex:1;text-align:right;font-size:10px;font-weight:700;
+  letter-spacing:.6px;color:#cfdaea;text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.g-events-turn-summary b{color:#fff;}
+.g-events-turn-summary .sep{color:#4a6a80;margin:0 4px;}
+#g-events-toggle{color:#7ab8e8;transition:transform .25s;font-size:9px;flex-shrink:0;}
 #g-events-panel.collapsed #g-events-toggle{transform:rotate(-90deg);}
 #g-events-panel.collapsed #g-events-header{border-bottom:none;}
+
+/* Loss-warning strip — sits ABOVE the record/goals strip. Yellow at 1/3,
+   pulsing red at 2/3, since the player needs continuous awareness of how
+   close they are to elimination by this specific opponent. Visibility
+   driven entirely by JS via style.display so it can vanish cleanly. */
+.g-conquest-loss{font-size:12px;font-weight:700;letter-spacing:.5px;
+  text-align:center;padding:6px 14px 0;line-height:1.4;}
+.g-conquest-loss b{font-weight:800;}
+.g-conquest-loss.warn  {color:#ffd54a;}
+.g-conquest-loss.danger{color:#ff8a8a;animation:g-hud-pulse 1s ease-in-out infinite;}
+
+/* Campaign stats strip inside the conquest game panel — sits above the
+   flags row. Format mirrors the old HUD stats line: "RECORD W–L · GOALS
+   GF–GA (±GD)". Hidden until the player has played their first match. */
+.g-conquest-stats{font-size:11px;font-weight:700;letter-spacing:1px;
+  color:#7a9bb5;text-transform:uppercase;text-align:center;
+  padding:6px 14px 0;line-height:1.4;}
+.g-conquest-stats b{color:#fff;font-weight:800;}
+.g-conquest-stats b.w{color:#6dd86d;}
+.g-conquest-stats b.l{color:#ff8a8a;}
+.g-conquest-stats b.gd-pos{color:#6dd86d;}
+.g-conquest-stats b.gd-neg{color:#ff8a8a;}
+.g-conquest-stats b.gd-zero{color:#cfdaea;}
+.g-conquest-stats .sep{color:#4a6a80;margin:0 8px;}
 #g-events-panel #g-log{flex:1;min-height:0;max-height:none;overflow-y:auto;
   padding:8px 13px;background:transparent;border-radius:0;
   font-size:12px;line-height:1.55;color:#b8c9d8;}
@@ -796,16 +829,21 @@ body.web-build .g-result-finish-tag.shown{display:block;
   0%   {opacity:0;transform:translateY(4px);}
   100% {opacity:1;transform:translateY(0);}
 }
-/* Momentum-impact line under the score — tells the player how the result
-   moved their OVR/morale. Small font, color-matched to the score (green
-   for a boost, red for a hit), only shown when the projected delta is ≠0. */
+/* Impact preview lines under the score — first the momentum bonus delta
+   (primary), then the OVR delta (secondary, slightly smaller). Each is
+   color-matched (green for boost, red for hit) and animates in with a
+   small stagger so they read as cascading consequences of the result. */
 .g-result-momentum-impact{display:none;text-align:center;
-  font-size:13px;font-weight:600;letter-spacing:.4px;
+  font-size:14px;font-weight:700;letter-spacing:.4px;
   margin-top:6px;}
 .g-result-momentum-impact.up  {color:#9dffa3;}
 .g-result-momentum-impact.down{color:#ff8a8a;}
 body.web-build .g-result-momentum-impact.shown{display:block;
-  animation:g-reveal-pop-soft .42s ease-out .15s both;}
+  animation:g-reveal-pop-soft .42s ease-out .18s both;}
+/* OVR line is the secondary indicator — smaller, slightly dimmer, lands
+   ~250ms after the momentum line so the player reads cause → effect. */
+.g-result-ovr-impact{font-size:12px;font-weight:600;opacity:.88;margin-top:3px;}
+body.web-build .g-result-ovr-impact.shown{animation-delay:.42s;}
 @keyframes g-reveal-pop{
   0%   {opacity:0;transform:scale(.4);}
   60%  {opacity:1;transform:scale(1.15);}
@@ -1026,8 +1064,12 @@ body.web-build .g-result-card.revealed .g-sim-btn{
             <!-- Finish tag (AET / on Penalties X-Y) — only shown when the
                  simulated match actually went past regulation. -->
             <div class="g-result-finish-tag" id="g-result-finish-tag"></div>
-            <!-- Momentum-impact line — preview of OVR change. -->
-            <div class="g-result-momentum-impact" id="g-result-momentum-impact"></div>
+            <!-- Two-line impact preview: momentum bonus delta first, then
+                 OVR delta if it also moved. Each line is independently
+                 shown/hidden so a result that only changes momentum (no
+                 rounded OVR step) still gets visual feedback. -->
+            <div class="g-result-momentum-impact" id="g-result-momentum-delta"></div>
+            <div class="g-result-momentum-impact g-result-ovr-impact" id="g-result-ovr-delta"></div>
           </div>
           <div class="g-result-team">
             <div class="g-result-flag empty" id="g-result-opp-flag"></div>
@@ -1130,6 +1172,15 @@ body.web-build .g-result-card.revealed .g-sim-btn{
         </label>
       </div>
       <div class="g-body">
+        <!-- Loss-warning strip — sits ABOVE the record/goals strip so the
+             "you've already lost N times to this opponent" reminder is the
+             first thing the player reads when the modal context shifts.
+             Hidden until lossCount>0 against the active threat. -->
+        <div class="g-conquest-loss" id="g-conquest-loss" style="display:none;"></div>
+        <!-- Campaign stats strip — RECORD + GOALS sit above the two flags
+             in conquest mode (per Gürkan's visual mockup). Populated by
+             updateConquestHud(). Hidden in imperialism mode. -->
+        <div class="g-conquest-stats" id="g-conquest-stats" style="display:none;"></div>
         <div class="g-slots">
           <div class="g-slot">
             <div class="g-slot-label">Attacker</div>
@@ -1164,7 +1215,11 @@ body.web-build .g-result-card.revealed .g-sim-btn{
          CSS sibling selector whenever #game-panel is open. -->
     <div id="g-events-panel">
       <div id="g-events-header">
-        <span>🕘 Events</span>
+        <span class="g-events-title">🕘 Events</span>
+        <!-- Turn summary chip — always visible, even when the events panel
+             is collapsed, so the player can keep tabs on Turn N / remaining
+             without expanding the log. Populated by updateConquestHud(). -->
+        <span class="g-events-turn-summary" id="g-events-turn-summary"></span>
         <span id="g-events-toggle">▼</span>
       </div>
       <div id="g-log"><div class="g-log-empty">Click Pick attacker to begin.</div></div>
@@ -5644,8 +5699,10 @@ function openResultModal(){
   }
   const finishTag=document.getElementById('g-result-finish-tag');
   if(finishTag){finishTag.classList.remove('shown','pens');finishTag.textContent='';}
-  const momentumEl=document.getElementById('g-result-momentum-impact');
+  const momentumEl=document.getElementById('g-result-momentum-delta');
   if(momentumEl){momentumEl.classList.remove('shown','up','down');momentumEl.textContent='';}
+  const ovrEl=document.getElementById('g-result-ovr-delta');
+  if(ovrEl){ovrEl.classList.remove('shown','up','down');ovrEl.textContent='';}
   const card=document.querySelector('.g-result-card');
   if(card) card.classList.remove('revealed');
   // Refresh live preview (win prob + xG + tactic-button active state) for the
@@ -5920,9 +5977,15 @@ function wireResultModal(){
     const revealOpp =document.getElementById('g-result-reveal-opp');
     const revealBox =document.getElementById('g-result-score-reveal');
     const finishTag =document.getElementById('g-result-finish-tag');
-    const momentumEl=document.getElementById('g-result-momentum-impact');
+    const momentumEl=document.getElementById('g-result-momentum-delta');
+    const ovrEl     =document.getElementById('g-result-ovr-delta');
     const card      =document.querySelector('.g-result-card');
-    const heroWon   =result.heroGoals > result.oppGoals;
+    // Pens-aware winner: when a match goes to penalties, regulation goals
+    // are tied (e.g., 3–3), so the shootout decides the winner. Without
+    // this check, the score reveal would always glow red on a pens-won match.
+    let heroWon;
+    if(finish==='pens') heroWon = result.pensHero > result.pensOpp;
+    else                heroWon = result.heroGoals > result.oppGoals;
     if(revealHero && revealOpp && revealBox){
       revealHero.textContent=result.heroGoals;
       revealOpp.textContent =result.oppGoals;
@@ -5941,34 +6004,47 @@ function wireResultModal(){
         finishTag.classList.add('shown','pens');
       }
     }
-    // Momentum impact — preview the OVR change this result will cause.
-    // Temporarily mutate GAME.momentumProgress + winStreak, recompute
-    // teamCurrentOverall, then revert so we don't double-apply.
-    if(momentumEl){
-      momentumEl.classList.remove('shown','up','down');
-      const hero=GAME.attacker, opp=GAME.defender;
-      if(hero && opp){
-        const oldOvr=teamCurrentOverall(hero);
-        const prevProgress=GAME.momentumProgress||0;
-        const prevStreak  =GAME.winStreak||0;
-        if(heroWon){
-          GAME.momentumProgress=prevProgress+computeWinValue(opp,result.heroGoals,result.oppGoals);
-          GAME.winStreak=prevStreak+1;
-        } else {
-          const frac=computeLossFraction(opp,result.heroGoals,result.oppGoals,prevStreak);
-          GAME.momentumProgress=Math.max(0, prevProgress*(1-frac));
-          GAME.winStreak=0;
-        }
-        const newOvr=teamCurrentOverall(hero);
-        // Revert — handleConquestWin/Loss will re-apply for real.
-        GAME.momentumProgress=prevProgress;
-        GAME.winStreak=prevStreak;
-        const delta=newOvr-oldOvr;
-        if(delta!==0){
-          const sign=delta>0?'+':'−';
-          momentumEl.textContent='Momentum '+sign+Math.abs(delta)+' OVR';
-          momentumEl.classList.add(delta>0?'up':'down','shown');
-        }
+    // ── Impact preview: project the momentum-bonus + OVR change ───────────
+    // Temporarily mutate GAME state, recompute the bonus / OVR, then revert
+    // so handleConquestWin/Loss can re-apply for real with no double-count.
+    // We show TWO lines: the momentum-bonus delta (primary, what just moved)
+    // and the OVR delta (secondary, the FC-style number players track).
+    // Each is independently shown only if its delta ≠ 0.
+    let visibleImpactLines = 0;
+    if(momentumEl) momentumEl.classList.remove('shown','up','down');
+    if(ovrEl)      ovrEl.classList.remove('shown','up','down');
+    const hero=GAME.attacker, opp=GAME.defender;
+    if(hero && opp && momentumEl && ovrEl){
+      const oldMomentum = getHeroMomentumBonus(hero);
+      const oldOvr      = teamCurrentOverall(hero);
+      const prevProgress=GAME.momentumProgress||0;
+      const prevStreak  =GAME.winStreak||0;
+      if(heroWon){
+        GAME.momentumProgress=prevProgress+computeWinValue(opp,result.heroGoals,result.oppGoals);
+        GAME.winStreak=prevStreak+1;
+      } else {
+        const frac=computeLossFraction(opp,result.heroGoals,result.oppGoals,prevStreak);
+        GAME.momentumProgress=Math.max(0, prevProgress*(1-frac));
+        GAME.winStreak=0;
+      }
+      const newMomentum = getHeroMomentumBonus(hero);
+      const newOvr      = teamCurrentOverall(hero);
+      // Revert.
+      GAME.momentumProgress=prevProgress;
+      GAME.winStreak=prevStreak;
+      const momentumDelta = newMomentum - oldMomentum;
+      const ovrDelta      = newOvr      - oldOvr;
+      if(momentumDelta !== 0){
+        const sign = momentumDelta>0 ? '+' : '−';
+        momentumEl.textContent='Momentum '+sign+Math.abs(momentumDelta);
+        momentumEl.classList.add(momentumDelta>0?'up':'down','shown');
+        visibleImpactLines++;
+      }
+      if(ovrDelta !== 0){
+        const sign = ovrDelta>0 ? '+' : '−';
+        ovrEl.textContent='OVR '+sign+Math.abs(ovrDelta);
+        ovrEl.classList.add(ovrDelta>0?'up':'down','shown');
+        visibleImpactLines++;
       }
     }
     if(card) card.classList.add('revealed');
@@ -5977,9 +6053,16 @@ function wireResultModal(){
       return;
     }
     if(_simAutoConfirmTimer) clearTimeout(_simAutoConfirmTimer);
-    // Reveal pause before auto-confirming. AET / pens results get a longer
-    // hold so the player can read the finish tag and momentum impact too.
-    const holdMs = finish==='normal' ? 1400 : 2000;
+    // Reveal pause before auto-confirming. Base time scales with how much
+    // info we're asking the player to absorb:
+    //   1400ms = bare FT result
+    //   +400ms for AET / pens (finish tag)
+    //   +400ms per visible impact line (momentum / OVR)
+    // So a routine 1–0 with no OVR step: 1400ms.
+    // A pens-decided thrash with both deltas: 1400 + 400 + 800 = 2600ms.
+    const holdMs = 1400
+      + (finish==='normal' ? 0 : 400)
+      + visibleImpactLines * 400;
     _simAutoConfirmTimer=setTimeout(()=>{
       _simAutoConfirmTimer=null;
       document.getElementById('g-result-confirm').click();
@@ -6535,6 +6618,14 @@ function updateConquestHud(state){
   if(GAME.mode!=='conquest'){
     hud.classList.remove('visible');
     setTimeout(()=>{if(!hud.classList.contains('visible'))hud.style.display='none';},500);
+    // Clear conquest-specific bottom-strip + events-header content so
+    // stale text from a prior run doesn't bleed into imperialism mode.
+    const ts=document.getElementById('g-events-turn-summary');
+    if(ts) ts.textContent='';
+    const cs=document.getElementById('g-conquest-stats');
+    if(cs){cs.style.display='none';cs.innerHTML='';}
+    const cl=document.getElementById('g-conquest-loss');
+    if(cl){cl.style.display='none';cl.innerHTML='';cl.classList.remove('warn','danger');}
     return;
   }
   hud.style.display='block';
@@ -6542,34 +6633,50 @@ function updateConquestHud(state){
   const statsEl=document.getElementById('g-hud-stats');
   const lossEl=document.getElementById('g-hud-loss');
   const lastEl=document.getElementById('g-hud-last');
-  // Turn row — always show
+  // Turn + remaining moved to the Events panel header (visible even when
+  // the panel is collapsed); Record + Goals moved to the strip above the
+  // flags inside the game panel. The old HUD rows are kept hidden — the
+  // floating HUD itself now only carries the loss-warning + last-result
+  // toasts. See refreshConquestHud / DOM elements for the new homes.
   const remaining=Object.values(GAME.state).filter(t=>t.alive&&t.id!==GAME.heroTeamId).length;
-  turnEl.innerHTML=`Turn <b>${GAME.turn}</b> · <b>${remaining}</b> remaining`;
-  // Campaign stats row — show as soon as the hero has played a single match.
-  // Stays visible alongside the turn counter; no fade. Format mirrors the turn
-  // row prose: "Record 3–1 · Goals 8–3 (+5)". GD coloured green/red/neutral.
-  if(statsEl){
+  const turnSummaryEl=document.getElementById('g-events-turn-summary');
+  if(turnSummaryEl){
+    turnSummaryEl.innerHTML=`Turn <b>${GAME.turn}</b><span class="sep">·</span><b>${remaining}</b> left`;
+  }
+  if(turnEl) turnEl.style.display='none';
+  // Campaign stats strip above the flags — RECORD W–L · GOALS GF–GA (±GD).
+  // Hidden until the hero has played at least one match.
+  const conquestStatsEl=document.getElementById('g-conquest-stats');
+  if(conquestStatsEl){
     const s=GAME.stats||{wins:0,losses:0,gf:0,ga:0};
     if((s.wins+s.losses)>0){
       const gd=s.gf-s.ga;
       const gdClass=gd>0?'gd-pos':(gd<0?'gd-neg':'gd-zero');
       const gdStr=(gd>0?'+':'')+gd;
-      statsEl.style.display='block';
-      statsEl.innerHTML=`Record <b class="w">${s.wins}</b>–<b class="l">${s.losses}</b> · Goals <b>${s.gf}</b>–<b>${s.ga}</b> (<b class="${gdClass}">${gdStr}</b>)`;
+      conquestStatsEl.style.display='block';
+      conquestStatsEl.innerHTML=`Record <b class="w">${s.wins}</b>–<b class="l">${s.losses}</b><span class="sep">·</span>Goals <b>${s.gf}</b>–<b>${s.ga}</b> (<b class="${gdClass}">${gdStr}</b>)`;
     } else {
-      statsEl.style.display='none';
+      conquestStatsEl.style.display='none';
     }
   }
-  // Loss row — show if hero has 1+ losses against the CURRENT opponent
-  if(state&&state.lossOpponent&&state.lossCount>0){
-    lossEl.style.display='block';
-    lossEl.classList.remove('warn','danger');
-    if(state.lossCount===1) lossEl.classList.add('warn');
-    if(state.lossCount>=2) lossEl.classList.add('danger');
-    lossEl.innerHTML=`⚠️ Losses to <b>${state.lossOpponent}</b>: <b>${state.lossCount}/3</b>`;
-  } else {
-    lossEl.style.display='none';
+  if(statsEl) statsEl.style.display='none';
+  // Loss warning — relocated from the floating HUD to the strip ABOVE the
+  // record/goals row inside the game panel, so the threat reading reads
+  // top-down: WARNING → record → matchup. The old #g-hud-loss element is
+  // kept hidden for safety (other code paths might still toggle it).
+  const conquestLossEl=document.getElementById('g-conquest-loss');
+  if(conquestLossEl){
+    if(state&&state.lossOpponent&&state.lossCount>0){
+      conquestLossEl.style.display='block';
+      conquestLossEl.classList.remove('warn','danger');
+      if(state.lossCount===1) conquestLossEl.classList.add('warn');
+      if(state.lossCount>=2) conquestLossEl.classList.add('danger');
+      conquestLossEl.innerHTML=`⚠️ Losses to <b>${state.lossOpponent}</b>: <b>${state.lossCount}/3</b>`;
+    } else {
+      conquestLossEl.style.display='none';
+    }
   }
+  if(lossEl) lossEl.style.display='none';
   // Last result row
   if(state&&state.lastResult){
     lastEl.style.display='block';
@@ -6593,17 +6700,29 @@ function updateConquestHud(state){
     const gameOver=!!(state&&state.lastResult&&state.lastResult.gameOver);
     newGameBtn.classList.toggle('show',gameOver);
   }
-  // Show + start fade timer
-  hud.classList.add('visible');
+  // Floating HUD now only carries the last-result toast + game-over button.
+  // Loss warning lives in the game panel; record/turn moved out earlier.
+  // When neither row is showing, hide the HUD entirely.
+  const hasLastResult = lastEl && lastEl.style.display!=='none';
+  const hasGameOverBtn = newGameBtn && newGameBtn.classList.contains('show');
+  if(hasLastResult || hasGameOverBtn){
+    hud.classList.add('visible');
+  } else {
+    hud.classList.remove('visible');
+    setTimeout(()=>{if(!hud.classList.contains('visible'))hud.style.display='none';},500);
+  }
   if(_hudFadeTimer){clearTimeout(_hudFadeTimer);}
-  // Auto-fade only the lastResult row after 6s. The loss-count row stays
-  // permanently visible whenever there are losses to track — the player needs
-  // continuous awareness of how close they are to elimination, not a 6-second
-  // window. The row hides on its own when refreshConquestHud is called with
-  // lossCount=0 (i.e., after a win against the lastLossOpp or starting a new
-  // game).
+  // Auto-fade the lastResult row after 6s and re-evaluate HUD visibility
+  // so the whole card hides if the game-over button isn't also showing.
   _hudFadeTimer=setTimeout(()=>{
-    if(lastEl&&!lastEl.classList.contains('over')) lastEl.style.display='none';
+    if(lastEl&&!lastEl.classList.contains('over')){
+      lastEl.style.display='none';
+      const stillHasGameOver = newGameBtn && newGameBtn.classList.contains('show');
+      if(!stillHasGameOver){
+        hud.classList.remove('visible');
+        setTimeout(()=>{if(!hud.classList.contains('visible'))hud.style.display='none';},500);
+      }
+    }
   },6000);
 }
 
