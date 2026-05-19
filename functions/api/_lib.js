@@ -80,7 +80,7 @@ export function validateSubmission(body) {
   if (turns > MAX_TURNS) return { error: 'turns_too_large' };
   if (tOwned > MAX_TERRITORIES_OWNED) return { error: 'territories_too_large' };
 
-// In World Conquest, GAME.turn only increments on WINS (each successful
+  // In World Conquest, GAME.turn only increments on WINS (each successful
   // conquest moves the hero forward by one turn). Losses retreat the hero
   // without advancing the turn counter, so the relationship is roughly
   // `turns ≈ wins + 1` regardless of how many losses occurred. A claim of

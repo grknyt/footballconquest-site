@@ -14,7 +14,7 @@
 <meta name="twitter:card" content="summary_large_image">
 
 <!-- Google AdSense -->
-<!-- REPLACE ca-pub-XXXXXXXXXXXXXXXX with your real publisher ID after AdSense approval -->
+<!-- REPLACE ca-pub-2248373411425621 with your real publisher ID after AdSense approval -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2248373411425621" crossorigin="anonymous"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,41 +42,75 @@
 
 <!-- Hero -->
 <header class="hero">
-  <div class="hero-grid">
-    <div class="hero-left">
-      <div class="hero-eyebrow">EDITION 01 · GLOBAL</div>
-      <h1 class="hero-title">
-        <span class="hero-line-1">Spin the arrow.</span>
-        <span class="hero-line-2">Conquer the <em>world.</em></span>
-      </h1>
-      <p class="hero-lead">A free browser-based Imperialism simulator for football fans. Pick any of 212 nations, spin for an opponent, simulate the match with real FIFA ratings, and watch territories fall — one battle at a time.</p>
-      <div class="hero-cta">
-        <a href="/play.html" class="btn-primary">Start a campaign →</a>
-        <a href="/how-to-play.html" class="btn-secondary">How it works</a>
-      </div>
-      <div class="hero-stats">
-        <div class="stat"><span class="stat-num">212</span><span class="stat-label">Nations</span></div>
-        <div class="stat"><span class="stat-num">2</span><span class="stat-label">Modes</span></div>
-        <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Campaigns</span></div>
-        <div class="stat"><span class="stat-num">$0</span><span class="stat-label">Free</span></div>
-      </div>
-    </div>
-    <div class="hero-right">
-      <!-- Live simulator preview: the actual game running in an iframe. Click
-           anywhere on it to jump straight into /play.html. pointer-events on
-           the iframe itself are disabled so the homepage CTAs above stay the
-           primary action and the iframe acts as a moving poster. loading="lazy"
-           defers the 1.9MB simulator until the user scrolls near the hero
-           (often instantly, but skipped for bots / cached-only views). -->
-      <a href="/play.html" class="hero-preview-link" aria-label="Open the live simulator">
-        <div class="hero-map-frame">
-          <iframe src="/simulator.html" class="hero-preview-iframe" title="Football Conquest live preview" loading="lazy" scrolling="no" tabindex="-1" aria-hidden="true"></iframe>
-          <div class="hero-preview-overlay">
-            <span class="hero-preview-cta">▶ ENTER</span>
-          </div>
+  <!-- Three-column shell: skyscraper ads flank the hero-grid on wide screens
+       and collapse out on narrower viewports (responsive rules in style.css).
+       Inner hero-grid keeps the existing 2-column text|preview layout. -->
+  <div class="hero-shell">
+    <aside class="hero-ad hero-ad-side" aria-label="Advertisement">
+      <ins class="adsbygoogle"
+           style="display:block;width:100%;height:100%"
+           data-ad-client="ca-pub-2248373411425621"
+           data-ad-slot="0000000000"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </aside>
+
+    <div class="hero-grid">
+      <div class="hero-left">
+        <h1 class="hero-title">
+          <span class="hero-line-1">Football Conquest</span>
+          <span class="hero-line-2"><em>by</em> Ghiellini</span>
+        </h1>
+        <p class="hero-tagline">Spin the arrow, conquer the world.</p>
+        <p class="hero-lead">A free browser-based Imperialism simulator for football fans. Pick any of 212 nations, spin for an opponent, simulate the match with real FIFA ratings, and watch territories fall — one battle at a time.</p>
+        <div class="hero-cta">
+          <a href="/play.html" class="btn-primary">Start a campaign →</a>
+          <a href="/how-to-play.html" class="btn-secondary">How it works</a>
         </div>
-      </a>
+        <div class="hero-stats">
+          <div class="stat"><span class="stat-num">212</span><span class="stat-label">Nations</span></div>
+          <div class="stat"><span class="stat-num">2</span><span class="stat-label">Modes</span></div>
+          <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Campaigns</span></div>
+          <div class="stat"><span class="stat-num">$0</span><span class="stat-label">Free</span></div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <!-- Top-of-column horizontal ad slot, then the live simulator preview
+             below it. -->
+        <div class="hero-ad hero-ad-top" aria-label="Advertisement">
+          <ins class="adsbygoogle"
+               style="display:block;width:100%;height:100%"
+               data-ad-client="ca-pub-2248373411425621"
+               data-ad-slot="0000000000"
+               data-ad-format="auto"
+               data-full-width-responsive="true"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+        <!-- Live simulator preview: the actual game running in an iframe. Click
+             anywhere on it to jump straight into /play.html. pointer-events on
+             the iframe itself are disabled so the homepage CTAs above stay the
+             primary action and the iframe acts as a moving poster. -->
+        <a href="/play.html" class="hero-preview-link" aria-label="Open the live simulator">
+          <div class="hero-map-frame">
+            <iframe src="/simulator.html" class="hero-preview-iframe" title="Football Conquest live preview" loading="lazy" scrolling="no" tabindex="-1" aria-hidden="true"></iframe>
+            <div class="hero-preview-overlay">
+              <span class="hero-preview-cta">▶ ENTER</span>
+            </div>
+          </div>
+        </a>
+      </div>
     </div>
+
+    <aside class="hero-ad hero-ad-side" aria-label="Advertisement">
+      <ins class="adsbygoogle"
+           style="display:block;width:100%;height:100%"
+           data-ad-client="ca-pub-2248373411425621"
+           data-ad-slot="0000000000"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+    </aside>
   </div>
   <div class="hero-marquee">
     <div class="marquee-track">
@@ -96,7 +130,7 @@
 <div class="ad-container ad-leaderboard">
   <ins class="adsbygoogle"
        style="display:block"
-       data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+       data-ad-client="ca-pub-2248373411425621"
        data-ad-slot="XXXXXXXXXX"
        data-ad-format="auto"
        data-full-width-responsive="true"></ins>

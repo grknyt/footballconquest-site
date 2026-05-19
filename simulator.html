@@ -8,7 +8,11 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;background:#070e17;-webkit-user-select:none;user-select:none;}
 #app{background:#0b1520;color:#fff;display:flex;flex-direction:column;width:100vw;height:100vh;font-family:system-ui,sans-serif;}
-#hdr{background:#070e17;padding:7px 10px;display:flex;align-items:center;gap:5px;border-bottom:1px solid #1a2f40;flex-shrink:0;flex-wrap:wrap;}
+/* Toolbar sits above any open modal (modals are at z-index 50) so the
+   Leaderboards, Theme, Undo, History, and hamburger controls stay readable
+   and clickable even when a central modal is open. position:relative is
+   required for z-index to take effect on a non-positioned element. */
+#hdr{background:#070e17;padding:7px 10px;display:flex;align-items:center;gap:5px;border-bottom:1px solid #1a2f40;flex-shrink:0;flex-wrap:wrap;position:relative;z-index:60;}
 .htitle{font-size:13px;font-weight:600;color:#7ab8e8;letter-spacing:.5px;margin-right:2px;white-space:nowrap;}
 .modes{display:flex;gap:3px;flex-wrap:wrap;}
 .mbtn{padding:5px 10px;border-radius:6px;border:1px solid #2a3f55;color:#7a9bb5;font-size:11px;cursor:pointer;background:transparent;transition:all .15s;white-space:nowrap;-webkit-tap-highlight-color:transparent;position:relative;}
@@ -37,7 +41,14 @@ body.map-light #fc-bg-pattern text{fill:#1a3550;opacity:0.13;}
 .zb{width:32px;height:32px;background:rgba(7,14,23,.92);border:1px solid #2a3f55;color:#7ab8e8;border-radius:6px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
 .zb:hover{background:#1a2f40;}
 /* Horizontal strip across the bottom, full-width */
-#game-panel{position:absolute;bottom:10px;left:10px;right:10px;
+/* Default panel: centered horizontally, width hugs its content (with a max so
+   it can't escape the viewport). Conquest mode overrides bottom offset + a
+   couple of internal-layout tweaks below, but the centered-content sizing is
+   shared. Previously the panel spanned the entire viewport width via
+   left:10px right:10px — that wasted huge amounts of horizontal space in
+   Imperialism mode where the body content is naturally narrow. */
+#game-panel{position:absolute;bottom:10px;left:50%;
+transform:translateX(-50%);width:auto;max-width:calc(100% - 24px);
 background:rgba(7,14,23,.96);border:1px solid #2a3f55;border-radius:10px;
 display:none;flex-direction:column;z-index:25;overflow:hidden;
 box-shadow:0 6px 18px rgba(0,0,0,.5);}
@@ -132,6 +143,20 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
    no width-clip math, no glyph-width assumptions, just three independent
    colour states. Half-stars use a left-to-right gold/grey gradient that's
    text-clipped onto the ★ glyph. Conquest-mode only by default. */
+/* FC-game-style OVR rating, prominent. Pulses green on tick-up so the
+   player gets a visible reward when their momentum bonus pushes the
+   number higher after a win. Tabular-nums keeps "OVR 78" and "OVR 100"
+   aligned the same way on consecutive renders. */
+.g-slot-overall{display:block;text-align:center;margin:4px auto 0;
+  font-size:15px;font-weight:700;color:#d4a936;letter-spacing:.5px;
+  font-variant-numeric:tabular-nums;line-height:1;
+  text-shadow:0 0 6px rgba(212,169,54,.35);}
+@keyframes g-ovr-pulse{
+  0%   {color:#d4a936;transform:scale(1);text-shadow:0 0 6px rgba(212,169,54,.35);}
+  35%  {color:#9dffa3;transform:scale(1.18);text-shadow:0 0 14px rgba(109,216,109,.85);}
+  100% {color:#d4a936;transform:scale(1);text-shadow:0 0 6px rgba(212,169,54,.35);}
+}
+.g-slot-overall.pulse{animation:g-ovr-pulse .7s ease-out;}
 /* Star rating row — visible in BOTH Imperialism and Conquest now. The
    conquest-mode rule below is kept as a no-op for explicitness in case we
    later want to scope behavior differently per mode. */
@@ -226,7 +251,7 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 
 
 /* Game Mode Startup Modal */
-/* Hall of Fame: shares the modal-overlay base with the other two. The card
+/* Leaderboards: shares the modal-overlay base with the other two. The card
    itself is wider (640px) because it hosts a 7-column table of past runs. */
 #g-leaderboard-modal{position:absolute;top:0;left:0;width:100%;height:100%;
   background:rgba(0,0,0,0.6);z-index:50;display:none;justify-content:center;
@@ -372,6 +397,19 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-result-xg-row{font-size:12px;color:#7a9bb5;text-align:center;margin-bottom:12px;letter-spacing:.3px;}
 .g-result-xg-row b{color:#fff;font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;}
 .g-result-xg-dash{margin:0 6px;color:#4a6580;}
+/* Momentum + streak row. Sits below xG, above the tactic selector. Hidden
+   when momentum bonus is 0. Gold for momentum, red for hot streak. */
+.g-result-momentum-row{display:flex;justify-content:center;align-items:center;gap:14px;
+  font-size:11px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;
+  font-weight:600;margin-bottom:12px;}
+.g-result-momentum-label{color:#7a9bb5;}
+.g-result-momentum-value{color:#d4a936;font-size:14px;font-weight:700;
+  font-variant-numeric:tabular-nums;letter-spacing:0;text-transform:none;}
+.g-result-streak{color:#ff8a8a;font-weight:700;font-size:11px;
+  letter-spacing:.4px;text-transform:none;
+  padding:2px 8px;background:rgba(255,138,138,.12);border-radius:10px;
+  border:1px solid rgba(255,138,138,.3);}
+.g-result-streak b{color:#fff;}
 .g-result-tactics{display:flex;align-items:center;gap:10px;}
 .g-result-tactics-label{font-size:10px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;
   font-weight:600;flex-shrink:0;}
@@ -615,7 +653,10 @@ body.fc-splash-active #btn-history{display:none;}
 /* The old toolbar buttons stay in the DOM (so existing click handlers keep
    working) but are hidden — their actions are exposed via the splash or
    the hamburger menu now. */
-#btn-save,#btn-load,#btn-theme,#btn-reset{display:none!important;}
+/* Save / Load / Reset still hidden behind the hamburger menu — they're
+   either contextual (save during a game) or rare (reset). Theme + the new
+   Leaderboards button stay visible on the toolbar at all times. */
+#btn-save,#btn-load,#btn-reset{display:none!important;}
 
 </style>
 </head>
@@ -641,6 +682,7 @@ body.fc-splash-active #btn-history{display:none;}
     <div class="acts">
       <button class="abtn" id="btn-undo">↩ Undo<span class="kbadge">⌘Z</span></button>
       <button class="abtn" id="btn-history">🕘 History</button>
+      <button class="abtn" id="btn-leaderboard" title="View leaderboards (your runs + global)">🏆 Leaderboards</button>
       <button class="abtn" id="btn-save">💾 Save</button>
       <button class="abtn" id="btn-load">📂 Load</button>
       <button class="abtn" id="btn-theme" title="Toggle light/dark map">☀️ Light</button>
@@ -650,8 +692,6 @@ body.fc-splash-active #btn-history{display:none;}
         <div class="fc-menu-popover" id="fc-menu" role="menu">
           <div class="fc-menu-item" id="fc-menu-save" role="menuitem"><span class="fc-menu-icon">💾</span><span>Save game</span></div>
           <div class="fc-menu-item fc-menu-game-only" id="fc-menu-end" role="menuitem"><span class="fc-menu-icon">🎲</span><span>New game</span></div>
-          <div class="fc-menu-item" id="fc-menu-leaderboard" role="menuitem"><span class="fc-menu-icon">🏆</span><span>Hall of Fame</span></div>
-          <div class="fc-menu-item" id="fc-menu-theme" role="menuitem"><span class="fc-menu-icon">☀</span><span id="fc-menu-theme-label">Light map</span></div>
           <div class="fc-menu-sep"></div>
           <div class="fc-menu-item danger fc-menu-hide-in-conquest" id="fc-menu-reset" role="menuitem"><span class="fc-menu-icon">⟳</span><span>Reset map</span></div>
         </div>
@@ -750,12 +790,12 @@ body.fc-splash-active #btn-history{display:none;}
       </div>
     </div>
 
-    <!-- Hall of Fame: persistent campaign history. Records survive in localStorage
+    <!-- Leaderboards: persistent campaign history. Records survive in localStorage
          under key 'fc-leaderboard'. Auto-populated on Victory and Game-Over events. -->
     <div id="g-leaderboard-modal" style="display:none;">
       <div class="g-leaderboard-card">
         <div class="g-leaderboard-header">
-          <span>🏆 Hall of Fame</span>
+          <span>🏆 Leaderboards</span>
           <button id="g-leaderboard-close" type="button" aria-label="Close">✕</button>
         </div>
         <!-- Tabs let the player swap between their own browser-local records
@@ -826,6 +866,13 @@ body.fc-splash-active #btn-history{display:none;}
           <div class="g-result-prob-bar"><div class="g-result-prob-fill" id="g-result-prob-fill"></div></div>
           <div class="g-result-xg-row">
             Expected goals: <b id="g-result-xg-hero">—</b> <span class="g-result-xg-dash">–</span> <b id="g-result-xg-opp">—</b>
+          </div>
+          <!-- Momentum row: shows the territory + streak bonus the hero is
+               currently carrying. Hidden when bonus is 0 (start of game). -->
+          <div class="g-result-momentum-row" id="g-result-momentum-row" style="display:none;">
+            <span class="g-result-momentum-label">Momentum</span>
+            <span class="g-result-momentum-value" id="g-result-momentum-value">+0</span>
+            <span class="g-result-streak" id="g-result-streak" style="display:none;">🔥 <span id="g-result-streak-n">0</span>-win streak</span>
           </div>
           <div class="g-result-tactics">
             <span class="g-result-tactics-label">Tactic</span>
@@ -909,6 +956,7 @@ body.fc-splash-active #btn-history{display:none;}
             <div class="g-slot-label">Attacker</div>
             <div class="g-slot-flag" id="g-attacker-flag"></div>
             <div class="g-slot-val" id="g-attacker">—</div>
+            <div class="g-slot-overall" id="g-attacker-overall">OVR —</div>
             <div class="g-slot-stars" id="g-attacker-stars"></div>
           </div>
           <div class="g-middle" id="g-middle"><span class="g-vs">vs</span></div>
@@ -916,6 +964,7 @@ body.fc-splash-active #btn-history{display:none;}
             <div class="g-slot-label">Defender</div>
             <div class="g-slot-flag" id="g-defender-flag"></div>
             <div class="g-slot-val" id="g-defender">—</div>
+            <div class="g-slot-overall" id="g-defender-overall">OVR —</div>
             <div class="g-slot-stars" id="g-defender-stars"></div>
           </div>
         </div>
@@ -1340,7 +1389,7 @@ const NATIONS=[
 {name:'China',iso:156,cx:104.2,cy:35.9,f:[['#DE2910'],['#FFDE00']]},
 {name:'Chinese Taipei',iso:158,cx:121.0,cy:23.7,f:[['#FE0000'],['#FFFFFF'],['#000095']]},
 {name:'Guam',iso:316,cx:144.8,cy:13.5,f:[['#193F8E'],['#CF0921']]},
-{name:'Hong Kong',iso:344,cx:114.2,cy:22.3,f:[['#DE2910'],['#FFFFFF']]},
+{name:'Hong Kong',iso:344,cx:115.3,cy:22.3,f:[['#DE2910'],['#FFFFFF']]}, /* cx nudged east from 114.2 → 115.3 so the flag clears Macau's flag (Macau at 113.5). Geographic centroid is ~114.2 but with both flags rendered as bitmaps over a tiny territory they collide; this offset (≈120 km east into the South China Sea) is purely a flag-display nudge — the actual territory polygon stays where it is. */
 {name:'India',iso:356,cx:80.0,cy:20.6,f:[['#FF9933'],['#FFFFFF'],['#138808']]},
 {name:'Indonesia',iso:360,cx:113.9,cy:-0.8,f:[['#CE1126'],['#FFFFFF']]},
 {name:'Iran',iso:364,cx:53.7,cy:32.4,f:[['#239F40'],['#FFFFFF'],['#DA0000']]},
@@ -1390,9 +1439,24 @@ const NATIONS=[
 {name:'Vanuatu',iso:548,cx:167.0,cy:-15.4,f:[['#009543'],['#CE1126'],['#000000']]}
 ];
 
+// Extra iso codes belonging to a team that doesn't appear separately in NATIONS.
+// These polygons get claimed by their parent team during buildMap (so they
+// render in the parent's colour) and added to the parent's ownedIsos in
+// gameInit (so the game treats them as conquerable parts of that team).
+// Only list cases where the territory has NO independent FIFA team:
+//   - Sint Maarten (534): Dutch constituent country, CONCACAF associate but not FIFA member
+//   - Bonaire/Saba/St-Eustatius (535): "BES islands", special municipalities of NL
+//   Curaçao (531) and Aruba (533) already have their own teams in NATIONS.
+const EXTRA_TEAM_ISOS={
+  'Netherlands':[534, 535]
+};
+
 const VW=10000,VH=5000,BW=300,BH=195;
 const REF_K=2.5; // flags scale with map up to this zoom, then stay constant screen size
-const FLAG_SCALE=0.7; // global size multiplier — tweak this to make all flags bigger/smaller
+const FLAG_SCALE=0.62; // global size multiplier (was 0.7). Big countries are
+// largely unaffected because of the wvBoost mechanism (Russia/Canada/USA/etc.
+// auto-grow back). Small/dense-region flags shrink ~11% — better fit inside
+// tight territories like the Balkans, Caribbean, and Pearl River Delta.
 const HINTS={
   view:'Scroll/pinch to zoom · Drag to pan',
   erase:'✏ Draw across any border to fade it — works even near the edge',
@@ -1543,6 +1607,51 @@ const TEAM_PLAYSTYLE={
 function teamPlaystyle(teamName){
   return TEAM_PLAYSTYLE[teamName] || 'balanced';
 }
+// ── Momentum / underdog mechanic ──────────────────────────────────────────
+// Returns the hero's "you've been winning, so you're getting stronger" bonus
+// in FIFA-point units. Conquest mode only — Imperialism's auto-resolve uses
+// the simpler flat `size * 5` formula (no underdog story to tell there).
+//
+// Composed of three layers:
+//   1. Territory bonus: ~linear early, slight non-linear ramp past 5 wins so
+//      sustained empires keep accelerating.
+//   2. Underdog amplifier: weak base-FIFA teams get a multiplier of up to 2.0×;
+//      top-tier teams get 0.5×. So San Marino growing 5 territories yields a
+//      noticeably bigger bump than France growing 5.
+//   3. Win-streak bonus: small flat bump per consecutive win past 2, capped at
+//      +64. Resets on any loss. Rewards hot streaks; can't snowball forever.
+//
+// Examples (territories owned / streak / output):
+//   San Marino 10 / 0 → ~130    France 10 / 0 → ~50
+//   San Marino 30 / 0 → ~440    France 30 / 0 → ~170
+//   San Marino 80 / 0 → ~1350   France 80 / 0 → ~540
+function getHeroMomentumBonus(hero){
+  if(!hero || !GAME || GAME.mode!=='conquest') return 0;
+  const baseFifa=fifaRating(hero.name);
+  const progress=GAME.momentumProgress||0;
+  const streak=GAME.winStreak||0;
+  // Per-team CEILING — the asymptote the bonus approaches as you keep
+  // winning. Minnows get a high ceiling (they have room to grow into
+  // competitiveness); top teams get a low ceiling (they're already strong
+  // and shouldn't snowball into "literally unbeatable"). Anchors:
+  //   San Marino (635)  → ~900 ceiling (climbs to ~OVR 80 at endgame)
+  //   Andorra (945)     → ~624
+  //   Iceland (1385)    → ~326
+  //   Türkiye (1599)    → ~165  ← was hitting OVR 96 and going +982 before
+  //   Italy (1700)      → ~200
+  //   France (1877)     → ~94   (top team, already maxed at OVR 94)
+  let ceiling;
+  if(baseFifa < 1000)      ceiling = 900 - (baseFifa - 600) * 0.8;
+  else if(baseFifa < 1500) ceiling = 580 - (baseFifa - 1000) * 0.66;
+  else if(baseFifa < 1700) ceiling = 200 - (baseFifa - 1500) * 0.35;
+  else                     ceiling = Math.max(80, 200 - (baseFifa - 1700) * 0.6);
+  // Exponential saturation: approaches ceiling, never exceeds it. ~95% of
+  // ceiling reached by progress=75 (about 60-90 wins depending on opp mix).
+  const territoryRaw = ceiling * (1 - Math.exp(-progress / 25));
+  // Streak still rewards hot runs but doesn't dominate the math.
+  const streakBonus = Math.min(Math.max(0, streak-3) * 4, 30);
+  return Math.round(territoryRaw + streakBonus);
+}
 // FC 26–style 1.0–5.0 star rating in 0.5 increments, derived from FIFA Men's
 // World Ranking points. Anchors: top 10 → 5★; Türkiye (1599) / Denmark (1620) → 4.5★.
 // Bucket thresholds tuned so the cutoffs feel intuitive against the current
@@ -1558,6 +1667,60 @@ function teamStars(teamName){
   if(pts>=1060) return 2.0;
   if(pts>=920)  return 1.5;
   return 1.0;
+}
+// FC-game-style overall rating, 1-99 scale. Most national teams land in the
+// 50-95 sweet spot: minnows like San Marino around 51, top sides like France
+// at 94-95. Momentum-boosted heroes can push past base; capped at 99.
+//
+// Calibration anchors:
+//   FIFA  635 (San Marino) → OVR 51
+//   FIFA  945 (Andorra)    → OVR 62
+//   FIFA 1385 (Iceland)    → OVR 77
+//   FIFA 1599 (Türkiye)    → OVR 85
+//   FIFA 1730 (Germany)    → OVR 89
+//   FIFA 1877 (France)     → OVR 94
+function teamOverall(fifaPoints){
+  const raw = 50 + (fifaPoints - 600) * 45 / 1300;
+  return Math.max(1, Math.min(99, Math.round(raw)));
+}
+// Effective overall for a team RIGHT NOW — includes whatever bonus that team
+// is carrying. In conquest mode the hero gets the momentum formula (territory
+// + underdog amplifier + streak); everyone else (and both sides in Imperialism
+// mode) gets the simple flat `size * 5` bonus.
+function teamCurrentOverall(team){
+  if(!team) return null;
+  const baseFifa = fifaRating(team.name);
+  const isHero = GAME && GAME.mode==='conquest' && team.id===GAME.heroTeamId;
+  let bonus;
+  if(isHero){
+    bonus = getHeroMomentumBonus(team);
+  } else {
+    const sz = (GAME && GAME.state && GAME.state[team.id]) ? GAME.state[team.id].ownedIsos.size : 0;
+    bonus = sz * 5;
+  }
+  return teamOverall(baseFifa + bonus);
+}
+// Render an OVR badge for a slot. Tracks the previous value via a data-prev
+// attribute so we can flash green when the number ticks up after a win.
+function setSlotOverall(elId, team){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  if(!team){
+    el.textContent='OVR —';
+    el.classList.remove('pulse');
+    el.removeAttribute('data-prev');
+    return;
+  }
+  const ovr = teamCurrentOverall(team);
+  const prev = parseInt(el.getAttribute('data-prev')||'-1');
+  el.textContent = 'OVR ' + ovr;
+  el.setAttribute('data-prev', String(ovr));
+  // Pulse green when OVR ticked up from a real previous value (not first paint).
+  if(ovr > prev && prev >= 0){
+    el.classList.remove('pulse');
+    void el.offsetWidth; // force reflow so the animation restarts
+    el.classList.add('pulse');
+  }
 }
 // Update a slot's star-row to reflect a team's rating. Renders 5 independent
 // <span class="g-star ..."> children with full / half / empty state per star —
@@ -2678,6 +2841,14 @@ function buildMap(world){
   pg=d3.geoPath().projection(proj);
   const g=d3.select('#mg');g.selectAll('*').remove();
   const byIso={};teams.forEach(t=>byIso[t.iso]=t);
+  // Apply EXTRA_TEAM_ISOS — small territories without their own FIFA team
+  // (Sint Maarten, Bonaire, etc.) get assigned to their parent team here so
+  // their polygons render in the parent's colour rather than as inactive grey.
+  for(const [teamName, extraIsos] of Object.entries(EXTRA_TEAM_ISOS||{})){
+    const parent=teams.find(t=>t.name===teamName);
+    if(!parent) continue;
+    extraIsos.forEach(iso=>{ byIso[iso]=parent; });
+  }
 
   // Transparent ocean rect: lets the FC checker pattern in #fc-bg-pattern (sitting behind
   // #msvg in mwrap) show through the entire map area. Kept as an empty rect for any code
@@ -3322,6 +3493,13 @@ function gSlots(){
     setSlotStars('g-attacker-stars', a);
     setSlotStars('g-defender-stars', d);
   }catch(e){console.warn('setSlotStars failed (non-fatal):',e);}
+  // FC-game-style overall ratings — hero's reflects current momentum, opp's
+  // reflects simple size*5 bonus. Pulses green when the hero's OVR ticks up
+  // after a win (handled inside setSlotOverall via data-prev).
+  try{
+    setSlotOverall('g-attacker-overall', a);
+    setSlotOverall('g-defender-overall', d);
+  }catch(e){console.warn('setSlotOverall failed (non-fatal):',e);}
   // Middle area: reset to "vs" unless a score is showing
   const mid=document.getElementById('g-middle');
   if(mid&&!mid.dataset.showingScore){
@@ -3373,6 +3551,22 @@ function gameInit(){
     };
     GAME.ownerOf[String(t.iso)]=t.id;
   });
+  // Claim extra territories — Sint Maarten + Bonaire become part of the
+  // Netherlands team's starting ownedIsos. So the ray-cast finds those isos
+  // as Netherlands, conquest mode resolves matches against them as fights
+  // with Netherlands, and beating Netherlands transfers them along with NL
+  // mainland.
+  for(const [teamName, extraIsos] of Object.entries(EXTRA_TEAM_ISOS||{})){
+    const parent=teams.find(t=>t.name===teamName);
+    if(!parent) continue;
+    const state=GAME.state[parent.id];
+    if(!state) continue;
+    extraIsos.forEach(iso=>{
+      const isoStr=String(iso);
+      state.ownedIsos.add(isoStr);
+      GAME.ownerOf[isoStr]=parent.id;
+    });
+  }
   GAME.active=true;
   gameRender();
   gLog('<b>New game started.</b> '+teams.length+' teams begin.');
@@ -3665,6 +3859,11 @@ function gameSpinArrow(){
       // Done — set exact final value
       p.setAttribute('transform',`rotate(${normalizedTarget})`);
       GAME.defender=defender;
+      // Remember the SPECIFIC iso the arrow hit so handleConquestWin can move
+      // the hero's flag there (matters for countries with scattered overseas
+      // territories — attacking France via Guadeloupe should land you in
+      // Guadeloupe, not mainland France).
+      GAME.defenderIso=pick.defIso||null;
       GAME.phase='picked-def';
       window._fcSpinning=false;
       gLog('➤ Arrow points at <b>'+defender.name+'</b>!');
@@ -3879,6 +4078,54 @@ function isoCentroid(iso,nearTo){
   }catch(e){return null;}
 }
 
+// Diagnostic helper — call `fcDebugRay()` in the browser console after a
+// confusing spin. Prints the hero/defender positions, the actual ray angle
+// (computed from the line between them), and Australia's specific state +
+// whether the ray crosses Australia's bbox. Use this to verify whether a
+// "skipped Australia" report is a real bug or a perception issue (e.g.,
+// confusing trails from previous turns with the current attack line).
+window.fcDebugRay = function(targetName){
+  if(!GAME||!GAME.attacker){console.log('No attacker'); return;}
+  const att = GAME.attacker;
+  const attC = teamCentroid(att.id);
+  const def = GAME.defender;
+  const defC = def?teamCentroid(def.id):null;
+  console.log('=== Ray-cast debug ===');
+  console.log('Attacker:', att.name, '@ viewBox', attC);
+  console.log('Defender:', def?def.name:'(none)', '@ viewBox', defC);
+  if(attC && defC){
+    const dx = defC[0]-attC[0], dy = defC[1]-attC[1];
+    const angleDeg = Math.atan2(dy, dx) * 180 / Math.PI;
+    console.log('Ray direction: dx='+dx.toFixed(0)+', dy='+dy.toFixed(0)+' (angle '+angleDeg.toFixed(0)+'°)');
+  }
+  // Inspect the team the user named (default: Australia)
+  const name = targetName || 'Australia';
+  const target = teams.find(t=>t.name===name);
+  if(!target){console.log('No team named '+name); return;}
+  const st = GAME.state[target.id];
+  console.log('\n--- '+name+' ('+target.id+') ---');
+  console.log('alive:', st.alive);
+  console.log('ownedIsos:', [...st.ownedIsos]);
+  st.ownedIsos.forEach(iso=>{
+    const rings = _ringsFor(iso);
+    console.log('  iso '+iso+': '+rings.length+' rings');
+    rings.forEach((r,i)=>{
+      const bb = r.bbox;
+      const skipCount = r.skipEdges ? r.skipEdges.size : 0;
+      console.log('    ring '+i+': '+r.points.length+' pts, bbox X['+
+        bb.minX.toFixed(0)+'..'+bb.maxX.toFixed(0)+'] Y['+
+        bb.minY.toFixed(0)+'..'+bb.maxY.toFixed(0)+'], skipEdges='+skipCount);
+      // If the ray exists, test whether it intersects THIS ring
+      if(attC && defC){
+        const dx = defC[0]-attC[0], dy = defC[1]-attC[1];
+        const len = Math.hypot(dx,dy);
+        const ndx = dx/len, ndy = dy/len;
+        const t = _rayHitsRing(attC[0], attC[1], ndx, ndy, 5000, r);
+        console.log('    ray-hit test: t='+(t==null?'null (miss)':t.toFixed(1)+' (HIT at distance '+t.toFixed(0)+')'));
+      }
+    });
+  });
+};
 // Cast a ray from (attX, attY) at `angleRad` (atan2 convention, Y-down).
 // Walks along the ray in steps; returns the first iso encountered that belongs to a
 // DIFFERENT team than the attacker. Returns null if ray exits the map without hitting anything.
@@ -4558,6 +4805,11 @@ $('btn-undo').onclick=doUndo;
 $('btn-reset').onclick=doReset;
 $('btn-save').onclick=doSave;
 $('btn-load').onclick=doLoad;
+// Top-toolbar Leaderboards button — always available, regardless of game state.
+const _lbBtn=document.getElementById('btn-leaderboard');
+if(_lbBtn) _lbBtn.onclick=()=>{
+  if(typeof openLeaderboardModal==='function') openLeaderboardModal();
+};
 $('btn-history').onclick=toggleHistory;
 $('history-close').onclick=toggleHistory;
 $('btn-flag-delete').onclick=deleteSelectedFlag;
@@ -4688,6 +4940,21 @@ function startGameInMode(mode,heroId){
   // warning row stays visible after a loss, instead of vanishing until the
   // next spin happens to land on the same team. Cleared by any conquest win.
   GAME.lastLossOppId=null;
+  // Consecutive win counter for the momentum-bonus formula. Bumps each
+  // conquest-win, resets to 0 on any conquest-loss. Stored on the win op
+  // for clean undo. Caps inside getHeroMomentumBonus().
+  GAME.winStreak=0;
+  // Weighted "progress" — each conquest contributes proportional to the
+  // opponent's FIFA points (beating Brazil counts ~3× more than beating San
+  // Marino). Replaces raw territory count as the basis for momentum so
+  // farming minnows doesn't snowball the way it did. Stored on each win op
+  // for clean undo via op.prevMomentumProgress.
+  GAME.momentumProgress=0;
+  // The specific iso (territory) the arrow hit on the last spin. Captured
+  // in gameSpinArrow's animation-end callback. Used by handleConquestWin to
+  // move the hero's flag onto the targeted territory rather than the
+  // opponent's home centroid.
+  GAME.defenderIso=null;
   gameInit();
   // Force the floating top HUD to reflect the new mode immediately.
   // In Imperialism mode this hides leftover conquest state (e.g., "Russia
@@ -4754,7 +5021,7 @@ window.gameResolve=function(){
   return _origGameResolve.apply(this,arguments);
 };
 
-// ── Hall of Fame / Leaderboard ────────────────────────────────────────────
+// ── Leaderboards ──────────────────────────────────────────────────────────
 // Persistent record of past World Conquest campaigns. Stored in localStorage
 // under FC_LEADERBOARD_KEY. Auto-saved on Victory or Game-Over events.
 // Schema per entry: {dateISO, heroId, heroName, result:'victory'|'eliminated',
@@ -5197,9 +5464,12 @@ function computeMatchModel(tactic){
   const lambdaMult=_lambdaMultFor(t,oppStyle);
   const heroFifa=fifaRating(hero.name);
   const oppFifa=fifaRating(opp.name);
-  const heroSize=GAME.state[hero.id].ownedIsos.size;
   const oppSize=GAME.state[opp.id].ownedIsos.size;
-  const heroEff=heroFifa+heroSize*5+matchupBonus+idBonus;
+  // Hero uses the momentum mechanic (territory bonus + underdog amplifier +
+  // streak bonus) instead of the flat `size * 5` it used to. Opp still uses
+  // the simple flat bonus — only the player's hero gets the underdog story.
+  const heroMomentum=getHeroMomentumBonus(hero);
+  const heroEff=heroFifa+heroMomentum+matchupBonus+idBonus;
   const oppEff=oppFifa+oppSize*5;
   const avg=(heroEff+oppEff)/2;
   const baseLambda=1.4*lambdaMult;
@@ -5208,7 +5478,8 @@ function computeMatchModel(tactic){
   // Win-probability uses the same Elo curve as the auto-resolve in gameResolve,
   // so the preview value matches the implicit odds of the simulator output.
   const pHeroWin=1/(1+Math.pow(10,(oppEff-heroEff)/450));
-  return {heroEff,oppEff,heroLambda,oppLambda,pHeroWin,heroStyle,oppStyle,matchupBonus,idBonus};
+  return {heroEff,oppEff,heroLambda,oppLambda,pHeroWin,heroStyle,oppStyle,
+          matchupBonus,idBonus,heroMomentum,winStreak:GAME.winStreak||0};
 }
 // Realistic-blowout cap: in real football, only true mismatches produce 7-8 goal
 // margins. Poisson's long tail occasionally rolls them between evenly-matched
@@ -5291,6 +5562,30 @@ function updateResultPreview(){
   }
   if(xgHeroEl) xgHeroEl.textContent=m.heroLambda.toFixed(1);
   if(xgOppEl)  xgOppEl.textContent=m.oppLambda.toFixed(1);
+  // Momentum row: show only when there's a non-zero bonus to show. Streak
+  // sub-badge appears once you're on a 3+ win streak (the threshold where
+  // the streak bonus kicks in inside getHeroMomentumBonus).
+  const momRow=document.getElementById('g-result-momentum-row');
+  const momVal=document.getElementById('g-result-momentum-value');
+  const streakEl=document.getElementById('g-result-streak');
+  const streakN=document.getElementById('g-result-streak-n');
+  if(momRow){
+    const bonus=m.heroMomentum||0;
+    if(bonus>0){
+      momRow.style.display='flex';
+      if(momVal) momVal.textContent='+'+bonus;
+      if(streakEl){
+        if(m.winStreak>=3){
+          streakEl.style.display='inline-block';
+          if(streakN) streakN.textContent=m.winStreak;
+        } else {
+          streakEl.style.display='none';
+        }
+      }
+    } else {
+      momRow.style.display='none';
+    }
+  }
   // Sync the active class on the tactic buttons in case the function was
   // called after a programmatic tactic change.
   document.querySelectorAll('#g-result-tactic-btns .g-tactic-btn').forEach(b=>{
@@ -5428,16 +5723,28 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   // Delete the opponent's flag
   const oppBadge=document.querySelector(`.fbadge[data-badge-id="${opp.id}"]`);
   if(oppBadge) oppBadge.remove();
-  // Move hero's flag to defender's old position
+  // Move hero's flag to where the attack actually landed.
   const defC=GAME.defender?teamCentroid(GAME.defender.id):null;
-  // The defender's badge is gone, so resolve the destination differently.
-  // Priority: (1) defender team's HOME centroid via proj() — always accurate since each team
-  // has a fixed cx/cy. (2) iso centroid with nearTo bias toward where flag was. (3) fallback.
+  // Priority order:
+  //   1. The specific ISO the player targeted via the arrow (GAME.defenderIso).
+  //      Matters for countries with scattered overseas territories — attacking
+  //      France via Guadeloupe lands you in Guadeloupe, not mainland France.
+  //      UK via Falklands, USA via Hawaii / Puerto Rico, Netherlands via
+  //      Curaçao, etc. all behave the same way.
+  //   2. Defender team's HOME centroid via proj([cx,cy]) — fallback for the
+  //      rare case where defenderIso wasn't captured (e.g., loading a save
+  //      mid-matchup, or replays). Always returns a valid point for the team.
+  //   3. First iso centroid with nearTo bias — last-resort fallback.
   let newPos=null;
-  const oppTeam=teams.find(t=>t.id===opp.id);
-  if(oppTeam){
-    const homePoint=proj([oppTeam.cx,oppTeam.cy]);
-    if(homePoint&&!isNaN(homePoint[0])) newPos=homePoint;
+  if(GAME.defenderIso){
+    newPos=isoCentroid(GAME.defenderIso,[fromX,fromY]);
+  }
+  if(!newPos){
+    const oppTeam=teams.find(t=>t.id===opp.id);
+    if(oppTeam){
+      const homePoint=proj([oppTeam.cx,oppTeam.cy]);
+      if(homePoint&&!isNaN(homePoint[0])) newPos=homePoint;
+    }
   }
   if(!newPos) newPos=isoCentroid(opponentIsoList[0],[fromX,fromY])||defC||[fromX,fromY];
   if(heroBadge){
@@ -5475,8 +5782,21 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   // has recovered momentum, so the danger row should disappear until they
   // lose to someone new.
   GAME.lastLossOppId=null;
+  // Momentum mechanic: snapshot streak BEFORE bumping so undoConquestWin
+  // can restore it cleanly. Then increment.
+  const prevWinStreak=GAME.winStreak||0;
+  GAME.winStreak=prevWinStreak+1;
+  // Weighted progress: each win contributes proportional to opp's FIFA
+  // strength. San Marino → 0.45, Brazil → 1.26, France → 1.34 (capped).
+  // Beating top teams pushes momentum faster; farming minnows doesn't.
+  const prevMomentumProgress=GAME.momentumProgress||0;
+  const winValue=Math.max(0.2, Math.min(1.5, fifaRating(opp.name)/1400));
+  GAME.momentumProgress=prevMomentumProgress + winValue;
   // Push undo record for this win. heroScore/oppScore stored explicitly so
   // undoConquestWin can rewind the stats tally cleanly (no string parsing).
+  // prevWinStreak captures the streak value BEFORE this win so undo restores
+  // it correctly (vs. just decrementing, which would lose info if the win
+  // came at the end of a streak that had already been reset by some path).
   undoStack.push({
     type:'conquest-win',
     heroId:hero.id, oppId:opp.id, oppName:opp.name,
@@ -5486,6 +5806,8 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
     heroFromX:fromX, heroFromY:fromY,
     heroToX:newPos[0], heroToY:newPos[1],
     heroScore:heroScore, oppScore:oppScore,
+    prevWinStreak:prevWinStreak,
+    prevMomentumProgress:prevMomentumProgress,
     scoreLine:`${hero.name} ${heroScore}–${oppScore}${suffix} ${opp.name}`
   });
   if(typeof renderHistory==='function') renderHistory();
@@ -5524,6 +5846,29 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   // Remember this opponent so the HUD keeps showing their loss count even
   // after GAME.defender is cleared by the retreat below.
   GAME.lastLossOppId=opp.id;
+  // ── Momentum penalty for the loss ────────────────────────────────────
+  // Snapshot streak BEFORE we reset it so the penalty calc sees how high
+  // we were riding.
+  const prevStreak=GAME.winStreak||0;
+  GAME.winStreak=0;
+  // The fraction of momentum progress lost scales with:
+  //   (a) how long the pre-loss streak was — longer streaks mean more to lose
+  //   (b) opp weakness — losing to a minnow after a hot run is devastating;
+  //       losing to a top side is psychologically acceptable.
+  // Final fraction capped at 55% so a single bad loss can't wipe a whole campaign.
+  const oppWinValue=Math.max(0.3, Math.min(1.3, fifaRating(opp.name)/1400));
+  const oppPenaltyMult=2.0 - oppWinValue;          // 0.7 (top team) → 1.7 (minnow)
+  const baseFraction=0.08 + Math.min(prevStreak, 15) * 0.025;
+  const fractionLost=Math.min(0.55, baseFraction * oppPenaltyMult);
+  const progressBefore=GAME.momentumProgress||0;
+  const progressAfter=Math.max(0, progressBefore * (1 - fractionLost));
+  GAME.momentumProgress=progressAfter;
+  // Log the morale hit so the player sees WHY their OVR just dropped.
+  // Only show if the penalty is non-trivial.
+  if(progressBefore > 1 && fractionLost > 0.05){
+    const pct=Math.round(fractionLost*100);
+    gLog(`💔 Morale hit — momentum down ${pct}% after the loss.`);
+  }
   // Capture current hero position before retreat (for undo)
   const heroBadgeNow=document.querySelector(`.fbadge[data-badge-id="${hero.id}"]`);
   const fromX=heroBadgeNow?parseFloat(heroBadgeNow.getAttribute('data-cx')):0;
@@ -5626,6 +5971,12 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   gSlots();
   gameRender();
   panTo([lastConquest.heroFromX,lastConquest.heroFromY],Math.max(6,currentK()));
+  // Refresh the floating HUD AFTER the retreat so the "Losses to X: Y/3"
+  // row reflects the just-incremented count. Without this the HUD would
+  // continue to show the pre-loss tally until the next spin landed (the
+  // no-retreat branch above already does this; the retreat branch was
+  // missing the same call).
+  refreshConquestHud({lastResult:{type:'loss',hero:hero.name,opp:opp.name,score:`${heroScore}–${oppScore}`}});
 }
 
 // Draw a faint arrow on the map showing direction of conquest
@@ -5660,6 +6011,10 @@ function undoConquestWin(op){
     if(typeof op.heroScore==='number') GAME.stats.gf=Math.max(0,GAME.stats.gf-op.heroScore);
     if(typeof op.oppScore==='number')  GAME.stats.ga=Math.max(0,GAME.stats.ga-op.oppScore);
   }
+  // Restore the pre-win streak value (stashed on the op at push-time).
+  if(typeof op.prevWinStreak==='number') GAME.winStreak=op.prevWinStreak;
+  // Restore the pre-win weighted momentum progress.
+  if(typeof op.prevMomentumProgress==='number') GAME.momentumProgress=op.prevMomentumProgress;
   // 1. Restore loser's alive state
   opp.alive=true;
   // 2. Give back the conquered isos to opp
@@ -6277,26 +6632,8 @@ function startNewGameFlow(){
     if(typeof startNewGameFlow==='function') startNewGameFlow();
   });
 
-  // Theme toggle → click the hidden btn-theme so its IIFE handler runs
-  // (which updates persistence, the gear-popover checkbox, and the label).
-  // We mirror the label here so the menu shows the next action (Light/Dark).
-  const themeItem=document.getElementById('fc-menu-theme');
-  const themeLabel=document.getElementById('fc-menu-theme-label');
-  const themeIcon=themeItem?themeItem.querySelector('.fc-menu-icon'):null;
-  function syncThemeLabel(){
-    const isLight=document.body.classList.contains('map-light');
-    if(themeLabel) themeLabel.textContent=isLight?'Dark map':'Light map';
-    if(themeIcon)  themeIcon.textContent =isLight?'🌙':'☀';
-  }
-  syncThemeLabel();
-  if(themeItem) themeItem.addEventListener('click',()=>{
-    close();
-    const tb=document.getElementById('btn-theme');
-    if(tb) tb.click();
-    // The btn-theme IIFE toggles body.map-light synchronously, so this reads
-    // the new state immediately.
-    setTimeout(syncThemeLabel,0);
-  });
+  // Theme toggle is now a direct top-toolbar button (#btn-theme is visible);
+  // no hamburger entry needed. Old wiring removed.
 
   // Reset map → delegate to the hidden btn-reset.
   const resetItem=document.getElementById('fc-menu-reset');
@@ -6306,13 +6643,8 @@ function startNewGameFlow(){
     if(rb) rb.click();
   });
 
-  // Hall of Fame → open the leaderboard modal. Available always (not game-only)
-  // so the player can browse past records before / between / after campaigns.
-  const lbItem=document.getElementById('fc-menu-leaderboard');
-  if(lbItem) lbItem.addEventListener('click',()=>{
-    close();
-    if(typeof openLeaderboardModal==='function') openLeaderboardModal();
-  });
+  // Leaderboards is now a top-toolbar button (#btn-leaderboard); no hamburger
+  // entry needed. Old wiring removed.
 })();
 
 </script>

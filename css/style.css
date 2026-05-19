@@ -154,12 +154,47 @@ img, svg { display: block; max-width: 100%; height: auto; }
   z-index: 0;
 }
 
-.hero-grid {
-  max-width: 1320px;
+/* Outer 3-column shell: [left ad] [hero-grid] [right ad]. Side ads collapse
+   out at narrower viewports via the responsive rules at the bottom of the
+   file. Max-width is generous (1700px) to let the side ads have room on
+   wide monitors without pushing the center too tight. */
+.hero-shell {
+  max-width: 1700px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 80px;
+  grid-template-columns: minmax(140px, 180px) 1fr minmax(140px, 180px);
+  gap: 28px;
+  align-items: stretch;
+  position: relative;
+  z-index: 1;
+}
+
+/* Ad placeholders. Filled by AdSense at runtime; the .hero-ad shell keeps
+   reserved space so the layout doesn't jump (prevents CLS — required for
+   AdSense compliance per the deployment notes). */
+.hero-ad {
+  background: rgba(7, 14, 23, 0.55);
+  border: 1px dashed rgba(244, 234, 213, 0.18);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-ad-side {
+  /* Skyscraper-ish: tall + narrow. Fills the column height. */
+  min-height: 600px;
+}
+.hero-ad-top {
+  /* Leaderboard-ish above the iframe preview. */
+  min-height: 110px;
+  margin-bottom: 18px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 56px;
   align-items: center;
   position: relative;
   z-index: 1;
@@ -187,13 +222,47 @@ img, svg { display: block; max-width: 100%; height: auto; }
 
 .hero-title {
   font-family: var(--display);
-  font-size: clamp(72px, 9vw, 144px);
-  line-height: 0.88;
-  letter-spacing: -2px;
-  /* Was navy on cream. Now paper on navy. */
+  /* The brand title is the primary visual now ("FOOTBALL CONQUEST / by GHIELLINI").
+     Line 1 ("FOOTBALL CONQUEST") gets the heaviest display weight; line 2
+     ("by GHIELLINI") is a notch smaller via .hero-line-2 below. */
+  font-size: clamp(56px, 6.5vw, 104px);
+  line-height: 0.92;
+  letter-spacing: -1px;
   color: var(--paper);
-  margin-bottom: 32px;
+  margin-bottom: 18px;
   text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  text-transform: uppercase;
+}
+.hero-line-2 {
+  /* Slightly smaller than line 1 so the brand reads first, creator second. */
+  font-size: 0.62em;
+  letter-spacing: 0;
+  display: block;
+  margin-top: 6px;
+}
+/* Handwritten-italic "by" — uses the existing serif (Fraunces) at italic
+   to evoke a script feel, mid-line between the brand and creator name. */
+.hero-title em {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  color: rgba(244, 234, 213, 0.85);
+  text-transform: none;
+  font-size: 0.55em;
+  letter-spacing: 0;
+  margin-right: 8px;
+  vertical-align: 0.18em;
+}
+/* Smaller tagline directly below the brand. Was the giant headline; now
+   reads more like a documentary subtitle. */
+.hero-tagline {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(18px, 1.8vw, 26px);
+  color: var(--red);
+  margin-bottom: 24px;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
 }
 
 .hero-line-1 {
@@ -1014,6 +1083,11 @@ img, svg { display: block; max-width: 100%; height: auto; }
    RESPONSIVE
    ───────────────────────────────────────────────────────────── */
 
+/* Tablet — collapse the side ad columns first; keep the hero-grid intact. */
+@media (max-width: 1200px) {
+  .hero-shell { grid-template-columns: 1fr; gap: 0; }
+  .hero-ad-side { display: none; }
+}
 @media (max-width: 900px) {
   .nav { padding: 12px 20px; }
   .nav-links { gap: 16px; }
@@ -1022,6 +1096,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   .hero { padding: 56px 20px 0; }
   .hero-grid { grid-template-columns: 1fr; gap: 48px; }
   .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .hero-ad-top { min-height: 90px; }
   .modes { padding: 56px 20px; }
   .modes-grid { grid-template-columns: 1fr; }
   .mode-card { padding: 32px 24px; }
