@@ -15,8 +15,12 @@
   --ink: #050a12;
   --muted: #6b7d92;
   --line: rgba(10, 25, 41, 0.12);
-  /* Type */
-  --display: 'Bebas Neue', 'Impact', sans-serif;
+  /* Type. --display is now a readable system sans-serif (used for buttons,
+     marquee, section titles, nav, etc.). --condensed is the Bebas-Neue tall
+     condensed look reserved for the hero title + giant stat numbers — places
+     where the dramatic condensed feel is intentional. */
+  --display: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, Roboto, Helvetica, Arial, sans-serif;
+  --condensed: 'Bebas Neue', 'Impact', sans-serif;
   --serif: 'Fraunces', Georgia, serif;
   --mono: 'JetBrains Mono', 'Courier New', monospace;
 }
@@ -221,10 +225,12 @@ img, svg { display: block; max-width: 100%; height: auto; }
 }
 
 .hero-title {
-  font-family: var(--display);
+  font-family: var(--condensed);
   /* The brand title is the primary visual now ("FOOTBALL CONQUEST / by GHIELLINI").
      Line 1 ("FOOTBALL CONQUEST") gets the heaviest display weight; line 2
-     ("by GHIELLINI") is a notch smaller via .hero-line-2 below. */
+     ("by GHIELLINI") is a notch smaller via .hero-line-2 below.
+     Keeps Bebas Neue here specifically — the rest of the page uses a
+     readable system sans (the --display variable now). */
   font-size: clamp(56px, 6.5vw, 104px);
   line-height: 0.92;
   letter-spacing: -1px;
@@ -378,12 +384,14 @@ img, svg { display: block; max-width: 100%; height: auto; }
 }
 
 .stat-num {
-  font-family: var(--display);
-  font-size: 44px;
+  /* Keep the dramatic condensed look for the giant stat numbers
+     (212 / 2 / ∞ / $0). Sits visually with the hero title. */
+  font-family: var(--condensed);
+  font-size: 56px;
   line-height: 1;
   /* Gold to pop against navy. Was navy. */
   color: #d4a936;
-  letter-spacing: 0;
+  letter-spacing: 1px;
 }
 
 .stat-label {
