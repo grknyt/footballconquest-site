@@ -602,6 +602,18 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
   z-index:60;display:none;align-items:center;justify-content:center;
   backdrop-filter:blur(6px);}
 #g-over-overlay.open{display:flex;}
+/* Center-top New Game button — shown after the game-over overlay is
+   dismissed so the player can start fresh while viewing the final map. */
+#g-final-newgame{position:absolute;top:18px;left:50%;transform:translateX(-50%);
+  display:none;z-index:55;padding:13px 32px;background:#c8102e;color:#fff;
+  border:1px solid #c8102e;border-radius:8px;font-family:inherit;
+  font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  box-shadow:0 6px 22px rgba(0,0,0,.6);align-items:center;gap:9px;
+  transition:background .15s,transform .12s;}
+#g-final-newgame.show{display:inline-flex;}
+#g-final-newgame:hover{background:#d92133;}
+#g-final-newgame:active{transform:translateX(-50%) translateY(1px);}
 .g-over-card{text-align:center;animation:g-over-in 0.6s cubic-bezier(0.16,1,0.3,1);max-width:600px;padding:40px;}
 @keyframes g-over-in{
   0%{opacity:0;transform:scale(0.7);}
@@ -1172,6 +1184,11 @@ body.web-build .g-result-card.revealed .g-sim-btn{
       <div class="g-hud-row" id="g-hud-last" style="display:none;"></div>
       <button id="g-hud-newgame" type="button"><span>🎲</span><span>New Game</span></button>
     </div>
+
+    <!-- Center-top New Game button — appears after the player dismisses the
+         game-over overlay via "View final map", so they can study the final
+         board and still start a fresh run without hunting for a button. -->
+    <button id="g-final-newgame" type="button"><span>🎲</span><span>New Game</span></button>
 
     <div id="game-panel">
       <div class="g-head">
@@ -4816,9 +4833,22 @@ function rayCastDefender(attX,attY,angleRad){
     });
   });
 
-  // Prefer exact intersection. Only use near-miss if the exact hit is FURTHER than the near-miss
-  // (i.e., a tiny island the ray brushed past en route to a far country gets picked instead).
-  if(bestTeam && nearTeam && nearBestT < bestT){
+  // Prefer exact intersection. The near-miss (Pass 2) only wins if it is
+  // CLEARLY in front of the exact hit — not merely a hair closer.
+  //
+  // Why the margin: the near-miss exists so a ray brushing a tiny island in
+  // open WATER en route to a far mainland registers as hitting the island —
+  // in that case the island sits hundreds of units in front of the country.
+  // But an ENCLAVE microstate (San Marino inside Italy, Vatican, Lesotho
+  // inside South Africa, Monaco) sits at almost the same distance as the
+  // country that surrounds it. Without the margin, the enclave's near-miss
+  // projection can come out a fraction closer than the surrounding country's
+  // real coastline crossing and wrongly snipe the pick. Requiring the
+  // near-miss to beat the exact hit by NEARMISS_MARGIN units lets genuine
+  // open-water islands through while keeping enclaves from hijacking a ray
+  // that actually crossed the country around them.
+  const NEARMISS_MARGIN = 80;
+  if(bestTeam && nearTeam && nearBestT < bestT - NEARMISS_MARGIN){
     return{team:nearTeam, defIso:nearIso, attIso:null,
            hitX:attX+nearBestT*dx, hitY:attY+nearBestT*dy};
   }
@@ -6903,22 +6933,14 @@ function updateConquestHud(state){
   // redundant noise. Just keep the element hidden in case any other code
   // path tries to flip its display.
   if(lastEl) lastEl.style.display='none';
-  // New Game button — visible only when the game is over (loss or victory).
+  // The bottom-left HUD's New Game button is retired — game-over now uses
+  // the centered overlay (with its own New Game) and, after dismissal, the
+  // center-top #g-final-newgame button. Keep this one permanently hidden.
   const newGameBtn=document.getElementById('g-hud-newgame');
-  if(newGameBtn){
-    const gameOver=!!(state&&state.lastResult&&state.lastResult.gameOver);
-    newGameBtn.classList.toggle('show',gameOver);
-  }
-  // Floating HUD now ONLY carries the game-over "New Game" button.
-  // Everything else (record, turn, losses, last-result) lives elsewhere.
-  // When the game isn't over, hide the HUD entirely.
-  const hasGameOverBtn = newGameBtn && newGameBtn.classList.contains('show');
-  if(hasGameOverBtn){
-    hud.classList.add('visible');
-  } else {
-    hud.classList.remove('visible');
-    setTimeout(()=>{if(!hud.classList.contains('visible'))hud.style.display='none';},500);
-  }
+  if(newGameBtn) newGameBtn.classList.remove('show');
+  // The floating HUD has no content left — keep it hidden.
+  hud.classList.remove('visible');
+  setTimeout(()=>{if(!hud.classList.contains('visible'))hud.style.display='none';},500);
   if(_hudFadeTimer){clearTimeout(_hudFadeTimer);_hudFadeTimer=null;}
 }
 
@@ -7064,18 +7086,34 @@ function drawConquestTrailArrow(x1,y1,x2,y2,opts){
 function initConquestUI(){
   wireStartupModal();
   wireResultModal();
+  // "View final map" dismiss — hide the overlay AND reveal the center-top
+  // New Game button so the player can study the final board, then restart.
   const dismissBtn=document.getElementById('g-over-dismiss');
-  if(dismissBtn) dismissBtn.addEventListener('click',hideGameOverOverlay);
+  if(dismissBtn) dismissBtn.addEventListener('click',()=>{
+    hideGameOverOverlay();
+    const fnb=document.getElementById('g-final-newgame');
+    if(fnb) fnb.classList.add('show');
+  });
   // New Game button inside the centered game-over overlay — primary CTA.
   const overNewBtn=document.getElementById('g-over-newgame');
   if(overNewBtn) overNewBtn.addEventListener('click',()=>{
     hideGameOverOverlay();
     if(typeof startNewGameFlow==='function') startNewGameFlow();
   });
+  // Center-top New Game button — same flow as the overlay's New Game.
+  const finalNewBtn=document.getElementById('g-final-newgame');
+  if(finalNewBtn) finalNewBtn.addEventListener('click',()=>{
+    finalNewBtn.classList.remove('show');
+    if(typeof startNewGameFlow==='function') startNewGameFlow();
+  });
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){
       const ov=document.getElementById('g-over-overlay');
-      if(ov&&ov.classList.contains('open')) hideGameOverOverlay();
+      if(ov&&ov.classList.contains('open')){
+        hideGameOverOverlay();
+        const fnb=document.getElementById('g-final-newgame');
+        if(fnb) fnb.classList.add('show');
+      }
     }
   });
 }
@@ -7180,6 +7218,10 @@ function startNewGameFlow(){
   // Hide the HUD's New Game button until the next game-over fires it.
   const _newBtn=document.getElementById('g-hud-newgame');
   if(_newBtn) _newBtn.classList.remove('show');
+  // Hide the center-top New Game button too (it only belongs to the
+  // dismissed-overlay state).
+  const _finalBtn=document.getElementById('g-final-newgame');
+  if(_finalBtn) _finalBtn.classList.remove('show');
   // Hide the lingering game-over overlay if it's still up.
   if(typeof hideGameOverOverlay==='function') hideGameOverOverlay();
   if(typeof openConquestStartup==='function') openConquestStartup();
