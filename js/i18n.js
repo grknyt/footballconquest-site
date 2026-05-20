@@ -91,16 +91,26 @@
     boot: function (dict) {
       this.dict = dict || window.FC_TRANSLATIONS || {};
       var self = this;
-      function finish(lang) {
-        self.current = lang;
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function () { self.apply(); });
-        } else { self.apply(); }
-      }
       var saved = savedLang();
-      if (saved) { finish(saved); return; }            // explicit choice wins
-      if (browserIsTurkish()) { finish('tr'); return; } // browser signal
-      inTurkey().then(function (isTR) { finish(isTR ? 'tr' : 'en'); }); // IP signal
+      // ── First paint: decide synchronously, apply with NO network wait ──
+      // The page already ships English text in the HTML, so applying the
+      // synchronous best guess on DOMContentLoaded means English (and
+      // Turkish-browser) visitors never see a delayed re-render flash.
+      var initial = saved || (browserIsTurkish() ? 'tr' : 'en');
+      self.current = initial;
+      function applyNow() { self.apply(); }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyNow);
+      } else { applyNow(); }
+      // ── Background IP probe ──
+      // Only relevant when the visitor has NO saved choice and their browser
+      // isn't already Turkish. If the Cloudflare edge says they're in Turkey,
+      // switch then — a one-time, deliberate change, not a load-flash.
+      if (!saved && initial !== 'tr') {
+        inTurkey().then(function (isTR) {
+          if (isTR && self.current !== 'tr') self.set('tr', false);
+        });
+      }
     }
   };
 
