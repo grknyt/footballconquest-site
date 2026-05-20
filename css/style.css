@@ -133,6 +133,33 @@ img, svg { display: block; max-width: 100%; height: auto; }
 
 .nav-links a:hover::after { transform: scaleX(1); }
 
+/* ── Language toggle (EN / TR) ── */
+.nav-lang {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.lang-btn {
+  background: transparent;
+  border: none;
+  color: var(--paper-2);
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  padding: 4px 6px;
+  opacity: 0.55;
+  transition: opacity 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.lang-btn:hover { opacity: 0.85; }
+.lang-btn.active {
+  opacity: 1;
+  color: var(--red);
+}
+.lang-sep { color: var(--muted); font-size: 11px; }
+
 /* ─────────────────────────────────────────────────────────────
    HERO
    ───────────────────────────────────────────────────────────── */
@@ -605,6 +632,94 @@ img, svg { display: block; max-width: 100%; height: auto; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 32px;
+}
+
+/* Vertical-stack modes layout: World Conquest (primary, hero-sized) on top,
+   Random Imperialism (compact BETA button) underneath. */
+.modes-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.mode-card.mode-primary {
+  padding: 64px;
+}
+.mode-card.mode-primary .mode-icon { font-size: 80px; margin-bottom: 24px; }
+.mode-card.mode-primary h3 { font-size: 64px; margin-bottom: 24px; }
+.mode-card.mode-primary p { font-size: 19px; max-width: 720px; margin-bottom: 32px; }
+.mode-card.mode-primary .mode-features li { font-size: 15px; }
+
+.mode-link.mode-link-lg {
+  font-size: 22px;
+  letter-spacing: 1.5px;
+  font-weight: 800;
+  padding-bottom: 6px;
+  border-bottom-width: 3px;
+}
+
+/* Compact mode card — small horizontal button row */
+.mode-card.mode-compact {
+  padding: 18px 28px;
+  position: relative;
+}
+.mode-compact-inner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.mode-icon-sm {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+.mode-compact-text {
+  flex: 1;
+}
+.mode-compact-text h3 {
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0;
+  margin-bottom: 2px;
+  color: var(--paper);
+}
+.mode-compact-text p {
+  font-size: 13px;
+  color: var(--paper-2);
+  margin: 0;
+  line-height: 1.4;
+}
+.mode-link.mode-link-sm {
+  font-size: 13px;
+  letter-spacing: 1px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* BETA badge — small red pill, top-right corner of the compact card */
+.mode-beta {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: var(--red);
+  color: var(--paper);
+  font-family: var(--display);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  line-height: 1;
+}
+
+/* Mobile: keep primary big but scale type down */
+@media (max-width: 768px) {
+  .mode-card.mode-primary { padding: 40px 28px; }
+  .mode-card.mode-primary .mode-icon { font-size: 56px; margin-bottom: 16px; }
+  .mode-card.mode-primary h3 { font-size: 40px; margin-bottom: 16px; }
+  .mode-card.mode-primary p { font-size: 16px; }
+  .mode-compact-inner { flex-wrap: wrap; gap: 12px; }
 }
 
 .mode-card {

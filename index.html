@@ -33,10 +33,15 @@
     <span class="brand-name">FOOTBALL CONQUEST</span>
   </a>
   <ul class="nav-links">
-    <li><a href="/play.html">Play</a></li>
-    <li><a href="/how-to-play.html">How to play</a></li>
-    <li><a href="/featured-runs.html">Featured runs</a></li>
-    <li><a href="/about.html">About</a></li>
+    <li><a href="/play.html" data-i18n="nav.play">Play</a></li>
+    <li><a href="/how-to-play.html" data-i18n="nav.howto">How to play</a></li>
+    <li><a href="/featured-runs.html" data-i18n="nav.featured">Featured runs</a></li>
+    <li><a href="/about.html" data-i18n="nav.about">About</a></li>
+    <li class="nav-lang">
+      <button type="button" class="lang-btn" data-lang-btn="en" onclick="FCLang.set('en',true)">EN</button>
+      <span class="lang-sep">/</span>
+      <button type="button" class="lang-btn" data-lang-btn="tr" onclick="FCLang.set('tr',true)">TR</button>
+    </li>
   </ul>
 </nav>
 
@@ -63,17 +68,17 @@
           <span class="hero-line-1">Football Conquest</span>
           <span class="hero-line-2"><em>by</em> Ghiellini</span>
         </h1>
-        <p class="hero-tagline">Spin the arrow, conquer the world.</p>
-        <p class="hero-lead">A free browser-based Imperialism simulator for football fans. Pick any of 212 nations, spin for an opponent, simulate the match with real FIFA ratings, and watch territories fall — one battle at a time.</p>
+        <p class="hero-tagline" data-i18n="home.tagline">Spin the arrow, conquer the world.</p>
+        <p class="hero-lead" data-i18n="home.lead">A free browser-based Imperialism simulator for football fans. Pick any of 212 nations, spin for an opponent, simulate the match with real FIFA ratings, and watch territories fall — one battle at a time.</p>
         <div class="hero-cta">
-          <a href="/play.html" class="btn-primary">Start a campaign →</a>
-          <a href="/how-to-play.html" class="btn-secondary">How it works</a>
+          <a href="/play.html" class="btn-primary" data-i18n="home.cta.start">Start a campaign →</a>
+          <a href="/how-to-play.html" class="btn-secondary" data-i18n="home.cta.how">How it works</a>
         </div>
         <div class="hero-stats">
-          <div class="stat"><span class="stat-num">212</span><span class="stat-label">Nations</span></div>
-          <div class="stat"><span class="stat-num">2</span><span class="stat-label">Modes</span></div>
-          <div class="stat"><span class="stat-num">∞</span><span class="stat-label">Campaigns</span></div>
-          <div class="stat"><span class="stat-num">$0</span><span class="stat-label">Free</span></div>
+          <div class="stat"><span class="stat-num">212</span><span class="stat-label" data-i18n="home.stat.nations">Nations</span></div>
+          <div class="stat"><span class="stat-num">2</span><span class="stat-label" data-i18n="home.stat.modes">Modes</span></div>
+          <div class="stat"><span class="stat-num">∞</span><span class="stat-label" data-i18n="home.stat.campaigns">Campaigns</span></div>
+          <div class="stat"><span class="stat-num">$0</span><span class="stat-label" data-i18n="home.stat.free">Free</span></div>
         </div>
       </div>
       <div class="hero-right">
@@ -97,7 +102,7 @@
           <div class="hero-map-frame">
             <iframe src="/simulator.html?demo=1" class="hero-preview-iframe" title="Football Conquest live preview" loading="lazy" scrolling="no" tabindex="-1" aria-hidden="true"></iframe>
             <div class="hero-preview-overlay">
-              <span class="hero-preview-cta">▶ ENTER</span>
+              <span class="hero-preview-cta" data-i18n="home.preview.enter">▶ ENTER</span>
             </div>
           </div>
         </a>
@@ -117,14 +122,14 @@
   </div>
   <div class="hero-marquee">
     <div class="marquee-track">
-      <span>🌍 PICK YOUR NATION</span>
-      <span>⚔️ SPIN THE ARROW</span>
-      <span>📊 FIFA-RATED RESULTS</span>
-      <span>👑 RULE THE WORLD</span>
-      <span>🌍 PICK YOUR NATION</span>
-      <span>⚔️ SPIN THE ARROW</span>
-      <span>📊 FIFA-RATED RESULTS</span>
-      <span>👑 RULE THE WORLD</span>
+      <span data-i18n="home.marquee.nation">🌍 PICK YOUR NATION</span>
+      <span data-i18n="home.marquee.spin">⚔️ SPIN THE ARROW</span>
+      <span data-i18n="home.marquee.results">📊 FIFA-RATED RESULTS</span>
+      <span data-i18n="home.marquee.rule">👑 RULE THE WORLD</span>
+      <span data-i18n="home.marquee.nation">🌍 PICK YOUR NATION</span>
+      <span data-i18n="home.marquee.spin">⚔️ SPIN THE ARROW</span>
+      <span data-i18n="home.marquee.results">📊 FIFA-RATED RESULTS</span>
+      <span data-i18n="home.marquee.rule">👑 RULE THE WORLD</span>
     </div>
   </div>
 </header>
@@ -145,34 +150,34 @@
 <section class="modes">
   <div class="section-header">
     <span class="section-num">01</span>
-    <h2 class="section-title">Two ways to play.</h2>
+    <h2 class="section-title" data-i18n="home.modes.title">Two ways to play.</h2>
   </div>
 
   <div class="modes-stack">
     <!-- Primary: World Conquest — hero-sized, sits on top -->
     <article class="mode-card mode-conquest mode-primary">
       <div class="mode-icon">⚔️</div>
-      <div class="mode-tag">FLAGSHIP MODE</div>
-      <h3>World Conquest</h3>
-      <p>Pick a single team. Always be the attacker. Play the matches yourself in FC 26, then enter the scores manually. Lose three times to the same opponent and your campaign ends.</p>
+      <div class="mode-tag" data-i18n="home.mode.conquest.tag">FLAGSHIP MODE</div>
+      <h3 data-i18n="home.mode.conquest.title">World Conquest</h3>
+      <p data-i18n="home.mode.conquest.desc">Pick a single team. Always be the attacker. Play the matches yourself in FC 26, then enter the scores manually. Lose three times to the same opponent and your campaign ends.</p>
       <ul class="mode-features">
-        <li>Choose any of 212 nations</li>
-        <li>Manual score entry</li>
-        <li>3-strikes elimination rule</li>
+        <li data-i18n="home.mode.conquest.f1">Choose any of 212 nations</li>
+        <li data-i18n="home.mode.conquest.f2">Manual score entry</li>
+        <li data-i18n="home.mode.conquest.f3">3-strikes elimination rule</li>
       </ul>
-      <a href="/play.html?mode=conquest" class="mode-link mode-link-lg">Start Conquest →</a>
+      <a href="/play.html?mode=conquest" class="mode-link mode-link-lg" data-i18n="home.mode.conquest.link">Start Conquest →</a>
     </article>
 
     <!-- Secondary: Random Imperialism — compact button, BETA flag -->
     <article class="mode-card mode-imperialism mode-compact">
-      <span class="mode-beta">BETA</span>
+      <span class="mode-beta" data-i18n="home.mode.imperialism.tag">BETA</span>
       <div class="mode-compact-inner">
         <span class="mode-icon-sm">🌍</span>
         <div class="mode-compact-text">
-          <h3>Random Imperialism</h3>
-          <p>All 212 nations battle randomly. AI-driven attackers, FIFA-rated results.</p>
+          <h3 data-i18n="home.mode.imperialism.title">Random Imperialism</h3>
+          <p data-i18n="home.mode.imperialism.desc">All 212 nations battle randomly. AI-driven attackers, FIFA-rated results.</p>
         </div>
-        <a href="/play.html?mode=imperialism" class="mode-link mode-link-sm">Open →</a>
+        <a href="/play.html?mode=imperialism" class="mode-link mode-link-sm" data-i18n="home.mode.imperialism.link">Open →</a>
       </div>
     </article>
   </div>
@@ -183,22 +188,22 @@
   <div class="how-strip-inner">
     <div class="how-step">
       <div class="how-num">①</div>
-      <div class="how-text"><strong>Pick a mode</strong><br>Random chaos or solo conquest.</div>
+      <div class="how-text"><strong data-i18n="home.how.1.title">Pick a mode</strong><br><span data-i18n="home.how.1.desc">Random chaos or solo conquest.</span></div>
     </div>
     <div class="how-arrow">→</div>
     <div class="how-step">
       <div class="how-num">②</div>
-      <div class="how-text"><strong>Spin the arrow</strong><br>The compass picks an opponent.</div>
+      <div class="how-text"><strong data-i18n="home.how.2.title">Spin the arrow</strong><br><span data-i18n="home.how.2.desc">The compass picks an opponent.</span></div>
     </div>
     <div class="how-arrow">→</div>
     <div class="how-step">
       <div class="how-num">③</div>
-      <div class="how-text"><strong>Resolve the match</strong><br>FIFA-rated outcome.</div>
+      <div class="how-text"><strong data-i18n="home.how.3.title">Resolve the match</strong><br><span data-i18n="home.how.3.desc">FIFA-rated outcome.</span></div>
     </div>
     <div class="how-arrow">→</div>
     <div class="how-step">
       <div class="how-num">④</div>
-      <div class="how-text"><strong>Take the territory</strong><br>Paint the map your colour.</div>
+      <div class="how-text"><strong data-i18n="home.how.4.title">Take the territory</strong><br><span data-i18n="home.how.4.desc">Paint the map your colour.</span></div>
     </div>
   </div>
 </section>
@@ -207,33 +212,33 @@
 <section class="creators">
   <div class="section-header">
     <span class="section-num">02</span>
-    <h2 class="section-title">Built for content.</h2>
+    <h2 class="section-title" data-i18n="home.creators.title">Built for content.</h2>
   </div>
 
   <div class="creators-grid">
     <div class="creator-feature">
-      <div class="feature-headline">SLOW ANIMATIONS</div>
-      <p>1.67× longer compass spins and team-roulette ticks so your commentary has room to breathe.</p>
+      <div class="feature-headline" data-i18n="home.creators.f1.h">SLOW ANIMATIONS</div>
+      <p data-i18n="home.creators.f1.p">1.67× longer compass spins and team-roulette ticks so your commentary has room to breathe.</p>
     </div>
     <div class="creator-feature">
-      <div class="feature-headline">CLICK-TO-REVEAL</div>
-      <p>Defer the score reveal until you cue it — perfect for building tension before the dramatic cut.</p>
+      <div class="feature-headline" data-i18n="home.creators.f2.h">CLICK-TO-REVEAL</div>
+      <p data-i18n="home.creators.f2.p">Defer the score reveal until you cue it — perfect for building tension before the dramatic cut.</p>
     </div>
     <div class="creator-feature">
-      <div class="feature-headline">LIGHT/DARK MAP</div>
-      <p>Toggle the ocean colour to match your video's grading. Pale blue or deep navy, one click.</p>
+      <div class="feature-headline" data-i18n="home.creators.f3.h">LIGHT/DARK MAP</div>
+      <p data-i18n="home.creators.f3.p">Toggle the ocean colour to match your video's grading. Pale blue or deep navy, one click.</p>
     </div>
     <div class="creator-feature">
-      <div class="feature-headline">CONQUEST TRAILS</div>
-      <p>Curved dotted arrows record your path. Wins shown white, losses preserved in red.</p>
+      <div class="feature-headline" data-i18n="home.creators.f4.h">CONQUEST TRAILS</div>
+      <p data-i18n="home.creators.f4.p">Curved dotted arrows record your path. Wins shown white, losses preserved in red.</p>
     </div>
     <div class="creator-feature">
-      <div class="feature-headline">UNDO ANYTHING</div>
-      <p>Made a mistake or missed a recording cue? Full undo history — even reverse conquests.</p>
+      <div class="feature-headline" data-i18n="home.creators.f5.h">UNDO ANYTHING</div>
+      <p data-i18n="home.creators.f5.p">Made a mistake or missed a recording cue? Full undo history — even reverse conquests.</p>
     </div>
     <div class="creator-feature">
-      <div class="feature-headline">SKIP MINNOWS</div>
-      <p>Toggle to exclude Vatican, San Marino, and other micronations from random selection.</p>
+      <div class="feature-headline" data-i18n="home.creators.f6.h">SKIP MINNOWS</div>
+      <p data-i18n="home.creators.f6.p">Toggle to exclude Vatican, San Marino, and other micronations from random selection.</p>
     </div>
   </div>
 </section>
@@ -242,10 +247,10 @@
 <section class="big-cta">
   <div class="big-cta-grid">
     <div>
-      <h2 class="cta-title">Ready when you are.</h2>
-      <p class="cta-sub">No sign-up. No download. Works in every browser.</p>
+      <h2 class="cta-title" data-i18n="home.cta.title">Ready when you are.</h2>
+      <p class="cta-sub" data-i18n="home.cta.sub">No sign-up. No download. Works in every browser.</p>
     </div>
-    <a href="/play.html" class="btn-primary btn-large">Start your campaign →</a>
+    <a href="/play.html" class="btn-primary btn-large" data-i18n="home.cta.button">Start your campaign →</a>
   </div>
 </section>
 
@@ -258,34 +263,37 @@
       <div class="footer-tag">© 2026 · Made by <a href="https://www.youtube.com/@Ghiellini">Ghiellini</a> &amp; <a href="https://www.youtube.com/@GRKN7">GRKN7</a></div>
     </div>
     <div class="footer-col">
-      <div class="footer-heading">PLAY</div>
-      <a href="/play.html">Start a campaign</a>
-      <a href="/how-to-play.html">How to play</a>
-      <a href="/featured-runs.html">Featured runs</a>
+      <div class="footer-heading" data-i18n="footer.play">PLAY</div>
+      <a href="/play.html" data-i18n="footer.play.start">Start a campaign</a>
+      <a href="/how-to-play.html" data-i18n="nav.howto">How to play</a>
+      <a href="/featured-runs.html" data-i18n="nav.featured">Featured runs</a>
     </div>
     <div class="footer-col">
-      <div class="footer-heading">CHANNELS</div>
+      <div class="footer-heading" data-i18n="footer.channels">CHANNELS</div>
       <a href="https://www.youtube.com/@Ghiellini" target="_blank">@Ghiellini (EN)</a>
       <a href="https://www.youtube.com/@GRKN7" target="_blank">@GRKN7 (TR)</a>
     </div>
     <div class="footer-col">
-      <div class="footer-heading">MORE</div>
+      <div class="footer-heading" data-i18n="footer.more">MORE</div>
       <div class="footer-col">
-      <div class="footer-heading">LEGAL</div>
-      <a href="/privacy.html">Privacy Policy</a>
-      <a href="/terms.html">Terms of Service</a>
+      <div class="footer-heading" data-i18n="footer.legal">LEGAL</div>
+      <a href="/privacy.html" data-i18n="footer.privacy">Privacy Policy</a>
+      <a href="/terms.html" data-i18n="footer.terms">Terms of Service</a>
     </div>
     <div class="footer-col">
-      <div class="footer-heading">MORE</div>
-      <a href="/about.html">About</a>
-      <a href="https://grkn.shop" target="_blank">Custom PSD maps</a>
+      <div class="footer-heading" data-i18n="footer.more">MORE</div>
+      <a href="/about.html" data-i18n="nav.about">About</a>
+      <a href="https://grkn.shop" target="_blank" data-i18n="footer.maps">Custom PSD maps</a>
     </div>
     </div>
   </div>
-  <div class="footer-fineprint">
+  <div class="footer-fineprint" data-i18n="footer.fineprint">
     Not affiliated with FIFA, EA Sports, or any football federation. Country ratings are public FIFA Men's World Ranking points.
   </div>
 </footer>
 
+<!-- Localization: translations dictionary + i18n engine. -->
+<script src="/js/translations.js"></script>
+<script src="/js/i18n.js"></script>
 </body>
 </html>

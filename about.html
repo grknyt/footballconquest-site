@@ -23,58 +23,63 @@
     <span class="brand-name">FOOTBALL CONQUEST</span>
   </a>
   <ul class="nav-links">
-    <li><a href="/play.html">Play</a></li>
-    <li><a href="/how-to-play.html">How to play</a></li>
-    <li><a href="/featured-runs.html">Featured runs</a></li>
-    <li><a href="/about.html" style="color:#fff;">About</a></li>
+    <li><a href="/play.html" data-i18n="nav.play">Play</a></li>
+    <li><a href="/how-to-play.html" data-i18n="nav.howto">How to play</a></li>
+    <li><a href="/featured-runs.html" data-i18n="nav.featured">Featured runs</a></li>
+    <li><a href="/about.html" style="color:#fff;" data-i18n="nav.about">About</a></li>
+    <li class="nav-lang">
+      <button type="button" class="lang-btn" data-lang-btn="en" onclick="FCLang.set('en',true)">EN</button>
+      <span class="lang-sep">/</span>
+      <button type="button" class="lang-btn" data-lang-btn="tr" onclick="FCLang.set('tr',true)">TR</button>
+    </li>
   </ul>
 </nav>
 
 <article class="page">
-  <div class="page-eyebrow">CHAPTER 03 · THE STORY</div>
-  <h1 class="page-title">About this project.</h1>
-  <p class="page-lead">Football Conquest started as a tool to make better videos. It turned into something the community could play with too.</p>
+  <div class="page-eyebrow" data-i18n="ab.eyebrow">CHAPTER 03 · THE STORY</div>
+  <h1 class="page-title" data-i18n="ab.title">About this project.</h1>
+  <p class="page-lead" data-i18n="ab.lead">Football Conquest started as a tool to make better videos. It turned into something the community could play with too.</p>
 
-  <h2>Who made this</h2>
-  <p>Hi, I'm Gürkan. I run two YouTube channels focused on offline EA Sports FC content:</p>
+  <h2 data-i18n="ab.who.h">Who made this</h2>
+  <p data-i18n="ab.who.p1">Hi, I'm Gürkan. I run two YouTube channels focused on offline EA Sports FC content:</p>
   <ul>
-    <li><strong><a href="https://www.youtube.com/@Ghiellini" target="_blank" style="color:var(--red);">@Ghiellini</a></strong> — English-language career-mode and simulation videos.</li>
-    <li><strong><a href="https://www.youtube.com/@GRKN7" target="_blank" style="color:var(--red);">@GRKN7</a></strong> — The same content for the Turkish-language audience.</li>
+    <li data-i18n-html="ab.who.li1"><strong><a href="https://www.youtube.com/@Ghiellini" target="_blank" style="color:var(--red);">@Ghiellini</a></strong> — English-language career-mode and simulation videos.</li>
+    <li data-i18n-html="ab.who.li2"><strong><a href="https://www.youtube.com/@GRKN7" target="_blank" style="color:var(--red);">@GRKN7</a></strong> — The same content for the Turkish-language audience.</li>
   </ul>
-  <p>Combined, the channels reach more than 700,000 subscribers who care a lot about offline FC content: career-mode runs, club rebuilds, World Cup simulations, and the kind of Imperialism format you're holding in your hand right now.</p>
+  <p data-i18n="ab.who.p2">Combined, the channels reach more than 700,000 subscribers who care a lot about offline FC content: career-mode runs, club rebuilds, World Cup simulations, and the kind of Imperialism format you're holding in your hand right now.</p>
 
-  <h2>Why we built it</h2>
-  <p>The Imperialism format — a single team trying to conquer the world one match at a time — has been a fan favourite for years. But making it on video was hard. You needed Photoshop, a 30,000-pixel map file, and a lot of patience between matches to manually paint conquered territory and reposition flags.</p>
-  <p>This simulator does all of that automatically. Pick your team, play the matches in FC 26, enter the scores, and the map updates itself. What used to take 20 minutes between matches now takes 20 seconds.</p>
-  <p>Then it occurred to me: if this is useful for me as a creator, it's probably fun for fans too. Free in your browser, no install, no sign-up. Pick a team and see how far you can take them.</p>
+  <h2 data-i18n="ab.why.h">Why we built it</h2>
+  <p data-i18n="ab.why.p1">The Imperialism format — a single team trying to conquer the world one match at a time — has been a fan favourite for years. But making it on video was hard. You needed Photoshop, a 30,000-pixel map file, and a lot of patience between matches to manually paint conquered territory and reposition flags.</p>
+  <p data-i18n="ab.why.p2">This simulator does all of that automatically. Pick your team, play the matches in FC 26, enter the scores, and the map updates itself. What used to take 20 minutes between matches now takes 20 seconds.</p>
+  <p data-i18n="ab.why.p3">Then it occurred to me: if this is useful for me as a creator, it's probably fun for fans too. Free in your browser, no install, no sign-up. Pick a team and see how far you can take them.</p>
 
-  <h2>The format, codified</h2>
-  <p>Football Imperialism as a format has loose rules — different creators do it different ways. Football Conquest codifies a specific ruleset:</p>
+  <h2 data-i18n="ab.format.h">The format, codified</h2>
+  <p data-i18n="ab.format.p1">Football Imperialism as a format has loose rules — different creators do it different ways. Football Conquest codifies a specific ruleset:</p>
   <ul>
-    <li>Random-direction arrow for opponent selection</li>
-    <li>FIFA Men's World Ranking points as the strength baseline</li>
-    <li>Elo-style probability for match outcomes</li>
-    <li>Three losses to the same opponent ends the campaign</li>
-    <li>Losing means retreating to your previous conquest</li>
-    <li>Match scorelines weighted by the strength gap</li>
+    <li data-i18n="ab.format.li1">Random-direction arrow for opponent selection</li>
+    <li data-i18n="ab.format.li2">FIFA Men's World Ranking points as the strength baseline</li>
+    <li data-i18n="ab.format.li3">Elo-style probability for match outcomes</li>
+    <li data-i18n="ab.format.li4">Three losses to the same opponent ends the campaign</li>
+    <li data-i18n="ab.format.li5">Losing means retreating to your previous conquest</li>
+    <li data-i18n="ab.format.li6">Match scorelines weighted by the strength gap</li>
   </ul>
-  <p>The rules aren't arbitrary — they're tuned to produce stories. Close matchups go to extra time more often. Underdogs winning produce tight 1–0 scorelines, not blowouts. Big empires can absorb a couple of losses before collapsing.</p>
+  <p data-i18n="ab.format.p2">The rules aren't arbitrary — they're tuned to produce stories. Close matchups go to extra time more often. Underdogs winning produce tight 1–0 scorelines, not blowouts. Big empires can absorb a couple of losses before collapsing.</p>
 
-  <h2>What's next</h2>
-  <p>This is a starting point. On the roadmap:</p>
+  <h2 data-i18n="ab.next.h">What's next</h2>
+  <p data-i18n="ab.next.p">This is a starting point. On the roadmap:</p>
   <ul>
-    <li><strong>Mobile apps</strong> for Android and iOS, so you can play on the go.</li>
-    <li><strong>Club leagues as Pro unlocks</strong> — Premier League, La Liga, Serie A, Bundesliga, Süper Lig — with fictional but recognisable club names you can rename to your favourites.</li>
-    <li><strong>Sharable result pages</strong> — when your campaign ends, get a URL that anyone can visit to see your final map and turn-by-turn history.</li>
-    <li><strong>More languages</strong> — Spanish and Arabic next, then whichever audiences ask for it.</li>
+    <li data-i18n-html="ab.next.li1"><strong>Mobile apps</strong> for Android and iOS, so you can play on the go.</li>
+    <li data-i18n-html="ab.next.li2"><strong>Club leagues as Pro unlocks</strong> — Premier League, La Liga, Serie A, Bundesliga, Süper Lig — with fictional but recognisable club names you can rename to your favourites.</li>
+    <li data-i18n-html="ab.next.li3"><strong>Sharable result pages</strong> — when your campaign ends, get a URL that anyone can visit to see your final map and turn-by-turn history.</li>
+    <li data-i18n-html="ab.next.li4"><strong>More languages</strong> — Spanish and Arabic next, then whichever audiences ask for it.</li>
   </ul>
 
-  <h2>Get in touch</h2>
-  <p>Found a bug? Have an idea? Want to feature your own run? Drop a comment on either channel, or message us directly on YouTube.</p>
-  <p>Or, if you want to support the work directly, our paid <a href="https://grkn.shop" target="_blank" style="color:var(--red);">PSD map packs at grkn.shop</a> are how we pay for the hosting and keep this free.</p>
+  <h2 data-i18n="ab.touch.h">Get in touch</h2>
+  <p data-i18n="ab.touch.p1">Found a bug? Have an idea? Want to feature your own run? Drop a comment on either channel, or message us directly on YouTube.</p>
+  <p data-i18n-html="ab.touch.p2">Or, if you want to support the work directly, our paid <a href="https://grkn.shop" target="_blank" style="color:var(--red);">PSD map packs at grkn.shop</a> are how we pay for the hosting and keep this free.</p>
 
-  <h2>Acknowledgements</h2>
-  <p>This simulator uses public-domain world geographic data from Natural Earth, the d3.js library for projection math, and FIFA's published World Ranking points (April 2026 edition). Not affiliated with FIFA, EA Sports, or any football federation.</p>
+  <h2 data-i18n="ab.ack.h">Acknowledgements</h2>
+  <p data-i18n="ab.ack.p">This simulator uses public-domain world geographic data from Natural Earth, the d3.js library for projection math, and FIFA's published World Ranking points (April 2026 edition). Not affiliated with FIFA, EA Sports, or any football federation.</p>
 
   <div class="ad-container" style="margin: 64px auto 0;">
     <!-- FC about (in-article) -->
@@ -96,34 +101,37 @@
       <div class="footer-tag">© 2026 · Made by <a href="https://www.youtube.com/@Ghiellini">Ghiellini</a> &amp; <a href="https://www.youtube.com/@GRKN7">GRKN7</a></div>
     </div>
     <div class="footer-col">
-      <div class="footer-heading">PLAY</div>
-      <a href="/play.html">Start a campaign</a>
-      <a href="/how-to-play.html">How to play</a>
-      <a href="/featured-runs.html">Featured runs</a>
+      <div class="footer-heading" data-i18n="footer.play">PLAY</div>
+      <a href="/play.html" data-i18n="footer.play.start">Start a campaign</a>
+      <a href="/how-to-play.html" data-i18n="nav.howto">How to play</a>
+      <a href="/featured-runs.html" data-i18n="nav.featured">Featured runs</a>
     </div>
     <div class="footer-col">
-      <div class="footer-heading">CHANNELS</div>
+      <div class="footer-heading" data-i18n="footer.channels">CHANNELS</div>
       <a href="https://www.youtube.com/@Ghiellini" target="_blank">@Ghiellini (EN)</a>
       <a href="https://www.youtube.com/@GRKN7" target="_blank">@GRKN7 (TR)</a>
     </div>
     <div class="footer-col">
-      <div class="footer-heading">MORE</div>
+      <div class="footer-heading" data-i18n="footer.more">MORE</div>
       <div class="footer-col">
-      <div class="footer-heading">LEGAL</div>
-      <a href="/privacy.html">Privacy Policy</a>
-      <a href="/terms.html">Terms of Service</a>
+      <div class="footer-heading" data-i18n="footer.legal">LEGAL</div>
+      <a href="/privacy.html" data-i18n="footer.privacy">Privacy Policy</a>
+      <a href="/terms.html" data-i18n="footer.terms">Terms of Service</a>
     </div>
     <div class="footer-col">
-      <div class="footer-heading">MORE</div>
-      <a href="/about.html">About</a>
-      <a href="https://grkn.shop" target="_blank">Custom PSD maps</a>
+      <div class="footer-heading" data-i18n="footer.more">MORE</div>
+      <a href="/about.html" data-i18n="nav.about">About</a>
+      <a href="https://grkn.shop" target="_blank" data-i18n="footer.maps">Custom PSD maps</a>
     </div>
     </div>
   </div>
-  <div class="footer-fineprint">
+  <div class="footer-fineprint" data-i18n="footer.fineprint">
     Not affiliated with FIFA, EA Sports, or any football federation. Country ratings are public FIFA Men's World Ranking points.
   </div>
 </footer>
 
+<!-- Localization: translations dictionary + i18n engine. -->
+<script src="/js/translations.js"></script>
+<script src="/js/i18n.js"></script>
 </body>
 </html>

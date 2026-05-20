@@ -23,20 +23,25 @@
     <span class="brand-name">FOOTBALL CONQUEST</span>
   </a>
   <ul class="nav-links">
-    <li><a href="/play.html">Play</a></li>
-    <li><a href="/how-to-play.html">How to play</a></li>
-    <li><a href="/featured-runs.html" style="color:#fff;">Featured runs</a></li>
-    <li><a href="/about.html">About</a></li>
+    <li><a href="/play.html" data-i18n="nav.play">Play</a></li>
+    <li><a href="/how-to-play.html" data-i18n="nav.howto">How to play</a></li>
+    <li><a href="/featured-runs.html" style="color:#fff;" data-i18n="nav.featured">Featured runs</a></li>
+    <li><a href="/about.html" data-i18n="nav.about">About</a></li>
+    <li class="nav-lang">
+      <button type="button" class="lang-btn" data-lang-btn="en" onclick="FCLang.set('en',true)">EN</button>
+      <span class="lang-sep">/</span>
+      <button type="button" class="lang-btn" data-lang-btn="tr" onclick="FCLang.set('tr',true)">TR</button>
+    </li>
   </ul>
 </nav>
 
 <article class="page">
-  <div class="page-eyebrow">CHAPTER 02 · THE ARCHIVE</div>
-  <h1 class="page-title">Featured runs.</h1>
-  <p class="page-lead">The best campaigns from the channels — pick a team, watch them try to conquer the world.</p>
+  <div class="page-eyebrow" data-i18n="fr.eyebrow">CHAPTER 02 · THE ARCHIVE</div>
+  <h1 class="page-title" data-i18n="fr.title">Featured runs.</h1>
+  <p class="page-lead" data-i18n="fr.lead">The best campaigns from the channels — pick a team, watch them try to conquer the world.</p>
 
-  <h2>English-language campaigns</h2>
-  <p>From the <a href="https://www.youtube.com/@Ghiellini" target="_blank" style="color:var(--red);">@Ghiellini channel</a>.</p>
+  <h2 data-i18n="fr.en.h">English-language campaigns</h2>
+  <p data-i18n-html="fr.en.p">From the <a href="https://www.youtube.com/@Ghiellini" target="_blank" style="color:var(--red);">@Ghiellini channel</a>.</p>
 
   <div class="video-grid">
     <!-- REPLACE these video IDs with actual YouTube video IDs after you record them -->
@@ -45,51 +50,51 @@
         <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Can England Take Over The World?" allowfullscreen></iframe>
       </div>
       <div class="video-meta">
-        <div class="video-title">CAN ENGLAND TAKE OVER THE WORLD?</div>
-        <div class="video-sub">Featured · 20 min · @Ghiellini</div>
+        <div class="video-title" data-i18n="fr.video1.title">CAN ENGLAND TAKE OVER THE WORLD?</div>
+        <div class="video-sub" data-i18n="fr.video1.sub">Featured · 20 min · @Ghiellini</div>
       </div>
     </div>
     <div class="video-card">
       <div class="video-embed" style="display:flex;flex-direction:column;align-items:center;justify-content:center;color:#7a9bb5;padding:24px;text-align:center;">
-        <div style="font-family:var(--display);font-size:48px;color:var(--paper-2);">SOON</div>
-        <div style="font-size:13px;margin-top:8px;">Next campaign coming soon</div>
+        <div style="font-family:var(--display);font-size:48px;color:var(--paper-2);" data-i18n="fr.soon">SOON</div>
+        <div style="font-size:13px;margin-top:8px;" data-i18n="fr.soon.sub">Next campaign coming soon</div>
       </div>
       <div class="video-meta">
-        <div class="video-title">UPCOMING</div>
-        <div class="video-sub">Subscribe for notifications</div>
+        <div class="video-title" data-i18n="fr.upcoming">UPCOMING</div>
+        <div class="video-sub" data-i18n="fr.notif">Subscribe for notifications</div>
       </div>
     </div>
   </div>
 
-  <h2>Turkish-language campaigns</h2>
-  <p>From the <a href="https://www.youtube.com/@GRKN7" target="_blank" style="color:var(--red);">@GRKN7 channel</a>.</p>
+  <h2 data-i18n="fr.tr.h">Turkish-language campaigns</h2>
+  <p data-i18n-html="fr.tr.p">From the <a href="https://www.youtube.com/@GRKN7" target="_blank" style="color:var(--red);">@GRKN7 channel</a>.</p>
 
   <div class="video-grid">
     <div class="video-card">
       <div class="video-embed" style="display:flex;flex-direction:column;align-items:center;justify-content:center;color:#7a9bb5;padding:24px;text-align:center;">
-        <div style="font-family:var(--display);font-size:48px;color:var(--paper-2);">YAKINDA</div>
-        <div style="font-size:13px;margin-top:8px;">İlk Türkçe kampanya yakında</div>
+        <div style="font-family:var(--display);font-size:48px;color:var(--paper-2);" data-i18n="fr.soon">SOON</div>
+        <div style="font-size:13px;margin-top:8px;" data-i18n="fr.soon2">First Turkish campaign coming soon</div>
       </div>
       <div class="video-meta">
-        <div class="video-title">UPCOMING</div>
-        <div class="video-sub">Abone olun</div>
+        <div class="video-title" data-i18n="fr.upcoming">UPCOMING</div>
+        <div class="video-sub" data-i18n="fr.subscribe">Subscribe</div>
       </div>
     </div>
     <div class="video-card">
       <div class="video-embed" style="display:flex;flex-direction:column;align-items:center;justify-content:center;color:#7a9bb5;padding:24px;text-align:center;">
-        <div style="font-family:var(--display);font-size:48px;color:var(--paper-2);">YAKINDA</div>
-        <div style="font-size:13px;margin-top:8px;">More episodes coming</div>
+        <div style="font-family:var(--display);font-size:48px;color:var(--paper-2);" data-i18n="fr.soon">SOON</div>
+        <div style="font-size:13px;margin-top:8px;" data-i18n="fr.soon3">More episodes coming</div>
       </div>
       <div class="video-meta">
-        <div class="video-title">UPCOMING</div>
-        <div class="video-sub">Abone olun</div>
+        <div class="video-title" data-i18n="fr.upcoming">UPCOMING</div>
+        <div class="video-sub" data-i18n="fr.subscribe">Subscribe</div>
       </div>
     </div>
   </div>
 
-  <h2>Make your own</h2>
-  <p>Want to make a Football Conquest video yourself? Use the simulator, follow the format, and tag <strong>#FootballConquest</strong> in your video description. Best community submissions get featured here.</p>
-  <p style="margin-top:24px;"><a href="/play.html" style="font-family:var(--display);font-size:20px;letter-spacing:3px;color:var(--red);border-bottom:2px solid var(--red);padding-bottom:4px;">START YOUR CAMPAIGN →</a></p>
+  <h2 data-i18n="fr.own.h">Make your own</h2>
+  <p data-i18n-html="fr.own.p">Want to make a Football Conquest video yourself? Use the simulator, follow the format, and tag <strong>#FootballConquest</strong> in your video description. Best community submissions get featured here.</p>
+  <p style="margin-top:24px;"><a href="/play.html" style="font-family:var(--display);font-size:20px;letter-spacing:3px;color:var(--red);border-bottom:2px solid var(--red);padding-bottom:4px;" data-i18n="fr.own.cta">START YOUR CAMPAIGN →</a></p>
 
   <div class="ad-container" style="margin: 64px auto 0;">
     <!-- FC featured-runs (in-article) -->
@@ -111,34 +116,37 @@
       <div class="footer-tag">© 2026 · Made by <a href="https://www.youtube.com/@Ghiellini">Ghiellini</a> &amp; <a href="https://www.youtube.com/@GRKN7">GRKN7</a></div>
     </div>
     <div class="footer-col">
-      <div class="footer-heading">PLAY</div>
-      <a href="/play.html">Start a campaign</a>
-      <a href="/how-to-play.html">How to play</a>
-      <a href="/featured-runs.html">Featured runs</a>
+      <div class="footer-heading" data-i18n="footer.play">PLAY</div>
+      <a href="/play.html" data-i18n="footer.play.start">Start a campaign</a>
+      <a href="/how-to-play.html" data-i18n="nav.howto">How to play</a>
+      <a href="/featured-runs.html" data-i18n="nav.featured">Featured runs</a>
     </div>
     <div class="footer-col">
-      <div class="footer-heading">CHANNELS</div>
+      <div class="footer-heading" data-i18n="footer.channels">CHANNELS</div>
       <a href="https://www.youtube.com/@Ghiellini" target="_blank">@Ghiellini (EN)</a>
       <a href="https://www.youtube.com/@GRKN7" target="_blank">@GRKN7 (TR)</a>
     </div>
     <div class="footer-col">
-      <div class="footer-heading">MORE</div>
+      <div class="footer-heading" data-i18n="footer.more">MORE</div>
       <div class="footer-col">
-      <div class="footer-heading">LEGAL</div>
-      <a href="/privacy.html">Privacy Policy</a>
-      <a href="/terms.html">Terms of Service</a>
+      <div class="footer-heading" data-i18n="footer.legal">LEGAL</div>
+      <a href="/privacy.html" data-i18n="footer.privacy">Privacy Policy</a>
+      <a href="/terms.html" data-i18n="footer.terms">Terms of Service</a>
     </div>
     <div class="footer-col">
-      <div class="footer-heading">MORE</div>
-      <a href="/about.html">About</a>
-      <a href="https://grkn.shop" target="_blank">Custom PSD maps</a>
+      <div class="footer-heading" data-i18n="footer.more">MORE</div>
+      <a href="/about.html" data-i18n="nav.about">About</a>
+      <a href="https://grkn.shop" target="_blank" data-i18n="footer.maps">Custom PSD maps</a>
     </div>
     </div>
   </div>
-  <div class="footer-fineprint">
+  <div class="footer-fineprint" data-i18n="footer.fineprint">
     Not affiliated with FIFA, EA Sports, or any football federation. Country ratings are public FIFA Men's World Ranking points.
   </div>
 </footer>
 
+<!-- Localization: translations dictionary + i18n engine. -->
+<script src="/js/translations.js"></script>
+<script src="/js/i18n.js"></script>
 </body>
 </html>

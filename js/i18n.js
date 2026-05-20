@@ -1,0 +1,111 @@
+/* ─────────────────────────────────────────────────────────────
+   Football Conquest — i18n engine (shared by every marketing page).
+
+   Language resolution order:
+     1. Saved toggle choice in localStorage ('fc-lang')         → wins outright
+     2. Visitor is in Turkey (Cloudflare /cdn-cgi/trace loc=TR)  → Turkish
+     3. Browser/OS language starts with 'tr'                     → Turkish
+     4. Otherwise                                                → English
+
+   The Cloudflare country probe needs NO backend function — every site
+   served through Cloudflare exposes /cdn-cgi/trace, whose body contains
+   a `loc=XX` line with the visitor's ISO country code.
+
+   Markup hooks:
+     <span data-i18n="key">            → textContent replaced
+     <span data-i18n-html="key">       → innerHTML replaced (for strings with <b>, links)
+     <meta data-i18n-attr="content:key"> → named attribute(s) replaced; ";"-separated
+
+   Strings live in window.FC_TRANSLATIONS (js/translations.js), shape:
+     { en:{ key:"English" }, tr:{ key:"Türkçe" } }
+   A missing tr value transparently falls back to the en value.
+   ───────────────────────────────────────────────────────────── */
+(function () {
+  var STORAGE_KEY = 'fc-lang';
+  var SUPPORTED = ['en', 'tr'];
+
+  function browserIsTurkish() {
+    var langs = (navigator.languages && navigator.languages.length)
+      ? navigator.languages : [navigator.language || ''];
+    return langs.some(function (l) { return (l || '').toLowerCase().indexOf('tr') === 0; });
+  }
+  function savedLang() {
+    try {
+      var v = localStorage.getItem(STORAGE_KEY);
+      return SUPPORTED.indexOf(v) !== -1 ? v : null;
+    } catch (e) { return null; }
+  }
+  function saveLang(l) { try { localStorage.setItem(STORAGE_KEY, l); } catch (e) {} }
+
+  // Resolves true if the Cloudflare edge reports the visitor is in Turkey.
+  function inTurkey() {
+    return fetch('/cdn-cgi/trace', { cache: 'no-store' })
+      .then(function (r) { return r.text(); })
+      .then(function (t) {
+        var m = /(^|\n)loc=([A-Z]{2})/.exec(t);
+        return !!(m && m[2] === 'TR');
+      })
+      .catch(function () { return false; });
+  }
+
+  var FCLang = {
+    current: 'en',
+    dict: {},
+    onChange: [],
+    // Look up a key in the active language; fall back to English, then the key.
+    t: function (key) {
+      var d = this.dict[this.current] || {};
+      if (key in d && d[key] !== '') return d[key];
+      var en = this.dict.en || {};
+      return (key in en) ? en[key] : key;
+    },
+    // Walk the DOM and replace every tagged element/attribute.
+    apply: function () {
+      document.documentElement.lang = this.current;
+      var self = this;
+      document.querySelectorAll('[data-i18n]').forEach(function (el) {
+        el.textContent = self.t(el.getAttribute('data-i18n'));
+      });
+      document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+        el.innerHTML = self.t(el.getAttribute('data-i18n-html'));
+      });
+      document.querySelectorAll('[data-i18n-attr]').forEach(function (el) {
+        el.getAttribute('data-i18n-attr').split(';').forEach(function (pair) {
+          var bits = pair.split(':');
+          if (bits.length === 2) el.setAttribute(bits[0].trim(), self.t(bits[1].trim()));
+        });
+      });
+      // Reflect the active language on any toggle buttons.
+      document.querySelectorAll('[data-lang-btn]').forEach(function (btn) {
+        btn.classList.toggle('active', btn.getAttribute('data-lang-btn') === self.current);
+      });
+      this.onChange.forEach(function (fn) { try { fn(self.current); } catch (e) {} });
+    },
+    // Switch language. `save` persists the choice as a manual override.
+    set: function (lang, save) {
+      if (SUPPORTED.indexOf(lang) === -1) return;
+      this.current = lang;
+      if (save) saveLang(lang);
+      this.apply();
+    },
+    boot: function (dict) {
+      this.dict = dict || window.FC_TRANSLATIONS || {};
+      var self = this;
+      function finish(lang) {
+        self.current = lang;
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function () { self.apply(); });
+        } else { self.apply(); }
+      }
+      var saved = savedLang();
+      if (saved) { finish(saved); return; }            // explicit choice wins
+      if (browserIsTurkish()) { finish('tr'); return; } // browser signal
+      inTurkey().then(function (isTR) { finish(isTR ? 'tr' : 'en'); }); // IP signal
+    }
+  };
+
+  window.FCLang = FCLang;
+  // Auto-boot once translations.js has defined the dictionary.
+  if (window.FC_TRANSLATIONS) FCLang.boot(window.FC_TRANSLATIONS);
+  else document.addEventListener('DOMContentLoaded', function () { FCLang.boot(window.FC_TRANSLATIONS); });
+})();

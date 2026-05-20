@@ -25,17 +25,22 @@
     <span class="brand-name">FOOTBALL CONQUEST</span>
   </a>
   <ul class="nav-links">
-    <li><a href="/play.html" style="color:#fff;">Play</a></li>
-    <li><a href="/how-to-play.html">How to play</a></li>
-    <li><a href="/featured-runs.html">Featured runs</a></li>
-    <li><a href="/about.html">About</a></li>
+    <li><a href="/play.html" style="color:#fff;" data-i18n="nav.play">Play</a></li>
+    <li><a href="/how-to-play.html" data-i18n="nav.howto">How to play</a></li>
+    <li><a href="/featured-runs.html" data-i18n="nav.featured">Featured runs</a></li>
+    <li><a href="/about.html" data-i18n="nav.about">About</a></li>
+    <li class="nav-lang">
+      <button type="button" class="lang-btn" data-lang-btn="en" onclick="FCLang.set('en',true)">EN</button>
+      <span class="lang-sep">/</span>
+      <button type="button" class="lang-btn" data-lang-btn="tr" onclick="FCLang.set('tr',true)">TR</button>
+    </li>
   </ul>
 </nav>
 
 <!-- Play sub-header -->
 <div class="play-header">
-  <div>SIMULATOR · LIVE</div>
-  <div><a href="/how-to-play.html">Need help? Read the guide →</a></div>
+  <div data-i18n="play.header.live">SIMULATOR · LIVE</div>
+  <div><a href="/how-to-play.html" data-i18n="play.header.help">Need help? Read the guide →</a></div>
 </div>
 
 <!-- The simulator itself, in an iframe -->
@@ -58,30 +63,33 @@
 <footer class="footer" style="padding:48px 36px 32px;">
   <div class="footer-grid" style="grid-template-columns:1fr 1fr 1fr;padding-bottom:24px;">
     <div class="footer-col">
-      <div class="footer-heading">LEARN</div>
-      <a href="/how-to-play.html">How to play</a>
-      <a href="/about.html">About this project</a>
+      <div class="footer-heading" data-i18n="footer.learn">LEARN</div>
+      <a href="/how-to-play.html" data-i18n="nav.howto">How to play</a>
+      <a href="/about.html" data-i18n="footer.about2">About this project</a>
     </div>
     <div class="footer-col">
-      <div class="footer-heading">WATCH</div>
+      <div class="footer-heading" data-i18n="footer.watch">WATCH</div>
       <a href="https://www.youtube.com/@Ghiellini" target="_blank">@Ghiellini (EN)</a>
       <a href="https://www.youtube.com/@GRKN7" target="_blank">@GRKN7 (TR)</a>
     </div>
     <div class="footer-col">
       <div class="footer-col">
-      <div class="footer-heading">LEGAL</div>
-      <a href="/privacy.html">Privacy Policy</a>
-      <a href="/terms.html">Terms of Service</a>
+      <div class="footer-heading" data-i18n="footer.legal">LEGAL</div>
+      <a href="/privacy.html" data-i18n="footer.privacy">Privacy Policy</a>
+      <a href="/terms.html" data-i18n="footer.terms">Terms of Service</a>
     </div>
-      <div class="footer-heading">EXTRAS</div>
-      <a href="/featured-runs.html">Featured runs</a>
-      <a href="https://grkn.shop" target="_blank">Custom PSD maps</a>
+      <div class="footer-heading" data-i18n="footer.extras">EXTRAS</div>
+      <a href="/featured-runs.html" data-i18n="nav.featured">Featured runs</a>
+      <a href="https://grkn.shop" target="_blank" data-i18n="footer.maps">Custom PSD maps</a>
     </div>
   </div>
-  <div class="footer-fineprint">
+  <div class="footer-fineprint" data-i18n="play.fineprint">
     Country ratings are public FIFA Men's World Ranking points (April 2026). Not affiliated with FIFA or EA Sports.
   </div>
 </footer>
 
+<!-- Localization: translations dictionary + i18n engine. -->
+<script src="/js/translations.js"></script>
+<script src="/js/i18n.js"></script>
 </body>
 </html>
