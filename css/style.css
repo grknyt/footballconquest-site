@@ -1193,23 +1193,9 @@ img, svg { display: block; max-width: 100%; height: auto; }
   position: relative;
 }
 
-.play-header {
-  background: var(--ink);
-  color: var(--paper);
-  padding: 14px 36px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-family: var(--mono);
-  font-size: 12px;
-  letter-spacing: 2px;
-}
-
-.play-header a { color: var(--paper-2); text-decoration: underline; }
-
 .play-frame {
   width: 100%;
-  height: calc(100vh - 56px - 48px);
+  height: calc(100vh - 56px);
   border: 0;
   background: var(--navy);
   display: block;
