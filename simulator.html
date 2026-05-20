@@ -240,7 +240,7 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
    (centered) and the conquest HUD (bottom-left). Width + max-height tuned
    to mirror the conquest HUD on the opposite side so the three elements
    form a balanced bottom triptych. */
-#g-events-panel{position:absolute;bottom:32px;right:14px;width:300px;
+#g-events-panel{position:absolute;bottom:32px;right:58px;width:300px;
   background:rgba(7,14,23,.97);border:1px solid #2a3f55;border-radius:10px;
   display:none;flex-direction:column;z-index:24;overflow:hidden;
   box-shadow:0 6px 18px rgba(0,0,0,.4);
@@ -4472,6 +4472,42 @@ function isoCentroid(iso,nearTo){
   }catch(e){return null;}
 }
 
+// Is geometry-space point `pt` inside any territory owned by `teamId`?
+// Uses SVG isPointInFill against each owned iso's <path>. isPointInFill
+// works in the path's own user space, so the ancestor zoom transform
+// doesn't matter — pt and the path `d` data are both geometry-space.
+function _pointInsideTeam(pt,teamId){
+  if(!pt||pt[0]==null) return false;
+  const st=GAME&&GAME.state&&GAME.state[teamId];
+  if(!st) return false;
+  for(const iso of st.ownedIsos){
+    const el=isoPaths[iso];
+    if(!el||typeof el.isPointInFill!=='function') continue;
+    try{
+      const svg=el.ownerSVGElement||(el.closest&&el.closest('svg'));
+      if(!svg||!svg.createSVGPoint) continue;
+      const p=svg.createSVGPoint(); p.x=pt[0]; p.y=pt[1];
+      if(el.isPointInFill(p)) return true;
+    }catch(e){}
+  }
+  return false;
+}
+// Centroid of `teamId`'s largest (by bbox area) owned iso — a guaranteed-safe
+// fallback flag position when a retreat point lands in compromised ground.
+function _largestIsoCentroid(teamId){
+  const st=GAME&&GAME.state&&GAME.state[teamId];
+  if(!st) return null;
+  let bestIso=null,bestArea=-1;
+  for(const iso of st.ownedIsos){
+    const el=isoPaths[iso];
+    if(!el) continue;
+    let area=0;
+    try{const bb=el.getBBox();area=bb.width*bb.height;}catch(e){}
+    if(area>bestArea){bestArea=area;bestIso=iso;}
+  }
+  return bestIso?isoCentroid(bestIso):null;
+}
+
 // Diagnostic helper — call `fcDebugRay()` in the browser console after a
 // confusing spin. Prints the hero/defender positions, the actual ray angle
 // (computed from the line between them), and Australia's specific state +
@@ -6466,6 +6502,25 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   // but the opponent (defender) gains it instead.
   if(GAME.conquestStack.length===0){
     gLog(`   ${hero.name} has nowhere to retreat. Try again from current position.`);
+    // Even with nowhere to retreat, guard the enclave trap: if the hero's
+    // current flag position sits inside the winning team's land, relocate
+    // to the hero's largest territory so spins aren't permanently funnelled
+    // back into the same opponent.
+    const stuckBadge=document.querySelector(`.fbadge[data-badge-id="${hero.id}"]`);
+    if(stuckBadge){
+      const cx=parseFloat(stuckBadge.getAttribute('data-cx'));
+      const cy=parseFloat(stuckBadge.getAttribute('data-cy'));
+      if(_pointInsideTeam([cx,cy], opp.id)){
+        const safe=_largestIsoCentroid(hero.id);
+        if(safe){
+          const k0=currentK(), s0=getScale(hero.id);
+          stuckBadge.setAttribute('data-cx',safe[0]);
+          stuckBadge.setAttribute('data-cy',safe[1]);
+          stuckBadge.setAttribute('transform',`translate(${safe[0]},${safe[1]}) scale(${effS(s0,k0)})`);
+          if(typeof movedFlags!=='undefined') movedFlags[hero.id]={cx:safe[0],cy:safe[1]};
+        }
+      }
+    }
     // Reset to ready-to-spin state with full UI cleanup
     GAME.defender=null;
     GAME.phase='picked-att';
@@ -6508,16 +6563,28 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   // original owner. The displaced team stays dead.
   // 
   // So we don't resurrect lastConquest.opponentId team.
-  // Move hero flag BACK to its previous position (before that conquest)
+  // Move hero flag BACK to its previous position (before that conquest).
   const heroBadge=document.querySelector(`.fbadge[data-badge-id="${hero.id}"]`);
   if(heroBadge){
-    heroBadge.setAttribute('data-cx',lastConquest.heroFromX);
-    heroBadge.setAttribute('data-cy',lastConquest.heroFromY);
+    let rx=lastConquest.heroFromX, ry=lastConquest.heroFromY;
+    // Enclave-trap guard: the stored retreat point can land geometrically
+    // inside the WINNING team's territory — e.g. the hero was standing on a
+    // small territory engulfed by the team that just beat them (San Marino
+    // inside Italy), or a concave-shape centroid falls outside its own
+    // polygon. If so, every subsequent ray-cast spin would hit that team no
+    // matter the direction. Detect it and fall back to the centroid of the
+    // hero's largest remaining territory.
+    if(_pointInsideTeam([rx,ry], opp.id)){
+      const safe=_largestIsoCentroid(hero.id);
+      if(safe){ rx=safe[0]; ry=safe[1]; }
+    }
+    heroBadge.setAttribute('data-cx',rx);
+    heroBadge.setAttribute('data-cy',ry);
     const k=currentK();
     const s=getScale(hero.id);
-    heroBadge.setAttribute('transform',`translate(${lastConquest.heroFromX},${lastConquest.heroFromY}) scale(${effS(s,k)})`);
+    heroBadge.setAttribute('transform',`translate(${rx},${ry}) scale(${effS(s,k)})`);
     if(typeof movedFlags!=='undefined'){
-      movedFlags[hero.id]={cx:lastConquest.heroFromX,cy:lastConquest.heroFromY};
+      movedFlags[hero.id]={cx:rx,cy:ry};
     }
   }
   updateHeroGlow();
