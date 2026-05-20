@@ -613,7 +613,14 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 }
 .g-over-sub{font-size:20px;color:#cfdaea;margin-bottom:30px;line-height:1.5;font-weight:500;}
 .g-over-sub b{color:#fff;}
-#g-over-dismiss{padding:14px 36px;font-size:14px;letter-spacing:1px;text-transform:uppercase;}
+/* Action row: New Game primary CTA + a quiet "view final map" dismiss. */
+.g-over-actions{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;}
+#g-over-newgame{padding:15px 40px;font-size:15px;letter-spacing:1px;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:9px;background:#c8102e;border:1px solid #c8102e;color:#fff;}
+#g-over-newgame:hover{background:#d92133;}
+#g-over-newgame:active{transform:translateY(1px);}
+#g-over-dismiss{padding:13px 26px;font-size:12px;letter-spacing:1px;text-transform:uppercase;opacity:.7;}
+#g-over-dismiss:hover{opacity:1;}
 
 
 /* Light-map theme: pale ocean + adjusted contrast.
@@ -1128,7 +1135,10 @@ body.web-build .g-result-card.revealed .g-sim-btn{
       <div class="g-over-card">
         <div class="g-over-title" id="g-over-title">GAME OVER</div>
         <div class="g-over-sub" id="g-over-sub"></div>
-        <button class="g-btn primary" id="g-over-dismiss">Continue</button>
+        <div class="g-over-actions">
+          <button class="g-btn primary" id="g-over-newgame"><span>🎲</span><span>New Game</span></button>
+          <button class="g-btn ghost" id="g-over-dismiss">View final map</button>
+        </div>
       </div>
     </div>
 
@@ -6900,6 +6910,12 @@ function initConquestUI(){
   wireResultModal();
   const dismissBtn=document.getElementById('g-over-dismiss');
   if(dismissBtn) dismissBtn.addEventListener('click',hideGameOverOverlay);
+  // New Game button inside the centered game-over overlay — primary CTA.
+  const overNewBtn=document.getElementById('g-over-newgame');
+  if(overNewBtn) overNewBtn.addEventListener('click',()=>{
+    hideGameOverOverlay();
+    if(typeof startNewGameFlow==='function') startNewGameFlow();
+  });
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){
       const ov=document.getElementById('g-over-overlay');
