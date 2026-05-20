@@ -53,11 +53,20 @@
     dict: {},
     onChange: [],
     // Look up a key in the active language; fall back to English, then the key.
-    t: function (key) {
+    // Optional `params` object interpolates {placeholders}: t('log.win',{hero:'X'})
+    // replaces every {hero} in the string with 'X'. Used by the simulator's
+    // dynamic event-log / modal strings.
+    t: function (key, params) {
       var d = this.dict[this.current] || {};
-      if (key in d && d[key] !== '') return d[key];
       var en = this.dict.en || {};
-      return (key in en) ? en[key] : key;
+      var str = (key in d && d[key] !== '') ? d[key]
+              : ((key in en) ? en[key] : key);
+      if (params) {
+        str = str.replace(/\{(\w+)\}/g, function (m, k) {
+          return (k in params) ? params[k] : m;
+        });
+      }
+      return str;
     },
     // Walk the DOM and replace every tagged element/attribute.
     apply: function () {
