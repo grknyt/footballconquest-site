@@ -1764,6 +1764,74 @@ const HINTS={
 
 const teams=NATIONS.map((n,i)=>({...n,id:i}));
 
+// ── Turkish display names ──────────────────────────────────────────
+// The English NATIONS `name` stays the internal identifier (it keys
+// FLAG_B64, FIFA_POINTS, TEAM_PLAYSTYLE, the leaderboard DB, save files).
+// COUNTRY_TR maps each identifier to its Turkish display name; only the
+// rendered label changes. teamDisplayName() returns the Turkish name when
+// the UI language is Turkish, otherwise the English identifier unchanged.
+const COUNTRY_TR={
+'Albania':'Arnavutluk','Andorra':'Andorra','Armenia':'Ermenistan','Austria':'Avusturya',
+'Azerbaijan':'Azerbaycan','Belarus':'Belarus','Belgium':'Belçika','Bosnia':'Bosna-Hersek',
+'Bulgaria':'Bulgaristan','Croatia':'Hırvatistan','Cyprus':'Kıbrıs','Czech Rep.':'Çekya',
+'Denmark':'Danimarka','England':'İngiltere','Estonia':'Estonya','Faroe Is.':'Faroe Ad.',
+'Finland':'Finlandiya','France':'Fransa','Georgia':'Gürcistan','Germany':'Almanya',
+'Gibraltar':'Cebelitarık','Greece':'Yunanistan','Hungary':'Macaristan','Iceland':'İzlanda',
+'Ireland':'İrlanda','Israel':'İsrail','Italy':'İtalya','Kazakhstan':'Kazakistan',
+'Kosovo':'Kosova','Latvia':'Letonya','Liechtenstein':'Lihtenştayn','Lithuania':'Litvanya',
+'Luxembourg':'Lüksemburg','Malta':'Malta','Moldova':'Moldova','Montenegro':'Karadağ',
+'N. Macedonia':'K. Makedonya','Netherlands':'Hollanda','N. Ireland':'K. İrlanda',
+'Norway':'Norveç','Poland':'Polonya','Portugal':'Portekiz','Romania':'Romanya',
+'Russia':'Rusya','San Marino':'San Marino','Scotland':'İskoçya','Serbia':'Sırbistan',
+'Slovakia':'Slovakya','Slovenia':'Slovenya','Spain':'İspanya','Sweden':'İsveç',
+'Switzerland':'İsviçre','Turkey':'Türkiye','Ukraine':'Ukrayna','Wales':'Galler',
+'Argentina':'Arjantin','Bolivia':'Bolivya','Brazil':'Brezilya','Chile':'Şili',
+'Colombia':'Kolombiya','Ecuador':'Ekvador','Paraguay':'Paraguay','Peru':'Peru',
+'Uruguay':'Uruguay','Venezuela':'Venezuela','Anguilla':'Anguilla','Antigua':'Antigua',
+'Aruba':'Aruba','Bahamas':'Bahamalar','Barbados':'Barbados','Belize':'Belize',
+'Bermuda':'Bermuda','British VI':'Britanya Virjin Ad.','Canada':'Kanada',
+'Cayman Is.':'Cayman Ad.','Costa Rica':'Kosta Rika','Cuba':'Küba','Curaçao':'Curaçao',
+'Dominica':'Dominika','Dominican Rep.':'Dominik Cum.','El Salvador':'El Salvador',
+'Grenada':'Grenada','Guatemala':'Guatemala','Guyana':'Guyana','Haiti':'Haiti',
+'Honduras':'Honduras','Jamaica':'Jamaika','Mexico':'Meksika','Montserrat':'Montserrat',
+'Nicaragua':'Nikaragua','Panama':'Panama','Puerto Rico':'Porto Riko','St. Kitts':'St. Kitts',
+'St. Lucia':'St. Lucia','St. Vincent':'St. Vincent','Suriname':'Surinam','Trinidad':'Trinidad',
+'Turks & Caicos':'Turks ve Caicos','US Virgin Is.':'ABD Virjin Ad.','USA':'ABD',
+'Algeria':'Cezayir','Angola':'Angola','Benin':'Benin','Botswana':'Botsvana',
+'Burkina Faso':'Burkina Faso','Burundi':'Burundi','Cabo Verde':'Cabo Verde',
+'Cameroon':'Kamerun','CAR':'Orta Afrika Cum.','Chad':'Çad','Comoros':'Komorlar',
+'Congo':'Kongo','DR Congo':'DK Kongo','Djibouti':'Cibuti','Egypt':'Mısır',
+'Eq. Guinea':'Ekv. Ginesi','Eritrea':'Eritre','Ethiopia':'Etiyopya','Gabon':'Gabon',
+'Gambia':'Gambiya','Ghana':'Gana','Guinea':'Gine','Guinea-Bissau':'Gine-Bissau',
+'Ivory Coast':'Fildişi Sahili','Kenya':'Kenya','Lesotho':'Lesotho','Liberia':'Liberya',
+'Libya':'Libya','Madagascar':'Madagaskar','Malawi':'Malavi','Mali':'Mali',
+'Mauritania':'Moritanya','Mauritius':'Mauritius','Morocco':'Fas','Mozambique':'Mozambik',
+'Namibia':'Namibya','Niger':'Nijer','Nigeria':'Nijerya','Rwanda':'Ruanda',
+'São Tomé':'São Tomé','Senegal':'Senegal','Seychelles':'Seyşeller','Sierra Leone':'Sierra Leone',
+'Somalia':'Somali','South Africa':'Güney Afrika','South Sudan':'Güney Sudan','Sudan':'Sudan',
+'Eswatini':'Esvatini','Tanzania':'Tanzanya','Togo':'Togo','Tunisia':'Tunus',
+'Uganda':'Uganda','Zambia':'Zambiya','Zimbabwe':'Zimbabve','Afghanistan':'Afganistan',
+'Australia':'Avustralya','Bahrain':'Bahreyn','Bangladesh':'Bangladeş','Bhutan':'Butan',
+'Brunei':'Brunei','Cambodia':'Kamboçya','China':'Çin','Chinese Taipei':'Çin Taipeisi',
+'Guam':'Guam','Hong Kong':'Hong Kong','India':'Hindistan','Indonesia':'Endonezya',
+'Iran':'İran','Iraq':'Irak','Japan':'Japonya','Jordan':'Ürdün','Kuwait':'Kuveyt',
+'Kyrgyzstan':'Kırgızistan','Laos':'Laos','Lebanon':'Lübnan','Macau':'Makao',
+'Malaysia':'Malezya','Maldives':'Maldivler','Mongolia':'Moğolistan','Myanmar':'Myanmar',
+'Nepal':'Nepal','NMI':'K. Mariana Ad.','North Korea':'Kuzey Kore','Oman':'Umman',
+'Pakistan':'Pakistan','Palestine':'Filistin','Philippines':'Filipinler','Qatar':'Katar',
+'Saudi Arabia':'Suudi Arabistan','Singapore':'Singapur','S. Korea':'G. Kore',
+'Sri Lanka':'Sri Lanka','Syria':'Suriye','Tajikistan':'Tacikistan','Thailand':'Tayland',
+'Timor-Leste':'Doğu Timor','Turkmenistan':'Türkmenistan','UAE':'BAE','Uzbekistan':'Özbekistan',
+'Vietnam':'Vietnam','Yemen':'Yemen','American Samoa':'Amerikan Samoası','Cook Islands':'Cook Ad.',
+'Fiji':'Fiji','New Caledonia':'Yeni Kaledonya','New Zealand':'Yeni Zelanda',
+'Papua New Guinea':'Papua Yeni Gine','Samoa':'Samoa','Solomon Is.':'Solomon Ad.',
+'Tahiti':'Tahiti','Tonga':'Tonga','Vanuatu':'Vanuatu'
+};
+function teamDisplayName(name){
+  if(window.FCLang && FCLang.current==='tr' && COUNTRY_TR[name]) return COUNTRY_TR[name];
+  return name||'';
+}
+
 // FIFA Men's World Ranking points (April 2026)
 // Source: inside.fifa.com, April 2026 update.
 // Top 40 are exact; teams below use an approximation curve based on rank position.
@@ -2154,7 +2222,7 @@ function setSlotStars(elId, team){
     html+='<span class="g-star '+cls+'">★</span>';
   }
   el.innerHTML=html;
-  el.title=team.name+' · '+r.toFixed(1)+'★ · '+Math.round(fifaRating(team.name))+' FIFA pts';
+  el.title=teamDisplayName(team.name)+' · '+r.toFixed(1)+'★ · '+Math.round(fifaRating(team.name))+' FIFA pts';
 }
 
 let mode='view',worldTopo,proj,pg,zoomBeh,svgSel;
@@ -2752,7 +2820,7 @@ function refreshLabels(k){
     text.setAttribute('stroke','rgba(0,0,0,0.7)');
     text.setAttribute('stroke-width','3');
     text.setAttribute('paint-order','stroke');
-    text.textContent=team.name;
+    text.textContent=teamDisplayName(team.name);
     wrap.appendChild(text);
     layer.appendChild(wrap);
   });
@@ -3062,7 +3130,7 @@ function onPaintDown(ev){
   const iso=isoAtClient(ev.clientX,ev.clientY);if(!iso)return;
   if(!paintColor){
     const el=document.querySelector(`.cp[data-iso="${iso}"]`);
-    if(el){const t=teams.find(x=>String(x.iso)===iso);setPaintColor(el.getAttribute('fill'),t?t.name:iso);}
+    if(el){const t=teams.find(x=>String(x.iso)===iso);setPaintColor(el.getAttribute('fill'),t?teamDisplayName(t.name):iso);}
   } else paintIso(iso,paintColor);
 }
 function onPaintMove(ev){
@@ -3651,24 +3719,24 @@ function describeOp(op){
   switch(op.type){
     case 'erase':{
       const [a,b]=op.pair.split('|');
-      return{icon:'✂️',text:`Erased border: ${teamNameByIso(a)} – ${teamNameByIso(b)}`};
+      return{icon:'✂️',text:`Erased border: ${teamDisplayName(teamNameByIso(a))} – ${teamDisplayName(teamNameByIso(b))}`};
     }
     case 'paint':
-      return{icon:'🎨',text:`Painted ${teamNameByIso(op.iso)}`};
+      return{icon:'🎨',text:`Painted ${teamDisplayName(teamNameByIso(op.iso))}`};
     case 'hide':
-      return{icon:'👁',text:`Hid ${teamNameById(op.id)}`};
+      return{icon:'👁',text:`Hid ${teamDisplayName(teamNameById(op.id))}`};
     case 'show':
-      return{icon:'👁',text:`Showed ${teamNameById(op.id)}`};
+      return{icon:'👁',text:`Showed ${teamDisplayName(teamNameById(op.id))}`};
     case 'move':
-      return{icon:'↔️',text:`Moved ${teamNameById(op.id)}`};
+      return{icon:'↔️',text:`Moved ${teamDisplayName(teamNameById(op.id))}`};
     case 'resize':
-      return{icon:'⤡',text:`Resized ${teamNameById(op.id)}`};
+      return{icon:'⤡',text:`Resized ${teamDisplayName(teamNameById(op.id))}`};
     case 'delete':
-      return{icon:'🗑',text:`Deleted ${teamNameById(op.id)}`};
+      return{icon:'🗑',text:`Deleted ${teamDisplayName(teamNameById(op.id))}`};
     case 'reset':
       return{icon:'⟳',text:'Reset all / Loaded save'};
     case 'battle':
-      return{icon:'⚔️',text:`${op.attName} defeated ${op.defName}`};
+      return{icon:'⚔️',text:`${teamDisplayName(op.attName)} defeated ${teamDisplayName(op.defName)}`};
     default:
       return{icon:'•',text:op.type};
   }
@@ -3882,8 +3950,8 @@ function gStats(){
 }
 function gSlots(){
   const a=GAME.attacker,d=GAME.defender;
-  document.getElementById('g-attacker').textContent=a?a.name:'—';
-  document.getElementById('g-defender').textContent=d?d.name:'—';
+  document.getElementById('g-attacker').textContent=a?teamDisplayName(a.name):'—';
+  document.getElementById('g-defender').textContent=d?teamDisplayName(d.name):'—';
   const afEl=document.getElementById('g-attacker-flag');
   const dfEl=document.getElementById('g-defender-flag');
   if(afEl){
@@ -4057,14 +4125,14 @@ function gameSpinTeam(){
   const totalTicks=18+Math.floor(Math.random()*8);
   const iv=setInterval(()=>{
     const rand=alive[Math.floor(Math.random()*alive.length)];
-    document.getElementById('g-attacker').textContent=rand.name;
+    document.getElementById('g-attacker').textContent=teamDisplayName(rand.name);
     ticks++;
     if(ticks>=totalTicks){
       clearInterval(iv);
       GAME.attacker=picked;
       GAME.phase='picked-att';
-      document.getElementById('g-attacker').textContent=picked.name;
-      gLog(FCLang.t('sim.log.willattack',{name:picked.name}));
+      document.getElementById('g-attacker').textContent=teamDisplayName(picked.name);
+      gLog(FCLang.t('sim.log.willattack',{name:teamDisplayName(picked.name)}));
       highlightAttacker();
       gameRender();
       // Pan to the attacker
@@ -4182,7 +4250,7 @@ function gameSpinArrow(){
   const targetAngleRad=Math.random()*2*Math.PI;
   const pick=pickDefender(attC,targetAngleRad);
   if(!pick){
-    gLog(FCLang.t('sim.log.noattack',{name:GAME.attacker.name}));
+    gLog(FCLang.t('sim.log.noattack',{name:teamDisplayName(GAME.attacker.name)}));
     GAME.phase='idle';GAME.turn++;
     window._fcSpinning=false;
     gameRender();
@@ -4294,7 +4362,7 @@ function gameSpinArrow(){
       GAME.defenderIso=pick.defIso||null;
       GAME.phase='picked-def';
       window._fcSpinning=false;
-      gLog(FCLang.t('sim.log.arrowpoints',{name:defender.name}));
+      gLog(FCLang.t('sim.log.arrowpoints',{name:teamDisplayName(defender.name)}));
       highlightDefender(defC);
       drawAttackLine(attC,defC);
       gameRender();
@@ -5073,12 +5141,12 @@ function gameResolve(){
     else{defSlot.classList.add('winner');attSlot.classList.add('loser');}
   }
   // Include a quick rating summary for viewer context
-  const ratingLine=`<span style="color:#7a9bb5;font-size:10px">FIFA: ${att.name} ${Math.round(attFifa)} vs ${def.name} ${Math.round(defFifa)}</span>`;
-  gLog(FCLang.t('sim.log.impresult',{att:att.name, score:scoreStr+suffix, def:def.name,
-    winner:'<b style="color:'+(attWon?'#6dd86d':'#ff8a8a')+'">'+winner.name+'</b>'})+'<br>'+ratingLine);
+  const ratingLine=`<span style="color:#7a9bb5;font-size:10px">FIFA: ${teamDisplayName(att.name)} ${Math.round(attFifa)} vs ${teamDisplayName(def.name)} ${Math.round(defFifa)}</span>`;
+  gLog(FCLang.t('sim.log.impresult',{att:teamDisplayName(att.name), score:scoreStr+suffix, def:teamDisplayName(def.name),
+    winner:'<b style="color:'+(attWon?'#6dd86d':'#ff8a8a')+'">'+teamDisplayName(winner.name)+'</b>'})+'<br>'+ratingLine);
   if(Object.values(GAME.state).filter(t=>t.alive).length===1){
     const champ=Object.values(GAME.state).find(t=>t.alive);
-    gLog(FCLang.t('sim.log.champ',{champ:champ.name}));
+    gLog(FCLang.t('sim.log.champ',{champ:teamDisplayName(champ.name)}));
   }
   // Add to undo stack as a single "battle" op
   undoStack.push({type:'battle',
@@ -5341,12 +5409,12 @@ function renderTeamList(filter){
   const list=document.getElementById('g-team-list');
   if(!list)return;
   const f=(filter||'').toLowerCase().trim();
-  const matched=teams.filter(t=>!f||t.name.toLowerCase().includes(f));
+  const matched=teams.filter(t=>!f||t.name.toLowerCase().includes(f)||teamDisplayName(t.name).toLowerCase().includes(f));
   list.innerHTML=matched.map(t=>{
     const flagBg=FLAG_B64[t.name]?`background-image:url(data:image/png;base64,${FLAG_B64[t.name]})`:'';
     return `<div class="g-team-item${_selectedConquestTeamId===t.id?' selected':''}" data-team-id="${t.id}">
       <div class="g-team-flag" style="${flagBg}"></div>
-      <div>${t.name}</div>
+      <div>${teamDisplayName(t.name)}</div>
     </div>`;
   }).join('');
   list.querySelectorAll('.g-team-item').forEach(el=>{
@@ -5443,7 +5511,7 @@ function startGameInMode(mode,heroId){
   const title=document.getElementById('g-mode-title');
   if(title){
     title.textContent=mode==='conquest'
-      ? FCLang.t('sim.gp.title.wc',{team:teams.find(t=>t.id===heroId).name})
+      ? FCLang.t('sim.gp.title.wc',{team:teamDisplayName(teams.find(t=>t.id===heroId).name)})
       : FCLang.t('sim.gp.title.imp');
   }
   if(mode==='conquest'){
@@ -5461,7 +5529,7 @@ function startGameInMode(mode,heroId){
     if(c) panTo([c[0],c[1]],Math.max(6,currentK()));
     updateHeroGlow();
     refreshConquestHud();
-    gLog(FCLang.t('sim.log.wcstarted',{hero:GAME.attacker.name}));
+    gLog(FCLang.t('sim.log.wcstarted',{hero:teamDisplayName(GAME.attacker.name)}));
     gLog(FCLang.t('sim.log.spinfind'));
   }
 }
@@ -5647,10 +5715,10 @@ function renderLeaderboard(){
     const gdStr=(gd>0?'+':'')+gd;
     const resultLabel=e.result==='victory'?FCLang.t('sim.lb.victory'):FCLang.t('sim.lb.eliminated');
     const elimRow=e.result==='eliminated'&&e.eliminatedBy
-      ?`<div class="g-lb-elim">${FCLang.t('sim.lb.by',{name:e.eliminatedBy})}</div>`:'';
+      ?`<div class="g-lb-elim">${FCLang.t('sim.lb.by',{name:escapeHtml(teamDisplayName(e.eliminatedBy))})}</div>`:'';
     return `<tr>
       <td><span class="${flagCls}" style="${flagBg}"></span></td>
-      <td><div class="g-lb-country">${e.heroName}</div>${elimRow}</td>
+      <td><div class="g-lb-country">${escapeHtml(teamDisplayName(e.heroName))}</div>${elimRow}</td>
       <td><span class="g-lb-result ${e.result}">${resultLabel}</span></td>
       <td class="g-lb-num"><b>${e.wins}</b>–<b>${e.losses}</b></td>
       <td class="g-lb-num"><b>${e.gf}</b>–<b>${e.ga}</b> <span class="${gdCls}">(${gdStr})</span></td>
@@ -5755,14 +5823,14 @@ async function renderGlobalLeaderboard(){
     const gdCls=gd>0?'g-lb-gd-pos':(gd<0?'g-lb-gd-neg':'');
     const gdStr=(gd>0?'+':'')+gd;
     const resLabel=r.result==='victory'?FCLang.t('sim.lb.victory'):FCLang.t('sim.lb.eliminated');
-    const elim=r.result==='eliminated'&&r.eliminated_by?`<div class="g-lb-elim">${FCLang.t('sim.lb.by',{name:escapeHtml(r.eliminated_by)})}</div>`:'';
+    const elim=r.result==='eliminated'&&r.eliminated_by?`<div class="g-lb-elim">${FCLang.t('sim.lb.by',{name:escapeHtml(teamDisplayName(r.eliminated_by))})}</div>`:'';
     const isYou=myName && r.username===myName;
     const userCls=isYou?'g-lb-username you':'g-lb-username';
     return `<tr>
       <td class="g-lb-rank ${rankCls}">${rank}</td>
       <td><span class="${flagCls}" style="${flagBg}"></span></td>
       <td>
-        <div class="g-lb-country">${escapeHtml(r.hero_name)}</div>
+        <div class="g-lb-country">${escapeHtml(teamDisplayName(r.hero_name))}</div>
         <div class="${userCls}">${escapeHtml(r.username)}${isYou?' '+FCLang.t('sim.lb.you'):''}</div>
         ${elim}
       </td>
@@ -5855,8 +5923,8 @@ function openResultModal(){
   const modal=document.getElementById('g-result-modal');
   if(!modal)return;
   const hero=GAME.attacker, opp=GAME.defender;
-  document.getElementById('g-result-hero').textContent=hero.name;
-  document.getElementById('g-result-opp').textContent=opp.name;
+  document.getElementById('g-result-hero').textContent=teamDisplayName(hero.name);
+  document.getElementById('g-result-opp').textContent=teamDisplayName(opp.name);
   // Paint each side's flag from the FLAG_B64 base64 table. Falls back to the
   // dashed-border .empty state if the team has no flag asset (shouldn't happen
   // for the 212 NATIONS but guarded for safety).
@@ -6056,7 +6124,11 @@ function updateResultPreview(){
   const oppStyleEl=document.getElementById('g-result-opp-style');
   // Render the playstyle chip for a slot. Icons match the tactic-button row.
   const styleIcon={defensive:'🛡️',balanced:'⚖️',attacking:'⚔️'};
-  const styleLabel={defensive:'Defensive',balanced:'Balanced',attacking:'Attacking'};
+  const styleLabel={
+    get defensive(){return FCLang.t('sim.style.defensive');},
+    get balanced(){return FCLang.t('sim.style.balanced');},
+    get attacking(){return FCLang.t('sim.style.attacking');}
+  };
   const m=computeMatchModel();
   if(!m){
     if(pctEl){pctEl.textContent='—';pctEl.className='g-result-prob-value';}
@@ -6348,8 +6420,8 @@ function resolveConquestBattle(won){
 
 function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   // Log
-  gLog(FCLang.t('sim.log.win',{hero:hero.name, score:heroScore+'–'+oppScore+suffix, opp:opp.name,
-    winner:'<b style="color:#6dd86d">'+hero.name+'</b>'}));
+  gLog(FCLang.t('sim.log.win',{hero:teamDisplayName(hero.name), score:heroScore+'–'+oppScore+suffix, opp:teamDisplayName(opp.name),
+    winner:'<b style="color:#6dd86d">'+teamDisplayName(hero.name)+'</b>'}));
   // Snapshot opponent's previous color (for retreat)
   const opponentIsoList=[...GAME.state[opp.id].ownedIsos];
   const prevColors={};
@@ -6488,7 +6560,7 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   // Check for total victory
   const remaining=Object.values(GAME.state).filter(t=>t.alive&&t.id!==hero.id).length;
   if(remaining===0){
-    gLog(FCLang.t('sim.log.heroconquered',{hero:hero.name}));
+    gLog(FCLang.t('sim.log.heroconquered',{hero:teamDisplayName(hero.name)}));
     showGameOverOverlay({victory:true,hero:hero.name,turns:GAME.turn});
     GAME.phase='idle';
     // Persist this run to the Hall of Fame so the player can revisit it later.
@@ -6529,14 +6601,14 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   const heroBadgeNow=document.querySelector(`.fbadge[data-badge-id="${hero.id}"]`);
   const fromX=heroBadgeNow?parseFloat(heroBadgeNow.getAttribute('data-cx')):0;
   const fromY=heroBadgeNow?parseFloat(heroBadgeNow.getAttribute('data-cy')):0;
-  gLog(FCLang.t('sim.log.loss',{hero:hero.name, score:heroScore+'–'+oppScore+suffix, opp:opp.name,
-    winner:'<b style="color:#ff8a8a">'+opp.name+'</b>'}));
+  gLog(FCLang.t('sim.log.loss',{hero:teamDisplayName(hero.name), score:heroScore+'–'+oppScore+suffix, opp:teamDisplayName(opp.name),
+    winner:'<b style="color:#ff8a8a">'+teamDisplayName(opp.name)+'</b>'}));
   // Increment loss count against this opponent
   GAME.lossCounts[opp.id]=(GAME.lossCounts[opp.id]||0)+1;
   const losses=GAME.lossCounts[opp.id];
-  gLog('   '+FCLang.t('sim.log.lossesto',{opp:opp.name,n:losses}));
+  gLog('   '+FCLang.t('sim.log.lossesto',{opp:teamDisplayName(opp.name),n:losses}));
   if(losses>=3){
-    gLog(FCLang.t('sim.log.gameover',{opp:opp.name,hero:hero.name}));
+    gLog(FCLang.t('sim.log.gameover',{opp:teamDisplayName(opp.name),hero:teamDisplayName(hero.name)}));
     refreshConquestHud({lastResult:{type:'loss',hero:hero.name,opp:opp.name,score:`${heroScore}–${oppScore}`,gameOver:true}});
     showGameOverOverlay({victory:false,hero:hero.name,opp:opp.name,score:`${heroScore}–${oppScore}`});
     // Persist this run to the Hall of Fame before flipping GAME.active off,
@@ -6550,7 +6622,7 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   // Retreat: pop the most recent conquest. That country becomes independent again,
   // but the opponent (defender) gains it instead.
   if(GAME.conquestStack.length===0){
-    gLog('   '+FCLang.t('sim.log.noretreat',{hero:hero.name}));
+    gLog('   '+FCLang.t('sim.log.noretreat',{hero:teamDisplayName(hero.name)}));
     // Even with nowhere to retreat, guard the enclave trap: if the hero's
     // current flag position sits inside the winning team's land, relocate
     // to the hero's largest territory so spins aren't permanently funnelled
@@ -6648,7 +6720,7 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
     lastWin.querySelectorAll('path').forEach(p=>p.setAttribute('stroke','rgba(255,90,90,0.55)'));
     lastWin.querySelectorAll('polygon').forEach(p=>p.setAttribute('fill','rgba(255,90,90,0.75)'));
   }
-  gLog(FCLang.t('sim.log.retreated',{hero:hero.name}));
+  gLog(FCLang.t('sim.log.retreated',{hero:teamDisplayName(hero.name)}));
   // Reset for next spin
   GAME.defender=null;
   GAME.phase='picked-att';
@@ -6777,7 +6849,7 @@ function undoConquestWin(op){
   gameRender();
   panTo([op.heroFromX,op.heroFromY],Math.max(6,currentK()));
   refreshConquestHud();
-  gLog(FCLang.t('sim.log.undoconquest',{name:op.oppName}));
+  gLog(FCLang.t('sim.log.undoconquest',{name:teamDisplayName(op.oppName)}));
 }
 
 function undoConquestLoss(op){
@@ -6849,7 +6921,7 @@ function undoConquestLoss(op){
   gameRender();
   panTo([op.heroPosBefore[0],op.heroPosBefore[1]],Math.max(6,currentK()));
   refreshConquestHud();
-  gLog(FCLang.t('sim.log.undoloss',{name:op.oppName}));
+  gLog(FCLang.t('sim.log.undoloss',{name:teamDisplayName(op.oppName)}));
 }
 
 
@@ -6863,11 +6935,11 @@ function showGameOverOverlay(opts){
   if(opts.victory){
     title.classList.add('victory');
     title.textContent=FCLang.t('sim.over.victory');
-    sub.innerHTML=FCLang.t('sim.over.conquered',{hero:opts.hero})+
+    sub.innerHTML=FCLang.t('sim.over.conquered',{hero:teamDisplayName(opts.hero)})+
       '<br><span style="color:#7a9bb5;font-size:14px">'+FCLang.t('sim.over.afterturns',{turns:opts.turns})+'</span>';
   } else {
     title.textContent=FCLang.t('sim.over.gameover');
-    sub.innerHTML=FCLang.t('sim.over.eliminated',{opp:opts.opp,hero:opts.hero})+
+    sub.innerHTML=FCLang.t('sim.over.eliminated',{opp:teamDisplayName(opts.opp),hero:teamDisplayName(opts.hero)})+
       '<br><span style="color:#7a9bb5;font-size:14px">'+FCLang.t('sim.over.3losses',{score:opts.score})+'</span>';
   }
   overlay.classList.add('open');
@@ -6940,7 +7012,7 @@ function updateConquestHud(state){
       conquestLossEl.classList.remove('warn','danger');
       if(state.lossCount===1) conquestLossEl.classList.add('warn');
       if(state.lossCount>=2) conquestLossEl.classList.add('danger');
-      conquestLossEl.innerHTML=FCLang.t('sim.hud.losses',{opp:state.lossOpponent,n:state.lossCount});
+      conquestLossEl.innerHTML=FCLang.t('sim.hud.losses',{opp:teamDisplayName(state.lossOpponent),n:state.lossCount});
     } else {
       conquestLossEl.style.display='none';
     }
@@ -7171,6 +7243,28 @@ if(document.readyState==='loading'){
   const cb=document.getElementById('set-lightMap');
   if(cb) cb.addEventListener('change',updateBtn);
 })();
+
+// Re-render country-name-bearing UI when the language toggles, so every
+// visible team name flips between English and Turkish without a reload.
+if(window.FCLang){
+  FCLang.onChange.push(function(){
+    try{ if(typeof refreshLabels==='function'&&typeof currentK==='function'){refreshLabels(currentK());scaleBadges(currentK());} }catch(e){}
+    try{ if(typeof gSlots==='function') gSlots(); }catch(e){}
+    try{ if(typeof renderHistory==='function') renderHistory(); }catch(e){}
+    try{ if(typeof refreshConquestHud==='function') refreshConquestHud(); }catch(e){}
+    try{
+      const si=document.getElementById('g-team-search');
+      if(typeof renderTeamList==='function'&&si) renderTeamList(si.value);
+    }catch(e){}
+    try{
+      const lbModal=document.getElementById('g-leaderboard-modal');
+      if(lbModal&&lbModal.classList.contains('open')){
+        if(_fcLbTab==='global'){ if(typeof renderGlobalLeaderboard==='function') renderGlobalLeaderboard(); }
+        else if(typeof renderLeaderboard==='function') renderLeaderboard();
+      }
+    }catch(e){}
+  });
+}
 
 // Settings popover wiring
 (function(){
