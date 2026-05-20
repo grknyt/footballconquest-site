@@ -488,14 +488,23 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-result-xg-row{font-size:12px;color:#7a9bb5;text-align:center;margin-bottom:12px;letter-spacing:.3px;}
 .g-result-xg-row b{color:#fff;font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;}
 .g-result-xg-dash{margin:0 6px;color:#4a6580;}
-/* Momentum + streak row. Sits below xG, above the tactic selector. Hidden
-   when momentum bonus is 0. Gold for momentum, red for hot streak. */
-.g-result-momentum-row{display:flex;justify-content:center;align-items:center;gap:14px;
+/* Strength row. Sits below xG, above the tactic selector. Two boost chips:
+   Territory (land held) + Momentum (form/streak). Hidden when both are 0. */
+.g-result-momentum-row{display:flex;justify-content:center;align-items:center;gap:10px;
   font-size:11px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;
-  font-weight:600;margin-bottom:12px;}
+  font-weight:600;margin-bottom:12px;flex-wrap:wrap;}
 .g-result-momentum-label{color:#7a9bb5;}
 .g-result-momentum-value{color:#d4a936;font-size:14px;font-weight:700;
   font-variant-numeric:tabular-nums;letter-spacing:0;text-transform:none;}
+/* Boost chips — pill per strength source. Territory = teal, Momentum = gold. */
+.g-result-boost-chip{display:inline-flex;align-items:center;gap:6px;
+  padding:3px 10px;border-radius:11px;background:rgba(122,184,232,.08);
+  border:1px solid rgba(122,184,232,.22);}
+.g-result-boost-label{font-size:10px;color:#7a9bb5;letter-spacing:.5px;}
+.g-result-boost-value{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;
+  letter-spacing:0;text-transform:none;}
+#g-result-territory-chip .g-result-boost-value{color:#5fd6c8;}
+#g-result-momentum-chip  .g-result-boost-value{color:#d4a936;}
 .g-result-streak{color:#ff8a8a;font-weight:700;font-size:11px;
   letter-spacing:.4px;text-transform:none;
   padding:2px 8px;background:rgba(255,138,138,.12);border-radius:10px;
@@ -847,10 +856,13 @@ body.web-build .g-result-finish-tag.shown{display:block;
 .g-result-momentum-impact.down{color:#ff8a8a;}
 body.web-build .g-result-momentum-impact.shown{display:block;
   animation:g-reveal-pop-soft .42s ease-out .18s both;}
-/* OVR line is the secondary indicator — smaller, slightly dimmer, lands
-   ~250ms after the momentum line so the player reads cause → effect. */
+/* Staggered entry — territory, then momentum, then OVR — so the player
+   reads the consequence chain cause → cause → net effect. */
+body.web-build #g-result-territory-delta.shown{animation-delay:.18s;}
+body.web-build #g-result-momentum-delta.shown {animation-delay:.40s;}
+body.web-build #g-result-ovr-delta.shown      {animation-delay:.62s;}
+/* OVR line is the net-effect summary — smaller, slightly dimmer. */
 .g-result-ovr-impact{font-size:12px;font-weight:600;opacity:.88;margin-top:3px;}
-body.web-build .g-result-ovr-impact.shown{animation-delay:.42s;}
 @keyframes g-reveal-pop{
   0%   {opacity:0;transform:scale(.4);}
   60%  {opacity:1;transform:scale(1.15);}
@@ -1071,10 +1083,10 @@ body.web-build .g-result-card.revealed .g-sim-btn{
             <!-- Finish tag (AET / on Penalties X-Y) — only shown when the
                  simulated match actually went past regulation. -->
             <div class="g-result-finish-tag" id="g-result-finish-tag"></div>
-            <!-- Two-line impact preview: momentum bonus delta first, then
-                 OVR delta if it also moved. Each line is independently
-                 shown/hidden so a result that only changes momentum (no
-                 rounded OVR step) still gets visual feedback. -->
+            <!-- Impact preview: territory delta, momentum delta, then the
+                 net OVR delta. Each line shown only if its value moved, so a
+                 result that touches just one source still reads cleanly. -->
+            <div class="g-result-momentum-impact" id="g-result-territory-delta"></div>
             <div class="g-result-momentum-impact" id="g-result-momentum-delta"></div>
             <div class="g-result-momentum-impact g-result-ovr-impact" id="g-result-ovr-delta"></div>
           </div>
@@ -1095,11 +1107,18 @@ body.web-build .g-result-card.revealed .g-sim-btn{
           <div class="g-result-xg-row">
             Expected goals: <b id="g-result-xg-hero">—</b> <span class="g-result-xg-dash">–</span> <b id="g-result-xg-opp">—</b>
           </div>
-          <!-- Momentum row: shows the territory + streak bonus the hero is
-               currently carrying. Hidden when bonus is 0 (start of game). -->
+          <!-- Strength row: the hero's two stacking boosts — TERRITORY (land
+               held) and MOMENTUM (form / streak). Each chip is hidden when
+               its value is 0. Whole row hidden when both are 0 (game start). -->
           <div class="g-result-momentum-row" id="g-result-momentum-row" style="display:none;">
-            <span class="g-result-momentum-label">Momentum</span>
-            <span class="g-result-momentum-value" id="g-result-momentum-value">+0</span>
+            <span class="g-result-boost-chip" id="g-result-territory-chip">
+              <span class="g-result-boost-label">🗺️ Territory</span>
+              <span class="g-result-boost-value" id="g-result-territory-value">+0</span>
+            </span>
+            <span class="g-result-boost-chip" id="g-result-momentum-chip">
+              <span class="g-result-boost-label">🔥 Momentum</span>
+              <span class="g-result-boost-value" id="g-result-momentum-value">+0</span>
+            </span>
             <span class="g-result-streak" id="g-result-streak" style="display:none;">🔥 <span id="g-result-streak-n">0</span>-win streak</span>
           </div>
           <div class="g-result-tactics">
@@ -1935,32 +1954,55 @@ function computeLossFraction(hero, opp, heroScore, oppScore, prevStreak){
   const marginMult = 1.0 + Math.min(0.9, Math.max(0, lossMargin - 1) * 0.15);
   return Math.min(0.75, baseFraction * gapMult * marginMult);
 }
+// Per-team strength-bonus CEILING — the asymptote the hero's bonus approaches.
+// Minnows get a high ceiling (room to grow into competitiveness); top teams
+// get a low one (already strong, shouldn't snowball into "unbeatable").
+//   San Marino (635) → ~900   Andorra (945) → ~624   Iceland (1385) → ~326
+//   Türkiye (1599) → ~165     Italy (1700) → ~200     France (1877) → ~94
+function getHeroBonusCeiling(baseFifa){
+  if(baseFifa < 1000)      return 900 - (baseFifa - 600) * 0.8;
+  else if(baseFifa < 1500) return 580 - (baseFifa - 1000) * 0.66;
+  else if(baseFifa < 1700) return 200 - (baseFifa - 1500) * 0.35;
+  else                     return Math.max(80, 200 - (baseFifa - 1700) * 0.6);
+}
+// ── Strength bonus, split into two independent halves ────────────────────
+// The hero's total OVR boost is TERRITORIAL + MOMENTUM. They're kept separate
+// so the player feels two distinct stories: "we hold all this land" and
+// "we're on a hot streak." A loss hits BOTH — you retreat (territory drops)
+// and your streak resets + progress is cut (momentum drops).
+//
+// TERRITORIAL boost — scales with how many territories the hero has conquered
+// beyond their home turf. Pure function of the live map state, so a
+// retreat-on-loss automatically lowers it. Gets ~65% of the team's ceiling.
+// `ownedOverride` lets the Match Result modal preview the boost for a
+// hypothetical post-match iso count without mutating the real map state.
+function getHeroTerritorialBonus(hero, ownedOverride){
+  if(!hero || !GAME || GAME.mode!=='conquest') return 0;
+  const st=GAME.state[hero.id];
+  if(!st) return 0;
+  const owned=(ownedOverride!=null)?ownedOverride:(st.ownedIsos.size||0);
+  const home =(GAME.heroHomeIsoCount!=null)?GAME.heroHomeIsoCount:owned;
+  const conquered=Math.max(0, owned - home);
+  const ceiling=getHeroBonusCeiling(fifaRating(hero.name))*0.65;
+  // Saturating curve — each new territory adds a little less than the last.
+  return Math.round(ceiling * (1 - Math.exp(-conquered / 40)));
+}
+// MOMENTUM boost — scales with recent FORM: the weighted win-progress
+// accumulator (cut fractionally on every loss) plus the consecutive-win
+// streak. Drops fast after a bad result. Gets ~45% of the ceiling.
 function getHeroMomentumBonus(hero){
   if(!hero || !GAME || GAME.mode!=='conquest') return 0;
-  const baseFifa=fifaRating(hero.name);
   const progress=GAME.momentumProgress||0;
   const streak=GAME.winStreak||0;
-  // Per-team CEILING — the asymptote the bonus approaches as you keep
-  // winning. Minnows get a high ceiling (they have room to grow into
-  // competitiveness); top teams get a low ceiling (they're already strong
-  // and shouldn't snowball into "literally unbeatable"). Anchors:
-  //   San Marino (635)  → ~900 ceiling (climbs to ~OVR 80 at endgame)
-  //   Andorra (945)     → ~624
-  //   Iceland (1385)    → ~326
-  //   Türkiye (1599)    → ~165  ← was hitting OVR 96 and going +982 before
-  //   Italy (1700)      → ~200
-  //   France (1877)     → ~94   (top team, already maxed at OVR 94)
-  let ceiling;
-  if(baseFifa < 1000)      ceiling = 900 - (baseFifa - 600) * 0.8;
-  else if(baseFifa < 1500) ceiling = 580 - (baseFifa - 1000) * 0.66;
-  else if(baseFifa < 1700) ceiling = 200 - (baseFifa - 1500) * 0.35;
-  else                     ceiling = Math.max(80, 200 - (baseFifa - 1700) * 0.6);
-  // Exponential saturation: approaches ceiling, never exceeds it. ~95% of
-  // ceiling reached by progress=75 (about 60-90 wins depending on opp mix).
-  const territoryRaw = ceiling * (1 - Math.exp(-progress / 25));
-  // Streak still rewards hot runs but doesn't dominate the math.
-  const streakBonus = Math.min(Math.max(0, streak-3) * 4, 30);
-  return Math.round(territoryRaw + streakBonus);
+  const ceiling=getHeroBonusCeiling(fifaRating(hero.name))*0.45;
+  const formRaw=ceiling * (1 - Math.exp(-progress / 20));
+  const streakBonus=Math.min(Math.max(0, streak-3) * 3, 24);
+  return Math.round(formRaw + streakBonus);
+}
+// Combined strength bonus — what teamCurrentOverall actually adds on top of
+// the hero's base FIFA rating.
+function getHeroTotalBonus(hero){
+  return getHeroTerritorialBonus(hero) + getHeroMomentumBonus(hero);
 }
 // FC 26–style 1.0–5.0 star rating in 0.5 increments, derived from FIFA Men's
 // World Ranking points. Anchors: top 10 → 5★; Türkiye (1599) / Denmark (1620) → 4.5★.
@@ -1994,16 +2036,16 @@ function teamOverall(fifaPoints){
   return Math.max(1, Math.min(99, Math.round(raw)));
 }
 // Effective overall for a team RIGHT NOW — includes whatever bonus that team
-// is carrying. In conquest mode the hero gets the momentum formula (territory
-// + underdog amplifier + streak); everyone else (and both sides in Imperialism
-// mode) gets the simple flat `size * 5` bonus.
+// is carrying. In conquest mode the hero gets the split TERRITORIAL+MOMENTUM
+// bonus; everyone else (and both sides in Imperialism mode) gets the simple
+// flat `size * 5` bonus.
 function teamCurrentOverall(team){
   if(!team) return null;
   const baseFifa = fifaRating(team.name);
   const isHero = GAME && GAME.mode==='conquest' && team.id===GAME.heroTeamId;
   let bonus;
   if(isHero){
-    bonus = getHeroMomentumBonus(team);
+    bonus = getHeroTotalBonus(team);
   } else {
     const sz = (GAME && GAME.state && GAME.state[team.id]) ? GAME.state[team.id].ownedIsos.size : 0;
     bonus = sz * 5;
@@ -5323,6 +5365,10 @@ function startGameInMode(mode,heroId){
   if(mode==='conquest'){
     // In conquest mode, hero IS the eternal attacker — pre-set them
     GAME.attacker=teams.find(t=>t.id===heroId);
+    // Snapshot the hero's STARTING territory count. The territorial-boost
+    // formula measures land conquered BEYOND home, so it reads 0 at kickoff
+    // regardless of how many isos the chosen nation natively owns.
+    GAME.heroHomeIsoCount=(GAME.state[heroId] && GAME.state[heroId].ownedIsos.size)||0;
     GAME.phase='picked-att';
     gSlots();
     gameRender();
@@ -5761,6 +5807,8 @@ function openResultModal(){
   }
   const finishTag=document.getElementById('g-result-finish-tag');
   if(finishTag){finishTag.classList.remove('shown','pens');finishTag.textContent='';}
+  const territoryEl=document.getElementById('g-result-territory-delta');
+  if(territoryEl){territoryEl.classList.remove('shown','up','down');territoryEl.textContent='';}
   const momentumEl=document.getElementById('g-result-momentum-delta');
   if(momentumEl){momentumEl.classList.remove('shown','up','down');momentumEl.textContent='';}
   const ovrEl=document.getElementById('g-result-ovr-delta');
@@ -5834,11 +5882,13 @@ function computeMatchModel(tactic){
   const heroFifa=fifaRating(hero.name);
   const oppFifa=fifaRating(opp.name);
   const oppSize=GAME.state[opp.id].ownedIsos.size;
-  // Hero uses the momentum mechanic (territory bonus + underdog amplifier +
-  // streak bonus) instead of the flat `size * 5` it used to. Opp still uses
-  // the simple flat bonus — only the player's hero gets the underdog story.
+  // Hero's strength bonus is split into a TERRITORIAL half (land conquered)
+  // and a MOMENTUM half (form / streak). Their sum feeds effective FIFA.
+  // Opp still uses the simple flat `size * 5` bonus.
+  const heroTerritorial=getHeroTerritorialBonus(hero);
   const heroMomentum=getHeroMomentumBonus(hero);
-  const heroEff=heroFifa+heroMomentum+matchupBonus+idBonus;
+  const heroTotalBonus=heroTerritorial+heroMomentum;
+  const heroEff=heroFifa+heroTotalBonus+matchupBonus+idBonus;
   const oppEff=oppFifa+oppSize*5;
   const avg=(heroEff+oppEff)/2;
   const baseLambda=1.4*lambdaMult;
@@ -5848,7 +5898,8 @@ function computeMatchModel(tactic){
   // so the preview value matches the implicit odds of the simulator output.
   const pHeroWin=1/(1+Math.pow(10,(oppEff-heroEff)/450));
   return {heroEff,oppEff,heroLambda,oppLambda,pHeroWin,heroStyle,oppStyle,
-          matchupBonus,idBonus,heroMomentum,winStreak:GAME.winStreak||0};
+          matchupBonus,idBonus,heroTerritorial,heroMomentum,heroTotalBonus,
+          winStreak:GAME.winStreak||0};
 }
 // Realistic-blowout cap: in real football, only true mismatches produce 7-8 goal
 // margins. Poisson's long tail occasionally rolls them between evenly-matched
@@ -5955,18 +6006,25 @@ function updateResultPreview(){
   }
   if(xgHeroEl) xgHeroEl.textContent=m.heroLambda.toFixed(1);
   if(xgOppEl)  xgOppEl.textContent=m.oppLambda.toFixed(1);
-  // Momentum row: show only when there's a non-zero bonus to show. Streak
-  // sub-badge appears once you're on a 3+ win streak (the threshold where
-  // the streak bonus kicks in inside getHeroMomentumBonus).
+  // Strength row: two boost chips — Territory (land held) and Momentum
+  // (form/streak). Each chip hides when its value is 0; the whole row hides
+  // when both are 0. Streak sub-badge appears on a 3+ win streak.
   const momRow=document.getElementById('g-result-momentum-row');
   const momVal=document.getElementById('g-result-momentum-value');
+  const terrVal=document.getElementById('g-result-territory-value');
+  const terrChip=document.getElementById('g-result-territory-chip');
+  const momChip=document.getElementById('g-result-momentum-chip');
   const streakEl=document.getElementById('g-result-streak');
   const streakN=document.getElementById('g-result-streak-n');
   if(momRow){
-    const bonus=m.heroMomentum||0;
-    if(bonus>0){
+    const terr=m.heroTerritorial||0;
+    const mom =m.heroMomentum||0;
+    if(terr>0 || mom>0){
       momRow.style.display='flex';
-      if(momVal) momVal.textContent='+'+bonus;
+      if(terrChip) terrChip.style.display = terr>0 ? 'inline-flex' : 'none';
+      if(momChip)  momChip.style.display  = mom>0  ? 'inline-flex' : 'none';
+      if(terrVal) terrVal.textContent='+'+terr;
+      if(momVal)  momVal.textContent='+'+mom;
       if(streakEl){
         if(m.winStreak>=3){
           streakEl.style.display='inline-block';
@@ -6039,6 +6097,7 @@ function wireResultModal(){
     const revealOpp =document.getElementById('g-result-reveal-opp');
     const revealBox =document.getElementById('g-result-score-reveal');
     const finishTag =document.getElementById('g-result-finish-tag');
+    const territoryEl=document.getElementById('g-result-territory-delta');
     const momentumEl=document.getElementById('g-result-momentum-delta');
     const ovrEl     =document.getElementById('g-result-ovr-delta');
     const card      =document.querySelector('.g-result-card');
@@ -6066,24 +6125,42 @@ function wireResultModal(){
         finishTag.classList.add('shown','pens');
       }
     }
-    // ── Impact preview: project the momentum-bonus + OVR change ───────────
-    // Temporarily mutate GAME state, recompute the bonus / OVR, then revert
+    // ── Impact preview: project TERRITORY + MOMENTUM + net OVR change ─────
+    // The strength bonus has two halves now:
+    //   • Territory — a win conquers all the opponent's isos; a loss retreats,
+    //     popping the last conquest off the stack.
+    //   • Momentum — a win bumps progress + streak; a loss cuts progress and
+    //     resets the streak.
+    // We project both without mutating the real map (territory via the
+    // ownedOverride param; momentum by temp-mutating GAME state then reverting)
     // so handleConquestWin/Loss can re-apply for real with no double-count.
-    // We show TWO lines: the momentum-bonus delta (primary, what just moved)
-    // and the OVR delta (secondary, the FC-style number players track).
-    // Each is independently shown only if its delta ≠ 0.
     let visibleImpactLines = 0;
-    if(momentumEl) momentumEl.classList.remove('shown','up','down');
-    if(ovrEl)      ovrEl.classList.remove('shown','up','down');
+    if(territoryEl) territoryEl.classList.remove('shown','up','down');
+    if(momentumEl)  momentumEl.classList.remove('shown','up','down');
+    if(ovrEl)       ovrEl.classList.remove('shown','up','down');
     const hero=GAME.attacker, opp=GAME.defender;
-    if(hero && opp && momentumEl && ovrEl){
-      const oldMomentum = getHeroMomentumBonus(hero);
-      const oldOvr      = teamCurrentOverall(hero);
+    if(hero && opp && territoryEl && momentumEl && ovrEl){
+      const baseFifa    = fifaRating(hero.name);
+      const heroState   = GAME.state[hero.id];
+      const curOwned    = (heroState && heroState.ownedIsos.size) || 0;
+      const oppIsoCount = (GAME.state[opp.id] && GAME.state[opp.id].ownedIsos.size) || 0;
+      // Projected post-match owned-iso count.
+      let projectedOwned;
+      if(heroWon){
+        projectedOwned = curOwned + oppIsoCount;          // conquer all opp land
+      } else {
+        const top = GAME.conquestStack[GAME.conquestStack.length-1];
+        const lost = (top && top.opponentIsos) ? top.opponentIsos.length : 0;
+        projectedOwned = Math.max(curOwned - lost, GAME.heroHomeIsoCount||0);
+      }
+      // BEFORE values.
+      const oldTerr = getHeroTerritorialBonus(hero);
+      const oldMom  = getHeroMomentumBonus(hero);
+      const oldOvr  = teamOverall(baseFifa + oldTerr + oldMom);
+      // Project momentum by temp-mutating GAME state.
       const prevProgress=GAME.momentumProgress||0;
       const prevStreak  =GAME.winStreak||0;
       if(heroWon){
-        // Bump streak BEFORE computing winValue so the damping math sees
-        // the POST-win streak length, matching handleConquestWin's order.
         GAME.winStreak=prevStreak+1;
         GAME.momentumProgress=prevProgress+computeWinValue(hero,opp,result.heroGoals,result.oppGoals,GAME.winStreak);
       } else {
@@ -6091,17 +6168,26 @@ function wireResultModal(){
         GAME.momentumProgress=Math.max(0, prevProgress*(1-frac));
         GAME.winStreak=0;
       }
-      const newMomentum = getHeroMomentumBonus(hero);
-      const newOvr      = teamCurrentOverall(hero);
-      // Revert.
+      const newMom  = getHeroMomentumBonus(hero);
+      // Territory projected via the override param (no map mutation needed).
+      const newTerr = getHeroTerritorialBonus(hero, projectedOwned);
+      const newOvr  = teamOverall(baseFifa + newTerr + newMom);
+      // Revert momentum state — handleConquestWin/Loss re-applies for real.
       GAME.momentumProgress=prevProgress;
       GAME.winStreak=prevStreak;
-      const momentumDelta = newMomentum - oldMomentum;
-      const ovrDelta      = newOvr      - oldOvr;
-      if(momentumDelta !== 0){
-        const sign = momentumDelta>0 ? '+' : '−';
-        momentumEl.textContent='Momentum '+sign+Math.abs(momentumDelta);
-        momentumEl.classList.add(momentumDelta>0?'up':'down','shown');
+      const terrDelta = newTerr - oldTerr;
+      const momDelta  = newMom  - oldMom;
+      const ovrDelta  = newOvr  - oldOvr;
+      if(terrDelta !== 0){
+        const sign = terrDelta>0 ? '+' : '−';
+        territoryEl.textContent='🗺️ Territory '+sign+Math.abs(terrDelta);
+        territoryEl.classList.add(terrDelta>0?'up':'down','shown');
+        visibleImpactLines++;
+      }
+      if(momDelta !== 0){
+        const sign = momDelta>0 ? '+' : '−';
+        momentumEl.textContent='🔥 Momentum '+sign+Math.abs(momDelta);
+        momentumEl.classList.add(momDelta>0?'up':'down','shown');
         visibleImpactLines++;
       }
       if(ovrDelta !== 0){
