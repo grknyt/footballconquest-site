@@ -27,6 +27,7 @@ window.FC_TRANSLATIONS = {
     "lang.toggle.tr": "TR",
 
     /* ── homepage: hero ── */
+    "home.hero.by": "<em>by</em> Ghiellini",
     "home.tagline": "Spin the arrow, conquer the world.",
     "home.lead": "A free browser-based Imperialism simulator for football fans. Pick any of 212 nations, spin for an opponent, simulate the match with real FIFA ratings, and watch territories fall — one battle at a time.",
     "home.cta.start": "Start a campaign →",
@@ -301,7 +302,7 @@ window.FC_TRANSLATIONS = {
     "nav.featured": "Öne çıkan seferler",
     "nav.about": "Hakkında",
     "footer.play": "OYNA",
-    "footer.play.start": "Kampanya başlat",
+    "footer.play.start": "Fethe Çık",
     "footer.channels": "KANALLAR",
     "footer.legal": "YASAL",
     "footer.privacy": "Gizlilik Politikası",
@@ -313,10 +314,11 @@ window.FC_TRANSLATIONS = {
     "lang.toggle.tr": "TR",
 
     /* ── homepage: hero ── */
+    "home.hero.by": "<em>by</em> GRKN",
     "home.tagline": "Oku çevir, dünyayı fethet.",
     "home.lead": "Futbol severler için ücretsiz, tarayıcı tabanlı bir Imperialism simülatörü. 212 ulustan birini seç, rakip için oku çevir, maçı gerçek FIFA puanlarıyla simüle et ve toprakların düşüşünü izle — her seferinde bir savaş.",
-    "home.cta.start": "Kampanya başlat →",
-    "home.cta.how": "Nasıl çalışır",
+    "home.cta.start": "Fethe Çık →",
+    "home.cta.how": "Nasıl Oynanır?",
     "home.stat.nations": "Ulus",
     "home.stat.modes": "Mod",
     "home.stat.campaigns": "Kampanya",
@@ -371,7 +373,7 @@ window.FC_TRANSLATIONS = {
     /* ── homepage: big CTA ── */
     "home.cta.title": "Sen hazır olunca başlıyoruz.",
     "home.cta.sub": "Kayıt yok. İndirme yok. Her tarayıcıda çalışır.",
-    "home.cta.button": "Kampanyanı başlat →",
+    "home.cta.button": "Fethe Çık →",
 
     /* ── play page ── */
     "play.header.live": "SİMÜLATÖR · CANLI",
