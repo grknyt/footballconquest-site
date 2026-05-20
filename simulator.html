@@ -23,6 +23,11 @@ html,body{height:100%;background:#070e17;-webkit-user-select:none;user-select:no
 .acts{display:flex;gap:3px;margin-left:auto;align-items:center;}
 .abtn{padding:5px 10px;border-radius:6px;border:1px solid #2a3f55;color:#7a9bb5;font-size:11px;cursor:pointer;background:transparent;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
 .abtn:hover{background:#1a2f40;}
+.sim-lang{display:inline-flex;align-items:center;gap:1px;margin-left:4px;padding-left:6px;border-left:1px solid #2a3f55;}
+.sim-lang-btn{background:transparent;border:none;color:#5a7a95;font-size:11px;font-weight:600;cursor:pointer;padding:3px 5px;border-radius:4px;-webkit-tap-highlight-color:transparent;}
+.sim-lang-btn:hover{color:#7ab8e8;}
+.sim-lang-btn.active{color:#fff;background:#1d5a8c;}
+.sim-lang-sep{color:#2a3f55;font-size:10px;}
 #paint-swatch-wrap{display:none;align-items:center;gap:5px;}
 #paint-swatch{width:20px;height:20px;border-radius:4px;border:2px solid #4a6a80;cursor:pointer;flex-shrink:0;transition:border-color .15s;}
 #paint-swatch.loaded{border-color:#378add;}
@@ -896,35 +901,40 @@ body.web-build .g-result-card.revealed .g-sim-btn{
   <div id="hdr">
     <span class="fc-logo" aria-label="Football Conquest">FC</span>
     <div class="modes">
-      <button class="mbtn active" id="btn-view">👁 View<span class="kbadge">V</span></button>
-      <button class="mbtn" id="btn-erase">✏ Erase<span class="kbadge">E</span></button>
-      <button class="mbtn" id="btn-paint">🪣 Paint<span class="kbadge">P</span></button>
-      <button class="mbtn" id="btn-flags">🚩 Flags<span class="kbadge">F</span></button>
-      <button class="mbtn" id="btn-game">⚔️ Game<span class="kbadge">G</span></button>
+      <button class="mbtn active" id="btn-view">👁 <span data-i18n="sim.tb.view">View</span><span class="kbadge">V</span></button>
+      <button class="mbtn" id="btn-erase">✏ <span data-i18n="sim.tb.erase">Erase</span><span class="kbadge">E</span></button>
+      <button class="mbtn" id="btn-paint">🪣 <span data-i18n="sim.tb.paint">Paint</span><span class="kbadge">P</span></button>
+      <button class="mbtn" id="btn-flags">🚩 <span data-i18n="sim.tb.flags">Flags</span><span class="kbadge">F</span></button>
+      <button class="mbtn" id="btn-game">⚔️ <span data-i18n="sim.tb.game">Game</span><span class="kbadge">G</span></button>
     </div>
     <div id="flag-hide-wrap" style="display:none;align-items:center;gap:4px;">
-      <button class="abtn" id="btn-flag-hide" style="color:#7ab8e8;">👁 Hide</button>
-      <button class="abtn" id="btn-flag-delete" style="color:#e07070;">🗑 Delete</button>
+      <button class="abtn" id="btn-flag-hide" style="color:#7ab8e8;">👁 <span data-i18n="sim.tb.hide">Hide</span></button>
+      <button class="abtn" id="btn-flag-delete" style="color:#e07070;">🗑 <span data-i18n="sim.tb.delete">Delete</span></button>
     </div>
     <div id="paint-swatch-wrap">
-      <div id="paint-swatch" title="Active colour — tap to clear"></div>
-      <span id="paint-label">Tap to pick</span>
+      <div id="paint-swatch" data-i18n-attr="title:sim.tb.tip.swatch" title="Active colour — tap to clear"></div>
+      <span id="paint-label" data-i18n="sim.tb.tappick">Tap to pick</span>
     </div>
     <div class="acts">
-      <button class="abtn" id="btn-undo">↩ Undo<span class="kbadge">⌘Z</span></button>
-      <button class="abtn" id="btn-history">🕘 History</button>
-      <button class="abtn" id="btn-leaderboard" title="View leaderboards (your runs + global)">🏆 Leaderboards</button>
-      <button class="abtn" id="btn-save">💾 Save</button>
-      <button class="abtn" id="btn-load">📂 Load</button>
-      <button class="abtn" id="btn-theme" title="Toggle light/dark map">☀️ Light</button>
-      <button class="abtn" id="btn-reset" title="Clear all changes (can undo)">⟳ Reset</button>
+      <button class="abtn" id="btn-undo">↩ <span data-i18n="sim.tb.undo">Undo</span><span class="kbadge">⌘Z</span></button>
+      <button class="abtn" id="btn-history">🕘 <span data-i18n="sim.tb.history">History</span></button>
+      <button class="abtn" id="btn-leaderboard" data-i18n-attr="title:sim.tb.tip.lb" title="View leaderboards (your runs + global)">🏆 <span data-i18n="sim.tb.leaderboards">Leaderboards</span></button>
+      <button class="abtn" id="btn-save">💾 <span data-i18n="sim.tb.save">Save</span></button>
+      <button class="abtn" id="btn-load">📂 <span data-i18n="sim.tb.load">Load</span></button>
+      <button class="abtn" id="btn-theme" data-i18n-attr="title:sim.tb.tip.theme" title="Toggle light/dark map">☀️ <span id="btn-theme-label">Light</span></button>
+      <button class="abtn" id="btn-reset" data-i18n-attr="title:sim.tb.tip.reset" title="Clear all changes (can undo)">⟳ <span data-i18n="sim.tb.reset">Reset</span></button>
+      <span class="sim-lang">
+        <button type="button" class="sim-lang-btn" data-lang-btn="en" onclick="FCLang.set('en',true)">EN</button>
+        <span class="sim-lang-sep">/</span>
+        <button type="button" class="sim-lang-btn" data-lang-btn="tr" onclick="FCLang.set('tr',true)">TR</button>
+      </span>
       <div class="fc-menu-wrap">
         <button class="abtn fc-menu-btn" id="fc-menu-btn" type="button" aria-label="Menu" aria-haspopup="true" aria-expanded="false">☰</button>
         <div class="fc-menu-popover" id="fc-menu" role="menu">
-          <div class="fc-menu-item" id="fc-menu-save" role="menuitem"><span class="fc-menu-icon">💾</span><span>Save game</span></div>
-          <div class="fc-menu-item fc-menu-game-only" id="fc-menu-end" role="menuitem"><span class="fc-menu-icon">🎲</span><span>New game</span></div>
+          <div class="fc-menu-item" id="fc-menu-save" role="menuitem"><span class="fc-menu-icon">💾</span><span data-i18n="sim.tb.menu.save">Save game</span></div>
+          <div class="fc-menu-item fc-menu-game-only" id="fc-menu-end" role="menuitem"><span class="fc-menu-icon">🎲</span><span data-i18n="sim.tb.menu.newgame">New game</span></div>
           <div class="fc-menu-sep"></div>
-          <div class="fc-menu-item danger fc-menu-hide-in-conquest" id="fc-menu-reset" role="menuitem"><span class="fc-menu-icon">⟳</span><span>Reset map</span></div>
+          <div class="fc-menu-item danger fc-menu-hide-in-conquest" id="fc-menu-reset" role="menuitem"><span class="fc-menu-icon">⟳</span><span data-i18n="sim.tb.menu.reset">Reset map</span></div>
         </div>
       </div>
     </div>
@@ -951,7 +961,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     </svg>
     <canvas id="erase-canvas"></canvas>
     <div id="flag-handles" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;"></div>
-    <div id="hint">Scroll/pinch to zoom · Drag to pan</div>
+    <div id="hint" data-i18n="sim.map.hint">Scroll/pinch to zoom · Drag to pan</div>
     <div class="tip" id="tip"></div>
 
     <!-- ── Splash launcher: front door when no game is active ─────────────── -->
@@ -980,18 +990,18 @@ body.web-build .g-result-card.revealed .g-sim-btn{
             <path d="M252 214 Q241 230 252 248 L273 257 L289 251 L284 233 L270 220 Z" fill="#1a3b5c"/>
           </g>
         </svg>
-        <div class="fc-corner-tl">ED. 01 · GLOBAL</div>
-        <div class="fc-corner-br">BROADCAST PREVIEW</div>
+        <div class="fc-corner-tl" data-i18n="sim.splash.ed">ED. 01 · GLOBAL</div>
+        <div class="fc-corner-br" data-i18n="sim.splash.preview">BROADCAST PREVIEW</div>
         <div class="fc-splash-content">
           <span class="fc-splash-badge">FC</span>
           <div class="fc-splash-wordmark">FOOTBALL CONQUEST</div>
           <button class="fc-play-btn" id="fc-splash-play" type="button">
             <span style="font-size:11px;">▶</span>
-            <span>PLAY CONQUEST</span>
+            <span data-i18n="sim.splash.play">PLAY CONQUEST</span>
           </button>
           <button class="fc-load-btn" id="fc-splash-load" type="button">
             <span style="font-size:11px;opacity:0.8;">📂</span>
-            <span>LOAD SAVED GAME</span>
+            <span data-i18n="sim.splash.load">LOAD SAVED GAME</span>
           </button>
         </div>
       </div>
@@ -999,25 +1009,25 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     
     <div id="g-startup-modal" style="display:none;">
       <div class="g-start-card">
-        <div class="g-start-title">Choose Game Mode</div>
+        <div class="g-start-title" data-i18n="sim.mode.title">Choose Game Mode</div>
         <div class="g-start-modes">
           <button class="g-mode-btn primary" data-mode="conquest">
             <div class="g-mode-icon">⚔️</div>
-            <div class="g-mode-name">World Conquest</div>
-            <div class="g-mode-desc">Pick one team. Conquer all 211 others. Lose three times to the same opponent and your run ends.</div>
+            <div class="g-mode-name" data-i18n="sim.mode.wc.name">World Conquest</div>
+            <div class="g-mode-desc" data-i18n="sim.mode.wc.desc">Pick one team. Conquer all 211 others. Lose three times to the same opponent and your run ends.</div>
           </button>
           <button class="g-mode-btn compact" data-mode="imperialism">
             <span class="g-mode-beta">BETA</span>
             <div class="g-mode-icon">🌍</div>
-            <div class="g-mode-name">Random Imperialism</div>
-            <div class="g-mode-desc">All 212 nations battle randomly. AI-driven attackers, FIFA-rated results.</div>
+            <div class="g-mode-name" data-i18n="sim.mode.ri.name">Random Imperialism</div>
+            <div class="g-mode-desc" data-i18n="sim.mode.ri.desc">All 212 nations battle randomly. AI-driven attackers, FIFA-rated results.</div>
           </button>
         </div>
         <div id="g-conquest-team-picker" style="display:none;">
-          <div class="g-pick-label">Choose your team:</div>
-          <input type="text" id="g-team-search" placeholder="Search teams..." class="g-team-search">
+          <div class="g-pick-label" data-i18n="sim.mode.pick">Choose your team:</div>
+          <input type="text" id="g-team-search" placeholder="Search teams..." data-i18n-attr="placeholder:sim.mode.search" class="g-team-search">
           <div id="g-team-list" class="g-team-list"></div>
-          <button id="g-start-conquest" class="g-btn primary" disabled>Start Conquest</button>
+          <button id="g-start-conquest" class="g-btn primary" disabled data-i18n="sim.mode.start">Start Conquest</button>
         </div>
       </div>
     </div>
@@ -1027,30 +1037,30 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     <div id="g-leaderboard-modal" style="display:none;">
       <div class="g-leaderboard-card">
         <div class="g-leaderboard-header">
-          <span>🏆 Leaderboards</span>
+          <span data-i18n="sim.lb.title">🏆 Leaderboards</span>
           <button id="g-leaderboard-close" type="button" aria-label="Close">✕</button>
         </div>
         <!-- Tabs let the player swap between their own browser-local records
              and the global server-side rankings. -->
         <div class="g-leaderboard-tabs" role="tablist">
-          <button class="g-leaderboard-tab active" data-tab="local"  type="button" role="tab">📁 Your Runs</button>
-          <button class="g-leaderboard-tab"        data-tab="global" type="button" role="tab">🌍 Global Rankings</button>
+          <button class="g-leaderboard-tab active" data-tab="local"  type="button" role="tab" data-i18n="sim.lb.tab.local">📁 Your Runs</button>
+          <button class="g-leaderboard-tab"        data-tab="global" type="button" role="tab" data-i18n="sim.lb.tab.global">🌍 Global Rankings</button>
         </div>
         <!-- Global-tab controls: sort selector + display-name strip. Hidden on local tab. -->
         <div class="g-leaderboard-controls" id="g-leaderboard-controls" style="display:none;">
           <label class="g-lb-sort-label">
-            Sort by
+            <span data-i18n="sim.lb.sortby">Sort by</span>
             <select id="g-leaderboard-sort">
-              <option value="wins">Most Wins</option>
-              <option value="fastest_victory">Fastest Victory</option>
-              <option value="gd">Best Goal Difference</option>
-              <option value="gf">Most Goals Scored</option>
-              <option value="recent">Most Recent</option>
+              <option value="wins" data-i18n="sim.lb.sort.wins">Most Wins</option>
+              <option value="fastest_victory" data-i18n="sim.lb.sort.fastest">Fastest Victory</option>
+              <option value="gd" data-i18n="sim.lb.sort.gd">Best Goal Difference</option>
+              <option value="gf" data-i18n="sim.lb.sort.gf">Most Goals Scored</option>
+              <option value="recent" data-i18n="sim.lb.sort.recent">Most Recent</option>
             </select>
           </label>
           <div class="g-lb-user-strip">
             <span id="g-lb-user-status"></span>
-            <button id="g-lb-set-name" class="g-btn ghost" type="button">Set name</button>
+            <button id="g-lb-set-name" class="g-btn ghost" type="button" data-i18n="sim.lb.setname">Set name</button>
           </div>
         </div>
         <div class="g-leaderboard-body" id="g-leaderboard-body">
@@ -1058,23 +1068,23 @@ body.web-build .g-result-card.revealed .g-sim-btn{
         </div>
         <div class="g-leaderboard-footer">
           <span id="g-leaderboard-count" class="g-leaderboard-count"></span>
-          <button id="g-leaderboard-clear" class="g-btn ghost" type="button">Clear local records</button>
+          <button id="g-leaderboard-clear" class="g-btn ghost" type="button" data-i18n="sim.lb.clear">Clear local records</button>
         </div>
       </div>
     </div>
     <div id="g-result-modal" style="display:none;">
       <div class="g-result-card">
-        <div class="g-result-title">Match Result</div>
+        <div class="g-result-title" data-i18n="sim.res.title">Match Result</div>
         <button class="g-sim-btn" id="g-result-sim" type="button">
           <span class="g-sim-icon">🎲</span>
-          <span>Simulate Match</span>
+          <span data-i18n="sim.res.simulate">Simulate Match</span>
         </button>
-        <div class="g-result-or"><span>or enter manually</span></div>
+        <div class="g-result-or"><span data-i18n="sim.res.ormanual">or enter manually</span></div>
         <div class="g-result-matchup">
           <div class="g-result-team">
             <div class="g-result-flag empty" id="g-result-hero-flag"></div>
             <div class="g-result-team-name" id="g-result-hero">—</div>
-            <div class="g-result-team-label">YOU</div>
+            <div class="g-result-team-label" data-i18n="sim.res.you">YOU</div>
             <div class="g-result-style" id="g-result-hero-style">—</div>
           </div>
           <div class="g-result-scores">
@@ -1105,56 +1115,56 @@ body.web-build .g-result-card.revealed .g-sim-btn{
           <div class="g-result-team">
             <div class="g-result-flag empty" id="g-result-opp-flag"></div>
             <div class="g-result-team-name" id="g-result-opp">—</div>
-            <div class="g-result-team-label">OPPONENT</div>
+            <div class="g-result-team-label" data-i18n="sim.res.opp">OPPONENT</div>
             <div class="g-result-style" id="g-result-opp-style">—</div>
           </div>
         </div>
         <!-- Match preview: live win probability + xG that responds to the tactic choice below. -->
         <div class="g-result-preview" id="g-result-preview">
           <div class="g-result-prob-row">
-            <span class="g-result-prob-label">Win probability</span>
+            <span class="g-result-prob-label" data-i18n="sim.res.winprob">Win probability</span>
             <span class="g-result-prob-value" id="g-result-prob-pct">—</span>
           </div>
           <div class="g-result-prob-bar"><div class="g-result-prob-fill" id="g-result-prob-fill"></div></div>
           <div class="g-result-xg-row">
-            Expected goals: <b id="g-result-xg-hero">—</b> <span class="g-result-xg-dash">–</span> <b id="g-result-xg-opp">—</b>
+            <span data-i18n="sim.res.xg">Expected goals:</span> <b id="g-result-xg-hero">—</b> <span class="g-result-xg-dash">–</span> <b id="g-result-xg-opp">—</b>
           </div>
           <!-- Strength row: the hero's two stacking boosts — TERRITORY (land
                held) and MOMENTUM (form / streak). Each chip is hidden when
                its value is 0. Whole row hidden when both are 0 (game start). -->
           <div class="g-result-momentum-row" id="g-result-momentum-row" style="display:none;">
             <span class="g-result-boost-chip" id="g-result-territory-chip">
-              <span class="g-result-boost-label">🗺️ Territory</span>
+              <span class="g-result-boost-label" data-i18n="sim.res.territory">🗺️ Territory</span>
               <span class="g-result-boost-value" id="g-result-territory-value">+0</span>
             </span>
             <span class="g-result-boost-chip" id="g-result-momentum-chip">
-              <span class="g-result-boost-label">🔥 Momentum</span>
+              <span class="g-result-boost-label" data-i18n="sim.res.momentum">🔥 Momentum</span>
               <span class="g-result-boost-value" id="g-result-momentum-value">+0</span>
             </span>
-            <span class="g-result-streak" id="g-result-streak" style="display:none;">🔥 <span id="g-result-streak-n">0</span>-win streak</span>
+            <span class="g-result-streak" id="g-result-streak" style="display:none;"></span>
           </div>
           <div class="g-result-tactics">
-            <span class="g-result-tactics-label">Tactic</span>
+            <span class="g-result-tactics-label" data-i18n="sim.res.tactic">Tactic</span>
             <div class="g-result-tactic-btns" id="g-result-tactic-btns">
-              <button class="g-tactic-btn" data-tactic="defensive" type="button">🛡️ Defensive</button>
-              <button class="g-tactic-btn active" data-tactic="balanced" type="button">⚖️ Balanced</button>
-              <button class="g-tactic-btn" data-tactic="attacking" type="button">⚔️ Attacking</button>
+              <button class="g-tactic-btn" data-tactic="defensive" type="button" data-i18n="sim.res.def">🛡️ Defensive</button>
+              <button class="g-tactic-btn active" data-tactic="balanced" type="button" data-i18n="sim.res.bal">⚖️ Balanced</button>
+              <button class="g-tactic-btn" data-tactic="attacking" type="button" data-i18n="sim.res.att">⚔️ Attacking</button>
             </div>
           </div>
         </div>
         <div class="g-result-finish">
-          <label><input type="radio" name="finish" value="normal" checked> FT</label>
-          <label><input type="radio" name="finish" value="aet"> AET</label>
-          <label><input type="radio" name="finish" value="pens"> Penalties</label>
+          <label><input type="radio" name="finish" value="normal" checked> <span data-i18n="sim.res.ft">FT</span></label>
+          <label><input type="radio" name="finish" value="aet"> <span data-i18n="sim.res.aet">AET</span></label>
+          <label><input type="radio" name="finish" value="pens"> <span data-i18n="sim.res.pens">Penalties</span></label>
         </div>
         <div id="g-result-pens-row" style="display:none;">
           <input type="number" min="0" max="20" value="0" class="g-result-score" id="g-result-pens-hero">
-          <span> pens </span>
+          <span data-i18n="sim.res.penslabel"> pens </span>
           <input type="number" min="0" max="20" value="0" class="g-result-score" id="g-result-pens-opp">
         </div>
         <div class="g-result-actions">
-          <button class="g-btn ghost" id="g-result-cancel">Cancel</button>
-          <button class="g-btn primary" id="g-result-confirm">Confirm Result</button>
+          <button class="g-btn ghost" id="g-result-cancel" data-i18n="sim.res.cancel">Cancel</button>
+          <button class="g-btn primary" id="g-result-confirm" data-i18n="sim.res.confirm">Confirm Result</button>
         </div>
       </div>
     </div>
@@ -1170,8 +1180,8 @@ body.web-build .g-result-card.revealed .g-sim-btn{
         <div class="g-over-title" id="g-over-title">GAME OVER</div>
         <div class="g-over-sub" id="g-over-sub"></div>
         <div class="g-over-actions">
-          <button class="g-btn primary" id="g-over-newgame"><span>🎲</span><span>New Game</span></button>
-          <button class="g-btn ghost" id="g-over-dismiss">View final map</button>
+          <button class="g-btn primary" id="g-over-newgame"><span>🎲</span><span data-i18n="sim.over.newgame">New Game</span></button>
+          <button class="g-btn ghost" id="g-over-dismiss" data-i18n="sim.over.viewmap">View final map</button>
         </div>
       </div>
     </div>
@@ -1182,13 +1192,13 @@ body.web-build .g-result-card.revealed .g-sim-btn{
       <div class="g-hud-row" id="g-hud-stats" style="display:none;"></div>
       <div class="g-hud-row" id="g-hud-loss" style="display:none;"></div>
       <div class="g-hud-row" id="g-hud-last" style="display:none;"></div>
-      <button id="g-hud-newgame" type="button"><span>🎲</span><span>New Game</span></button>
+      <button id="g-hud-newgame" type="button"><span>🎲</span><span data-i18n="sim.over.newgame">New Game</span></button>
     </div>
 
     <!-- Center-top New Game button — appears after the player dismisses the
          game-over overlay via "View final map", so they can study the final
          board and still start a fresh run without hunting for a button. -->
-    <button id="g-final-newgame" type="button"><span>🎲</span><span>New Game</span></button>
+    <button id="g-final-newgame" type="button"><span>🎲</span><span data-i18n="sim.over.newgame">New Game</span></button>
 
     <div id="game-panel">
       <div class="g-head">
@@ -1197,27 +1207,27 @@ body.web-build .g-result-card.revealed .g-sim-btn{
           <div class="g-stat" id="g-turn">Turn 0</div>
           <div class="g-stat" id="g-remaining">— alive</div>
         </div>
-        <button id="game-settings" title="Settings">⚙️</button>
-        <button id="game-close" title="Close">✕</button>
+        <button id="game-settings" data-i18n-attr="title:sim.gp.tip.settings" title="Settings">⚙️</button>
+        <button id="game-close" data-i18n-attr="title:sim.gp.tip.close" title="Close">✕</button>
       </div>
       <div id="g-settings-popover" style="display:none;">
-        <div class="g-set-title">Production Settings</div>
+        <div class="g-set-title" data-i18n="sim.gp.prodsettings">Production Settings</div>
         <label class="g-set-row">
           <input type="checkbox" id="set-lightMap">
-          <span><b>Light map</b><br><small>Pale ocean background — better visibility for some videos and color-coded territories</small></span>
+          <span><b data-i18n="sim.gp.lightmap.h">Light map</b><br><small data-i18n="sim.gp.lightmap.p">Pale ocean background — better visibility for some videos and color-coded territories</small></span>
         </label>
-        <button id="g-new-game-btn" class="g-btn ghost" style="width:100%;padding:8px;margin-bottom:10px;font-size:11px;">🔄 New Game / Change Mode</button>
+        <button id="g-new-game-btn" class="g-btn ghost" style="width:100%;padding:8px;margin-bottom:10px;font-size:11px;" data-i18n="sim.gp.newgamemode">🔄 New Game / Change Mode</button>
         <label class="g-set-row">
           <input type="checkbox" id="set-slowSpins">
-          <span><b>Slow animations</b><br><small>3s spin + slower team roulette (for commentary pacing)</small></span>
+          <span><b data-i18n="sim.gp.slowanim.h">Slow animations</b><br><small data-i18n="sim.gp.slowanim.p">3s spin + slower team roulette (for commentary pacing)</small></span>
         </label>
         <label class="g-set-row">
           <input type="checkbox" id="set-clickToReveal">
-          <span><b>Click to reveal score</b><br><small>Score + conquest paused until you click; lets you build commentary tension</small></span>
+          <span><b data-i18n="sim.gp.clickreveal.h">Click to reveal score</b><br><small data-i18n="sim.gp.clickreveal.p">Score + conquest paused until you click; lets you build commentary tension</small></span>
         </label>
         <label class="g-set-row">
           <input type="checkbox" id="set-excludeMicronations">
-          <span><b>Skip micronations</b><br><small>Exclude Vatican, San Marino, Monaco, Liechtenstein, Andorra, etc. from being picked as attackers</small></span>
+          <span><b data-i18n="sim.gp.skipmicro.h">Skip micronations</b><br><small data-i18n="sim.gp.skipmicro.p">Exclude Vatican, San Marino, Monaco, Liechtenstein, Andorra, etc. from being picked as attackers</small></span>
         </label>
       </div>
       <div class="g-body">
@@ -1238,9 +1248,9 @@ body.web-build .g-result-card.revealed .g-sim-btn{
             <div class="g-slot-overall" id="g-attacker-overall">OVR —</div>
             <div class="g-slot-stars" id="g-attacker-stars"></div>
           </div>
-          <div class="g-middle" id="g-middle"><span class="g-vs">vs</span></div>
+          <div class="g-middle" id="g-middle"><span class="g-vs" data-i18n="sim.gp.vs">vs</span></div>
           <div class="g-slot">
-            <div class="g-slot-label">Defender</div>
+            <div class="g-slot-label" data-i18n="sim.gp.defender">Defender</div>
             <div class="g-slot-flag" id="g-defender-flag"></div>
             <div class="g-slot-val" id="g-defender">—</div>
             <div class="g-slot-overall" id="g-defender-overall">OVR —</div>
@@ -1250,11 +1260,11 @@ body.web-build .g-result-card.revealed .g-sim-btn{
         <div class="g-action-group">
           <div class="g-actions">
             <button class="g-btn primary" id="g-spin-team">🎯 Pick attacker</button>
-            <button class="g-btn primary" id="g-spin-arrow" disabled>➤ Spin arrow</button>
+            <button class="g-btn primary" id="g-spin-arrow" disabled data-i18n="sim.gp.spinarrow">➤ Spin arrow</button>
           </div>
           <div class="g-actions">
-            <button class="g-btn danger" id="g-resolve" disabled>⚔️ Play Match</button>
-            <button class="g-btn ghost" id="g-skip" disabled>Skip turn</button>
+            <button class="g-btn danger" id="g-resolve" disabled data-i18n="sim.gp.playmatch">⚔️ Play Match</button>
+            <button class="g-btn ghost" id="g-skip" disabled data-i18n="sim.gp.skipturn">Skip turn</button>
           </div>
         </div>
       </div>
@@ -1264,19 +1274,19 @@ body.web-build .g-result-card.revealed .g-sim-btn{
          CSS sibling selector whenever #game-panel is open. -->
     <div id="g-events-panel">
       <div id="g-events-header">
-        <span class="g-events-title">🕘 Events</span>
+        <span class="g-events-title" data-i18n="sim.ev.title">🕘 Events</span>
         <!-- Turn summary chip — always visible, even when the events panel
              is collapsed, so the player can keep tabs on Turn N / remaining
              without expanding the log. Populated by updateConquestHud(). -->
         <span class="g-events-turn-summary" id="g-events-turn-summary"></span>
         <span id="g-events-toggle">▼</span>
       </div>
-      <div id="g-log"><div class="g-log-empty">Click Pick attacker to begin.</div></div>
+      <div id="g-log"><div class="g-log-empty" data-i18n="sim.ev.empty">Click Pick attacker to begin.</div></div>
     </div>
     <div id="history-panel">
       <div id="history-header">
-        <span>🕘 History</span>
-        <button id="history-close" title="Close">✕</button>
+        <span data-i18n="sim.hist.title">🕘 History</span>
+        <button id="history-close" data-i18n-attr="title:sim.gp.tip.close" title="Close">✕</button>
       </div>
       <div id="history-list"></div>
     </div>
@@ -1289,6 +1299,10 @@ body.web-build .g-result-card.revealed .g-sim-btn{
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<!-- Localization: shared dictionary + i18n engine (EN/TR). FCLang.t() drives
+     the simulator's dynamic strings; data-i18n attributes drive static ones. -->
+<script src="/js/translations.js"></script>
+<script src="/js/i18n.js"></script>
 <script>
 const FLAG_B64={
 'Albania':'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',
@@ -2096,14 +2110,14 @@ function setSlotOverall(elId, team){
   if(!team){
     // Clear everything — no team, no pill, no pulse state.
     el.innerHTML = '';
-    setLabel('OVR —');
+    setLabel(FCLang.t('sim.gp.ovrlabel') + ' —');
     el.classList.remove('pulse','pulse-down');
     el.removeAttribute('data-prev');
     return;
   }
   const ovr = teamCurrentOverall(team);
   const prev = parseInt(el.getAttribute('data-prev')||'-1');
-  setLabel('OVR ' + ovr);
+  setLabel(FCLang.t('sim.gp.ovrlabel') + ' ' + ovr);
   el.setAttribute('data-prev', String(ovr));
   if(prev >= 0 && ovr !== prev){
     const delta = ovr - prev;
@@ -3665,13 +3679,13 @@ function renderHistory(){
   if(!list)return;
   list.innerHTML='';
   if(undoStack.length===0){
-    list.innerHTML='<div class="hist-empty">No changes yet.<br>Every action you take will appear here.</div>';
+    list.innerHTML='<div class="hist-empty">'+FCLang.t('sim.hist.empty')+'</div>';
     return;
   }
   // Baseline row (index 0 = before any changes)
   const baseRow=document.createElement('div');
   baseRow.className='hist-item'+(historyIdx===0?' current':'');
-  baseRow.innerHTML='<span class="hist-icon">○</span><span class="hist-text">Original state</span>';
+  baseRow.innerHTML='<span class="hist-icon">○</span><span class="hist-text">'+FCLang.t('sim.hist.original')+'</span>';
   baseRow.onclick=()=>jumpToHistory(0);
   list.appendChild(baseRow);
   // One row per op
@@ -3850,7 +3864,7 @@ function gLog(msg){
   GAME.log.unshift(msg);
   const box=document.getElementById('g-log');
   if(!box)return;
-  if(GAME.log.length===0){box.innerHTML='<div class="g-log-empty">No events yet.</div>';return;}
+  if(GAME.log.length===0){box.innerHTML='<div class="g-log-empty">'+FCLang.t('sim.ev.noevents')+'</div>';return;}
   box.innerHTML=GAME.log.slice(0,20).map(m=>`<div>${m}</div>`).join('');
 }
 function gLogPop(){
@@ -3858,13 +3872,13 @@ function gLogPop(){
   if(GAME.log.length>0) GAME.log.shift();
   const box=document.getElementById('g-log');
   if(!box)return;
-  if(GAME.log.length===0){box.innerHTML='<div class="g-log-empty">No events yet.</div>';return;}
+  if(GAME.log.length===0){box.innerHTML='<div class="g-log-empty">'+FCLang.t('sim.ev.noevents')+'</div>';return;}
   box.innerHTML=GAME.log.slice(0,20).map(m=>`<div>${m}</div>`).join('');
 }
 function gStats(){
   const alive=Object.values(GAME.state).filter(t=>t.alive).length;
-  document.getElementById('g-turn').textContent='Turn '+GAME.turn;
-  document.getElementById('g-remaining').textContent=alive+' alive';
+  document.getElementById('g-turn').textContent=FCLang.t('sim.gp.turn',{n:GAME.turn});
+  document.getElementById('g-remaining').textContent=FCLang.t('sim.gp.alive',{n:alive});
 }
 function gSlots(){
   const a=GAME.attacker,d=GAME.defender;
@@ -3909,18 +3923,18 @@ function gSlots(){
   const spinBtn=document.getElementById('g-spin-arrow');
   const attackerSlot=document.getElementById('g-attacker-flag')?.closest('.g-slot');
   if(GAME.mode==='conquest'){
-    if(pickBtn){pickBtn.innerHTML='🎲 Spin Arrow';}
+    if(pickBtn){pickBtn.innerHTML=FCLang.t('sim.gp.spinarrow.team');}
     if(spinBtn){spinBtn.style.display='none';} // hide the secondary spin-arrow button
     if(attackerSlot){
       const lbl=attackerSlot.querySelector('.g-slot-label');
-      if(lbl) lbl.textContent='YOU';
+      if(lbl) lbl.textContent=FCLang.t('sim.res.you');
     }
   } else {
-    if(pickBtn){pickBtn.innerHTML='🎯 Pick attacker';}
+    if(pickBtn){pickBtn.innerHTML=FCLang.t('sim.gp.pickatt');}
     if(spinBtn){spinBtn.style.display='';}
     if(attackerSlot){
       const lbl=attackerSlot.querySelector('.g-slot-label');
-      if(lbl) lbl.textContent='Attacker';
+      if(lbl) lbl.textContent=FCLang.t('sim.gp.attacker');
     }
   }
 }
@@ -3968,8 +3982,8 @@ function gameInit(){
   }
   GAME.active=true;
   gameRender();
-  gLog('<b>New game started.</b> '+teams.length+' teams begin.');
-  gLog('Press <b>Pick attacker</b> to begin.');
+  gLog(FCLang.t('sim.log.newgame',{n:teams.length}));
+  gLog(FCLang.t('sim.log.presspick'));
 }
 
 function gameRender(){
@@ -4050,7 +4064,7 @@ function gameSpinTeam(){
       GAME.attacker=picked;
       GAME.phase='picked-att';
       document.getElementById('g-attacker').textContent=picked.name;
-      gLog('🎡 <b>'+picked.name+'</b> will attack this turn.');
+      gLog(FCLang.t('sim.log.willattack',{name:picked.name}));
       highlightAttacker();
       gameRender();
       // Pan to the attacker
@@ -4156,7 +4170,7 @@ function gameSpinArrow(){
   if(window._fcSpinning) return;
   window._fcSpinning=true;
   const attC=teamCentroid(GAME.attacker.id);
-  if(!attC){gLog('Could not locate attacker.');window._fcSpinning=false;return;}
+  if(!attC){gLog(FCLang.t('sim.log.nolocate'));window._fcSpinning=false;return;}
   const btn=document.getElementById('g-spin-arrow');btn.disabled=true;
   // In conquest mode the visible "Spin Arrow" is the relabeled g-spin-team button.
   // Disable it explicitly here — gBtnState() won't re-evaluate until the animation ends.
@@ -4168,7 +4182,7 @@ function gameSpinArrow(){
   const targetAngleRad=Math.random()*2*Math.PI;
   const pick=pickDefender(attC,targetAngleRad);
   if(!pick){
-    gLog('⚠️ <b>'+GAME.attacker.name+'</b> has no one to attack! Turn skipped.');
+    gLog(FCLang.t('sim.log.noattack',{name:GAME.attacker.name}));
     GAME.phase='idle';GAME.turn++;
     window._fcSpinning=false;
     gameRender();
@@ -4280,7 +4294,7 @@ function gameSpinArrow(){
       GAME.defenderIso=pick.defIso||null;
       GAME.phase='picked-def';
       window._fcSpinning=false;
-      gLog('➤ Arrow points at <b>'+defender.name+'</b>!');
+      gLog(FCLang.t('sim.log.arrowpoints',{name:defender.name}));
       highlightDefender(defC);
       drawAttackLine(attC,defC);
       gameRender();
@@ -5046,7 +5060,7 @@ function gameResolve(){
   const mid=document.getElementById('g-middle');
   if(mid){
     const cleanSuffix=suffix.replace(/<span[^>]*>/g,'<span class="g-score-suffix" style="color:'+(finishType==='aet'?'#ffd54a':'#ff8855')+'">').replace(/<\/span>/g,'</span>');
-    mid.innerHTML=`<div class="g-score" style="color:${attWon?'#6dd86d':'#ff8a8a'}">${scoreStr}</div>${cleanSuffix||'<div class="g-score-suffix" style="color:#7a9bb5">FT</div>'}`;
+    mid.innerHTML=`<div class="g-score" style="color:${attWon?'#6dd86d':'#ff8a8a'}">${scoreStr}</div>${cleanSuffix||'<div class="g-score-suffix" style="color:#7a9bb5">'+FCLang.t('sim.res.ft')+'</div>'}`;
     mid.dataset.showingScore='1';
   }
   // Flash the winning slot, fade the losing slot
@@ -5060,10 +5074,11 @@ function gameResolve(){
   }
   // Include a quick rating summary for viewer context
   const ratingLine=`<span style="color:#7a9bb5;font-size:10px">FIFA: ${att.name} ${Math.round(attFifa)} vs ${def.name} ${Math.round(defFifa)}</span>`;
-  gLog(`⚔️ <b>${att.name}</b> ${scoreStr}${suffix} <b>${def.name}</b> — <b style="color:${attWon?'#6dd86d':'#ff8a8a'}">${winner.name}</b> wins!<br>${ratingLine}`);
+  gLog(FCLang.t('sim.log.impresult',{att:att.name, score:scoreStr+suffix, def:def.name,
+    winner:'<b style="color:'+(attWon?'#6dd86d':'#ff8a8a')+'">'+winner.name+'</b>'})+'<br>'+ratingLine);
   if(Object.values(GAME.state).filter(t=>t.alive).length===1){
     const champ=Object.values(GAME.state).find(t=>t.alive);
-    gLog(`🏆 <b>${champ.name} CONQUERS THE WORLD!</b>`);
+    gLog(FCLang.t('sim.log.champ',{champ:champ.name}));
   }
   // Add to undo stack as a single "battle" op
   undoStack.push({type:'battle',
@@ -5078,7 +5093,7 @@ function gameSkip(){
   if(!GAME.active)return;
   clearGameOverlay();
   GAME.attacker=null;GAME.defender=null;GAME.phase='idle';GAME.turn++;
-  gLog('↷ Turn skipped.');
+  gLog(FCLang.t('sim.log.turnskipped'));
   gameRender();
 }
 
@@ -5207,12 +5222,12 @@ function doLoad(){
     reader.onload=()=>{
       try{
         const payload=JSON.parse(reader.result);
-        if(!payload.state){alert('Invalid save file.');return;}
+        if(!payload.state){alert(FCLang.t('sim.save.invalid'));return;}
         // Snapshot current state before loading so user can Undo the load
         const prev=captureState();
         undoStack.push({type:'reset',prev});
         restoreState(payload.state);
-      }catch(e){alert('Could not read save file: '+e.message);}
+      }catch(e){alert(FCLang.t('sim.save.readfail',{message:e.message}));}
     };
     reader.readAsText(f);
   };
@@ -5428,8 +5443,8 @@ function startGameInMode(mode,heroId){
   const title=document.getElementById('g-mode-title');
   if(title){
     title.textContent=mode==='conquest'
-      ? `⚔️ World Conquest: ${teams.find(t=>t.id===heroId).name}`
-      : '⚔️ FC Imperialism';
+      ? FCLang.t('sim.gp.title.wc',{team:teams.find(t=>t.id===heroId).name})
+      : FCLang.t('sim.gp.title.imp');
   }
   if(mode==='conquest'){
     // In conquest mode, hero IS the eternal attacker — pre-set them
@@ -5446,8 +5461,8 @@ function startGameInMode(mode,heroId){
     if(c) panTo([c[0],c[1]],Math.max(6,currentK()));
     updateHeroGlow();
     refreshConquestHud();
-    gLog(`⚔️ <b>World Conquest started.</b> You are <b>${GAME.attacker.name}</b>.`);
-    gLog('Spin the arrow to find your first opponent.');
+    gLog(FCLang.t('sim.log.wcstarted',{hero:GAME.attacker.name}));
+    gLog(FCLang.t('sim.log.spinfind'));
   }
 }
 
@@ -5609,11 +5624,11 @@ function renderLeaderboard(){
   const count=document.getElementById('g-leaderboard-count');
   if(!body) return;
   const board=loadLeaderboard();
-  if(count) count.textContent=board.length===0?'':`${board.length} run${board.length===1?'':'s'}`;
+  if(count) count.textContent=board.length===0?'':FCLang.t(board.length===1?'sim.lb.run':'sim.lb.runs',{n:board.length});
   if(board.length===0){
     body.innerHTML=`<div class="g-leaderboard-empty">
-      <b>No records yet</b>
-      Finish a World Conquest run (Victory or Elimination) and it'll be saved here automatically.
+      <b>${FCLang.t('sim.lb.empty.h')}</b>
+      ${FCLang.t('sim.lb.empty.p')}
     </div>`;
     return;
   }
@@ -5630,9 +5645,9 @@ function renderLeaderboard(){
     const gd=e.gf-e.ga;
     const gdCls=gd>0?'g-lb-gd-pos':(gd<0?'g-lb-gd-neg':'');
     const gdStr=(gd>0?'+':'')+gd;
-    const resultLabel=e.result==='victory'?'🏆 Victory':'💀 Eliminated';
+    const resultLabel=e.result==='victory'?FCLang.t('sim.lb.victory'):FCLang.t('sim.lb.eliminated');
     const elimRow=e.result==='eliminated'&&e.eliminatedBy
-      ?`<div class="g-lb-elim">by ${e.eliminatedBy}</div>`:'';
+      ?`<div class="g-lb-elim">${FCLang.t('sim.lb.by',{name:e.eliminatedBy})}</div>`:'';
     return `<tr>
       <td><span class="${flagCls}" style="${flagBg}"></span></td>
       <td><div class="g-lb-country">${e.heroName}</div>${elimRow}</td>
@@ -5646,8 +5661,8 @@ function renderLeaderboard(){
   }).join('');
   body.innerHTML=`<table class="g-leaderboard-table">
     <thead><tr>
-      <th></th><th>Country</th><th>Result</th><th>W–L</th><th>Goals</th>
-      <th>Turns</th><th>Territories</th><th>Date</th>
+      <th></th><th>${FCLang.t('sim.lb.col.country')}</th><th>${FCLang.t('sim.lb.col.result')}</th><th>${FCLang.t('sim.lb.col.wl')}</th><th>${FCLang.t('sim.lb.col.goals')}</th>
+      <th>${FCLang.t('sim.lb.col.turns')}</th><th>${FCLang.t('sim.lb.col.territories')}</th><th>${FCLang.t('sim.lb.col.date')}</th>
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
@@ -5679,11 +5694,11 @@ function syncUserStrip(){
   if(!statusEl||!btnEl) return;
   const name=fcUsername();
   if(name){
-    statusEl.innerHTML=`Submitting as <b>${escapeHtml(name)}</b>`;
-    btnEl.textContent='Change name';
+    statusEl.innerHTML=FCLang.t('sim.lb.submitas',{name:escapeHtml(name)});
+    btnEl.textContent=FCLang.t('sim.lb.changename');
   } else {
-    statusEl.innerHTML='Pick a name to appear here';
-    btnEl.textContent='Set name';
+    statusEl.innerHTML=FCLang.t('sim.lb.pickname');
+    btnEl.textContent=FCLang.t('sim.lb.setname');
   }
 }
 function escapeHtml(s){
@@ -5695,7 +5710,7 @@ async function renderGlobalLeaderboard(){
   const body=document.getElementById('g-leaderboard-body');
   const count=document.getElementById('g-leaderboard-count');
   if(!body) return;
-  body.innerHTML='<div class="g-lb-loading">Loading global rankings…</div>';
+  body.innerHTML='<div class="g-lb-loading">'+FCLang.t('sim.lb.loading')+'</div>';
   if(count) count.textContent='';
   let data;
   try{
@@ -5704,18 +5719,18 @@ async function renderGlobalLeaderboard(){
     data=await res.json();
   }catch(err){
     body.innerHTML=`<div class="g-lb-error">
-      Couldn't reach the global leaderboard.<br>
+      ${FCLang.t('sim.lb.err')}<br>
       <small>${escapeHtml(String(err.message||err))}</small><br><br>
-      Your local records are unaffected — switch to the "Your Runs" tab.
+      ${FCLang.t('sim.lb.err.p')}
     </div>`;
     return;
   }
   const rows=data.rows||[];
-  if(count) count.textContent=rows.length===0?'':`${rows.length} run${rows.length===1?'':'s'}`;
+  if(count) count.textContent=rows.length===0?'':FCLang.t(rows.length===1?'sim.lb.run':'sim.lb.runs',{n:rows.length});
   if(rows.length===0){
     body.innerHTML=`<div class="g-leaderboard-empty">
-      <b>No global runs yet</b>
-      Be the first to submit one — set a display name above and finish a campaign.
+      <b>${FCLang.t('sim.lb.global.empty.h')}</b>
+      ${FCLang.t('sim.lb.global.empty.p')}
     </div>`;
     return;
   }
@@ -5739,8 +5754,8 @@ async function renderGlobalLeaderboard(){
     const gd=r.gd!=null?r.gd:(r.gf-r.ga);
     const gdCls=gd>0?'g-lb-gd-pos':(gd<0?'g-lb-gd-neg':'');
     const gdStr=(gd>0?'+':'')+gd;
-    const resLabel=r.result==='victory'?'🏆 Victory':'💀 Eliminated';
-    const elim=r.result==='eliminated'&&r.eliminated_by?`<div class="g-lb-elim">by ${escapeHtml(r.eliminated_by)}</div>`:'';
+    const resLabel=r.result==='victory'?FCLang.t('sim.lb.victory'):FCLang.t('sim.lb.eliminated');
+    const elim=r.result==='eliminated'&&r.eliminated_by?`<div class="g-lb-elim">${FCLang.t('sim.lb.by',{name:escapeHtml(r.eliminated_by)})}</div>`:'';
     const isYou=myName && r.username===myName;
     const userCls=isYou?'g-lb-username you':'g-lb-username';
     return `<tr>
@@ -5748,7 +5763,7 @@ async function renderGlobalLeaderboard(){
       <td><span class="${flagCls}" style="${flagBg}"></span></td>
       <td>
         <div class="g-lb-country">${escapeHtml(r.hero_name)}</div>
-        <div class="${userCls}">${escapeHtml(r.username)}${isYou?' · you':''}</div>
+        <div class="${userCls}">${escapeHtml(r.username)}${isYou?' '+FCLang.t('sim.lb.you'):''}</div>
         ${elim}
       </td>
       <td><span class="g-lb-result ${r.result}">${resLabel}</span></td>
@@ -5760,8 +5775,8 @@ async function renderGlobalLeaderboard(){
   }).join('');
   body.innerHTML=`<table class="g-leaderboard-table">
     <thead><tr>
-      <th>#</th><th></th><th>Country / Player</th><th>Result</th>
-      <th>W–L</th><th>Goals</th><th>Turns</th><th>Date</th>
+      <th>#</th><th></th><th>${FCLang.t('sim.lb.col.countryplayer')}</th><th>${FCLang.t('sim.lb.col.result')}</th>
+      <th>${FCLang.t('sim.lb.col.wl')}</th><th>${FCLang.t('sim.lb.col.goals')}</th><th>${FCLang.t('sim.lb.col.turns')}</th><th>${FCLang.t('sim.lb.col.date')}</th>
     </tr></thead>
     <tbody>${html}</tbody>
   </table>`;
@@ -5775,7 +5790,7 @@ function wireLeaderboardModal(){
   if(closeBtn) closeBtn.addEventListener('click',closeLeaderboardModal);
   const clearBtn=document.getElementById('g-leaderboard-clear');
   if(clearBtn) clearBtn.addEventListener('click',()=>{
-    if(!confirm('Clear ALL local leaderboard records? This cannot be undone.\n\nNote: this does NOT remove your global submissions.')) return;
+    if(!confirm(FCLang.t('sim.lb.confirm'))) return;
     saveLeaderboard([]);
     renderLeaderboard();
   });
@@ -5808,8 +5823,8 @@ function wireLeaderboardModal(){
     const current=fcUsername();
     const next=prompt(
       current
-        ? `Change your display name (max 24 chars):`
-        : `Pick a display name to appear on the global leaderboard (max 24 chars):`,
+        ? FCLang.t('sim.lb.prompt.change')
+        : FCLang.t('sim.lb.prompt.pick'),
       current
     );
     if(next===null) return; // user cancelled
@@ -6084,7 +6099,6 @@ function updateResultPreview(){
   const terrChip=document.getElementById('g-result-territory-chip');
   const momChip=document.getElementById('g-result-momentum-chip');
   const streakEl=document.getElementById('g-result-streak');
-  const streakN=document.getElementById('g-result-streak-n');
   if(momRow){
     const terr=m.heroTerritorial||0;
     const mom =m.heroMomentum||0;
@@ -6097,7 +6111,7 @@ function updateResultPreview(){
       if(streakEl){
         if(m.winStreak>=3){
           streakEl.style.display='inline-block';
-          if(streakN) streakN.textContent=m.winStreak;
+          streakEl.textContent=FCLang.t('sim.res.streak',{n:m.winStreak});
         } else {
           streakEl.style.display='none';
         }
@@ -6187,10 +6201,10 @@ function wireResultModal(){
     if(finishTag){
       finishTag.classList.remove('shown','pens');
       if(finish==='aet'){
-        finishTag.textContent='After Extra Time';
+        finishTag.textContent=FCLang.t('sim.res.aftextra');
         finishTag.classList.add('shown');
       } else if(finish==='pens'){
-        finishTag.textContent='On Penalties · '+result.pensHero+'–'+result.pensOpp;
+        finishTag.textContent=FCLang.t('sim.res.onpens',{score:result.pensHero+'–'+result.pensOpp});
         finishTag.classList.add('shown','pens');
       }
     }
@@ -6249,19 +6263,19 @@ function wireResultModal(){
       const ovrDelta  = newOvr  - oldOvr;
       if(terrDelta !== 0){
         const sign = terrDelta>0 ? '+' : '−';
-        territoryEl.textContent='🗺️ Territory '+sign+Math.abs(terrDelta);
+        territoryEl.textContent=FCLang.t('sim.res.imp.terr',{d:sign+Math.abs(terrDelta)});
         territoryEl.classList.add(terrDelta>0?'up':'down','shown');
         visibleImpactLines++;
       }
       if(momDelta !== 0){
         const sign = momDelta>0 ? '+' : '−';
-        momentumEl.textContent='🔥 Momentum '+sign+Math.abs(momDelta);
+        momentumEl.textContent=FCLang.t('sim.res.imp.mom',{d:sign+Math.abs(momDelta)});
         momentumEl.classList.add(momDelta>0?'up':'down','shown');
         visibleImpactLines++;
       }
       if(ovrDelta !== 0){
         const sign = ovrDelta>0 ? '+' : '−';
-        ovrEl.textContent='OVR '+sign+Math.abs(ovrDelta);
+        ovrEl.textContent=FCLang.t('sim.res.imp.ovr',{d:sign+Math.abs(ovrDelta)});
         ovrEl.classList.add(ovrDelta>0?'up':'down','shown');
         visibleImpactLines++;
       }
@@ -6298,12 +6312,12 @@ function wireResultModal(){
       // Goals tied, shootout decides
       const pH=parseInt(document.getElementById('g-result-pens-hero').value)||0;
       const pO=parseInt(document.getElementById('g-result-pens-opp').value)||0;
-      if(pH===pO){alert('Penalty shootout cannot end in a tie. Adjust the pens score.');return;}
+      if(pH===pO){alert(FCLang.t('sim.res.alert.penstie'));return;}
       won=pH>pO;
     } else {
       // FT or AET: must have a clear winner (no draws allowed in knockout format)
       if(heroScore===oppScore){
-        alert('A match cannot end in a draw. Either adjust the score, or switch the result type to AET / Penalties.');
+        alert(FCLang.t('sim.res.alert.draw'));
         return;
       }
       won=heroScore>oppScore;
@@ -6334,7 +6348,8 @@ function resolveConquestBattle(won){
 
 function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   // Log
-  gLog(`✅ <b>${hero.name}</b> ${heroScore}–${oppScore}${suffix} <b>${opp.name}</b> — <b style="color:#6dd86d">${hero.name}</b> wins!`);
+  gLog(FCLang.t('sim.log.win',{hero:hero.name, score:heroScore+'–'+oppScore+suffix, opp:opp.name,
+    winner:'<b style="color:#6dd86d">'+hero.name+'</b>'}));
   // Snapshot opponent's previous color (for retreat)
   const opponentIsoList=[...GAME.state[opp.id].ownedIsos];
   const prevColors={};
@@ -6473,7 +6488,7 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   // Check for total victory
   const remaining=Object.values(GAME.state).filter(t=>t.alive&&t.id!==hero.id).length;
   if(remaining===0){
-    gLog(`🏆 <b>${hero.name} has conquered the world!</b>`);
+    gLog(FCLang.t('sim.log.heroconquered',{hero:hero.name}));
     showGameOverOverlay({victory:true,hero:hero.name,turns:GAME.turn});
     GAME.phase='idle';
     // Persist this run to the Hall of Fame so the player can revisit it later.
@@ -6508,19 +6523,20 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   // Only show if the penalty is non-trivial.
   if(progressBefore > 1 && fractionLost > 0.05){
     const pct=Math.round(fractionLost*100);
-    gLog(`💔 Morale hit — momentum down ${pct}% after the loss.`);
+    gLog(FCLang.t('sim.log.morale',{pct:pct}));
   }
   // Capture current hero position before retreat (for undo)
   const heroBadgeNow=document.querySelector(`.fbadge[data-badge-id="${hero.id}"]`);
   const fromX=heroBadgeNow?parseFloat(heroBadgeNow.getAttribute('data-cx')):0;
   const fromY=heroBadgeNow?parseFloat(heroBadgeNow.getAttribute('data-cy')):0;
-  gLog(`❌ <b>${hero.name}</b> ${heroScore}–${oppScore}${suffix} <b>${opp.name}</b> — <b style="color:#ff8a8a">${opp.name}</b> wins!`);
+  gLog(FCLang.t('sim.log.loss',{hero:hero.name, score:heroScore+'–'+oppScore+suffix, opp:opp.name,
+    winner:'<b style="color:#ff8a8a">'+opp.name+'</b>'}));
   // Increment loss count against this opponent
   GAME.lossCounts[opp.id]=(GAME.lossCounts[opp.id]||0)+1;
   const losses=GAME.lossCounts[opp.id];
-  gLog(`   Losses to ${opp.name}: <b>${losses}/3</b>`);
+  gLog('   '+FCLang.t('sim.log.lossesto',{opp:opp.name,n:losses}));
   if(losses>=3){
-    gLog(`💀 <b>Game over!</b> ${opp.name} has eliminated ${hero.name}.`);
+    gLog(FCLang.t('sim.log.gameover',{opp:opp.name,hero:hero.name}));
     refreshConquestHud({lastResult:{type:'loss',hero:hero.name,opp:opp.name,score:`${heroScore}–${oppScore}`,gameOver:true}});
     showGameOverOverlay({victory:false,hero:hero.name,opp:opp.name,score:`${heroScore}–${oppScore}`});
     // Persist this run to the Hall of Fame before flipping GAME.active off,
@@ -6534,7 +6550,7 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   // Retreat: pop the most recent conquest. That country becomes independent again,
   // but the opponent (defender) gains it instead.
   if(GAME.conquestStack.length===0){
-    gLog(`   ${hero.name} has nowhere to retreat. Try again from current position.`);
+    gLog('   '+FCLang.t('sim.log.noretreat',{hero:hero.name}));
     // Even with nowhere to retreat, guard the enclave trap: if the hero's
     // current flag position sits inside the winning team's land, relocate
     // to the hero's largest territory so spins aren't permanently funnelled
@@ -6632,7 +6648,7 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
     lastWin.querySelectorAll('path').forEach(p=>p.setAttribute('stroke','rgba(255,90,90,0.55)'));
     lastWin.querySelectorAll('polygon').forEach(p=>p.setAttribute('fill','rgba(255,90,90,0.75)'));
   }
-  gLog(`↩️ Retreated to <b>${hero.name}</b>'s previous position.`);
+  gLog(FCLang.t('sim.log.retreated',{hero:hero.name}));
   // Reset for next spin
   GAME.defender=null;
   GAME.phase='picked-att';
@@ -6761,7 +6777,7 @@ function undoConquestWin(op){
   gameRender();
   panTo([op.heroFromX,op.heroFromY],Math.max(6,currentK()));
   refreshConquestHud();
-  gLog(`↶ Undid conquest of <b>${op.oppName}</b>.`);
+  gLog(FCLang.t('sim.log.undoconquest',{name:op.oppName}));
 }
 
 function undoConquestLoss(op){
@@ -6833,7 +6849,7 @@ function undoConquestLoss(op){
   gameRender();
   panTo([op.heroPosBefore[0],op.heroPosBefore[1]],Math.max(6,currentK()));
   refreshConquestHud();
-  gLog(`↶ Undid loss to <b>${op.oppName}</b>.`);
+  gLog(FCLang.t('sim.log.undoloss',{name:op.oppName}));
 }
 
 
@@ -6846,11 +6862,13 @@ function showGameOverOverlay(opts){
   title.classList.remove('victory');
   if(opts.victory){
     title.classList.add('victory');
-    title.textContent='VICTORY!';
-    sub.innerHTML=`<b>${opts.hero}</b> has conquered the world<br><span style="color:#7a9bb5;font-size:14px">after ${opts.turns} turns</span>`;
+    title.textContent=FCLang.t('sim.over.victory');
+    sub.innerHTML=FCLang.t('sim.over.conquered',{hero:opts.hero})+
+      '<br><span style="color:#7a9bb5;font-size:14px">'+FCLang.t('sim.over.afterturns',{turns:opts.turns})+'</span>';
   } else {
-    title.textContent='GAME OVER';
-    sub.innerHTML=`<b>${opts.opp}</b> has eliminated <b>${opts.hero}</b><br><span style="color:#7a9bb5;font-size:14px">3 consecutive losses · Final score ${opts.score}</span>`;
+    title.textContent=FCLang.t('sim.over.gameover');
+    sub.innerHTML=FCLang.t('sim.over.eliminated',{opp:opts.opp,hero:opts.hero})+
+      '<br><span style="color:#7a9bb5;font-size:14px">'+FCLang.t('sim.over.3losses',{score:opts.score})+'</span>';
   }
   overlay.classList.add('open');
 }
@@ -6892,7 +6910,7 @@ function updateConquestHud(state){
   const remaining=Object.values(GAME.state).filter(t=>t.alive&&t.id!==GAME.heroTeamId).length;
   const turnSummaryEl=document.getElementById('g-events-turn-summary');
   if(turnSummaryEl){
-    turnSummaryEl.innerHTML=`Turn <b>${GAME.turn}</b><span class="sep">·</span><b>${remaining}</b> left`;
+    turnSummaryEl.innerHTML=FCLang.t('sim.ev.turnsummary',{turn:GAME.turn,remaining:remaining}).replace(' · ','<span class="sep">·</span>');
   }
   if(turnEl) turnEl.style.display='none';
   // Campaign stats strip above the flags — RECORD W–L · GOALS GF–GA (±GD).
@@ -6905,7 +6923,7 @@ function updateConquestHud(state){
       const gdClass=gd>0?'gd-pos':(gd<0?'gd-neg':'gd-zero');
       const gdStr=(gd>0?'+':'')+gd;
       conquestStatsEl.style.display='block';
-      conquestStatsEl.innerHTML=`Record <b class="w">${s.wins}</b>–<b class="l">${s.losses}</b><span class="sep">·</span>Goals <b>${s.gf}</b>–<b>${s.ga}</b> (<b class="${gdClass}">${gdStr}</b>)`;
+      conquestStatsEl.innerHTML=FCLang.t('sim.hud.record')+' <b class="w">'+s.wins+'</b>–<b class="l">'+s.losses+'</b><span class="sep">·</span>'+FCLang.t('sim.hud.goals')+' <b>'+s.gf+'</b>–<b>'+s.ga+'</b> (<b class="'+gdClass+'">'+gdStr+'</b>)';
     } else {
       conquestStatsEl.style.display='none';
     }
@@ -6922,7 +6940,7 @@ function updateConquestHud(state){
       conquestLossEl.classList.remove('warn','danger');
       if(state.lossCount===1) conquestLossEl.classList.add('warn');
       if(state.lossCount>=2) conquestLossEl.classList.add('danger');
-      conquestLossEl.innerHTML=`⚠️ Losses to <b>${state.lossOpponent}</b>: <b>${state.lossCount}/3</b>`;
+      conquestLossEl.innerHTML=FCLang.t('sim.hud.losses',{opp:state.lossOpponent,n:state.lossCount});
     } else {
       conquestLossEl.style.display='none';
     }
@@ -7131,8 +7149,8 @@ if(document.readyState==='loading'){
   if(!btn)return;
   const updateBtn=()=>{
     const light=document.body.classList.contains('map-light');
-    btn.innerHTML=light?'🌙 Dark':'☀️ Light';
-    btn.title=light?'Switch to dark map':'Switch to light map';
+    btn.innerHTML=(light?'🌙 ':'☀️ ')+'<span id="btn-theme-label">'+
+      FCLang.t(light?'sim.tb.dark':'sim.tb.light')+'</span>';
   };
   btn.addEventListener('click',()=>{
     const newLight=!document.body.classList.contains('map-light');
@@ -7147,6 +7165,8 @@ if(document.readyState==='loading'){
   });
   // Initial label
   updateBtn();
+  // Re-render the label when the UI language changes.
+  if(window.FCLang) FCLang.onChange.push(updateBtn);
   // Also re-sync if settings popover checkbox changes externally
   const cb=document.getElementById('set-lightMap');
   if(cb) cb.addEventListener('change',updateBtn);
