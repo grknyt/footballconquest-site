@@ -268,8 +268,8 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
    pulsing red at 2/3, since the player needs continuous awareness of how
    close they are to elimination by this specific opponent. Visibility
    driven entirely by JS via style.display so it can vanish cleanly. */
-.g-conquest-loss{font-size:12px;font-weight:700;letter-spacing:.5px;
-  text-align:center;padding:6px 14px 0;line-height:1.4;}
+.g-conquest-loss{font-size:15px;font-weight:700;letter-spacing:.4px;
+  text-align:center;padding:7px 14px 0;line-height:1.4;}
 .g-conquest-loss b{font-weight:800;}
 .g-conquest-loss.warn  {color:#ffd54a;}
 .g-conquest-loss.danger{color:#ff8a8a;animation:g-hud-pulse 1s ease-in-out infinite;}
@@ -1149,8 +1149,11 @@ body.web-build .g-result-card.revealed .g-sim-btn{
 
     
     
-    <!-- Game-over / victory dramatic overlay -->
-    <div id="g-over-overlay" style="display:none;">
+    <!-- Game-over / victory dramatic overlay. NOTE: no inline display:none —
+         visibility is driven purely by the .open class (CSS: base rule hides
+         it, #g-over-overlay.open shows it as flex). An inline style here would
+         override the class rule and the overlay would never appear. -->
+    <div id="g-over-overlay">
       <div class="g-over-card">
         <div class="g-over-title" id="g-over-title">GAME OVER</div>
         <div class="g-over-sub" id="g-over-sub"></div>
