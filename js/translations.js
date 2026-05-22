@@ -6,6 +6,9 @@
 
    Brand names ("Football Conquest", "Ghiellini", "GRKN7", "FC")
    are intentionally NOT translated. Keys are grouped by page.
+
+   rev: 2026-05-22 — clean redeploy (a previous build dropped this file
+   mid-upload during a Cloudflare incident).
    ───────────────────────────────────────────────────────────── */
 window.FC_TRANSLATIONS = {
   en: {
