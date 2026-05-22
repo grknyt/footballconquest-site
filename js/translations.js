@@ -535,6 +535,12 @@ window.FC_TRANSLATIONS = {
     "sim.rev.log": "Revenge match — {name} beat you before.",
     "sim.rev.nemesis": "{name} is now your nemesis — beat them to settle the score.",
     "sim.rev.taken": "Revenge taken — {name} conquered!",
+    /* Q — run recap */
+    "sim.recap.record": "Record",
+    "sim.recap.goals": "Goals",
+    "sim.recap.turns": "Turns",
+    "sim.recap.continents": "Continents",
+    "sim.recap.aura": "Aura",
     /* M — save/load */
     "sim.save.invalid": "Invalid save file.",
     "sim.save.readfail": "Could not read save file: {message}"
@@ -1064,6 +1070,12 @@ window.FC_TRANSLATIONS = {
     "sim.rev.log": "Revanş maçı — {name} seni daha önce yenmişti.",
     "sim.rev.nemesis": "{name} artık baş düşmanın — hesaplaşmak için onları yen.",
     "sim.rev.taken": "Revanş alındı — {name} fethedildi!",
+    /* Q — run recap */
+    "sim.recap.record": "Sicil",
+    "sim.recap.goals": "Goller",
+    "sim.recap.turns": "Tur",
+    "sim.recap.continents": "Kıtalar",
+    "sim.recap.aura": "Aura",
     /* M — save/load */
     "sim.save.invalid": "Geçersiz kayıt dosyası.",
     "sim.save.readfail": "Kayıt dosyası okunamadı: {message}"

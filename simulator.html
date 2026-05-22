@@ -536,6 +536,31 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-result-event.revenge .g-result-event-eyebrow{color:#ff9a4a;}
 .g-result-event.revenge .g-result-event-name{color:#ffb877;}
 .g-result-event.revenge .g-result-event-desc{color:#d8b48a;}
+/* ── Game-feel polish: confetti, screen shake, run-recap ── */
+.fc-confetti{position:fixed;inset:0;pointer-events:none;z-index:200;overflow:hidden;}
+.fc-confetti-bit{position:absolute;top:-24px;width:9px;height:14px;opacity:0;
+  animation:fc-confetti-fall linear forwards;}
+@keyframes fc-confetti-fall{
+  0%{opacity:0;transform:translate3d(0,-24px,0) rotate(0deg);}
+  8%{opacity:1;}
+  100%{opacity:1;transform:translate3d(var(--drift,0px),106vh,0) rotate(900deg);}
+}
+.fc-shake{animation:fc-shake .5s ease;}
+@keyframes fc-shake{
+  0%,100%{transform:translate(0,0);}
+  20%{transform:translate(-6px,2px);}
+  40%{transform:translate(6px,-3px);}
+  60%{transform:translate(-5px,3px);}
+  80%{transform:translate(5px,-2px);}
+}
+.g-over-recap{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+  margin:18px auto 4px;max-width:360px;}
+.g-recap-tile{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+  border-radius:8px;padding:9px 5px;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.g-recap-ic{font-size:16px;line-height:1;}
+.g-recap-val{font-size:14px;font-weight:800;color:#f4ead5;font-variant-numeric:tabular-nums;}
+.g-recap-lbl{font-size:8px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+  color:#7a9bb5;text-align:center;line-height:1.2;}
 /* ── Aura boosts panel inside the result modal ── */
 .g-result-boosts{background:#0a1624;border:1px solid #1a2f40;border-radius:8px;padding:12px 14px;margin-bottom:14px;}
 .g-boost-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;
@@ -1313,6 +1338,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
       <div class="g-over-card">
         <div class="g-over-title" id="g-over-title">GAME OVER</div>
         <div class="g-over-sub" id="g-over-sub"></div>
+        <div class="g-over-recap" id="g-over-recap"></div>
         <div class="g-over-actions">
           <button class="g-btn primary" id="g-over-newgame"><span>🎲</span><span data-i18n="sim.over.newgame">New Game</span></button>
           <button class="g-btn ghost" id="g-over-dismiss" data-i18n="sim.over.viewmap">View final map</button>
@@ -5716,7 +5742,7 @@ function startGameInMode(mode,heroId){
   // farming minnows doesn't snowball the way it did. Stored on each win op
   // for clean undo via op.prevMomentumProgress.
   GAME.momentumProgress=0;
-  GAME.aura=0; GAME.matchBoost=null; GAME.doubleOrNothing=false;
+  GAME.aura=0; GAME.matchBoost=null; GAME.doubleOrNothing=false; GAME.biggestWin=null;
   // The specific iso (territory) the arrow hit on the last spin. Captured
   // in gameSpinArrow's animation-end callback. Used by handleConquestWin to
   // move the hero's flag onto the targeted territory rather than the
@@ -7019,6 +7045,13 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
     gLog('⚔️ '+FCLang.t('sim.rev.taken',{name:'<b>'+teamDisplayName(opp.name)+'</b>'})); }
   if(GAME.doubleOrNothing) _auraGain*=2;
   GAME.aura=(GAME.aura||0)+_auraGain;
+  // Run-recap: remember the biggest-margin win of the campaign.
+  const _wm=heroScore-oppScore;
+  if(!GAME.biggestWin||_wm>GAME.biggestWin.margin)
+    GAME.biggestWin={margin:_wm,opp:opp.name,score:heroScore+'–'+oppScore};
+  // Screen shake on a dramatic win — an upset, a boss, or a revenge match.
+  if(fifaRating(opp.name)>fifaRating(hero.name)||
+     (GAME.matchEvent&&(GAME.matchEvent.isBoss||GAME.matchEvent.isRevenge))) screenShake();
   // Push undo record for this win. heroScore/oppScore stored explicitly so
   // undoConquestWin can rewind the stats tally cleanly (no string parsing).
   // prevWinStreak captures the streak value BEFORE this win so undo restores
@@ -7076,6 +7109,8 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   GAME.lastLossOppId=opp.id;
   // Double or Nothing: a loss forfeits the entire Aura bank.
   if(GAME.doubleOrNothing){ GAME.aura=0; }
+  // Screen shake on an upset loss — a lower-rated side beat the hero.
+  if(fifaRating(opp.name)<fifaRating(hero.name)) screenShake();
   // ── Momentum penalty for the loss ────────────────────────────────────
   // Snapshot streak BEFORE we reset it so the penalty calc sees how high
   // we were riding.
@@ -7431,6 +7466,57 @@ function undoConquestLoss(op){
 
 
 
+// ── Game-feel polish: confetti, screen shake, run-recap card ─────────────
+// Victory confetti — a burst of falling colour across the VICTORY overlay.
+function fireConfetti(){
+  const layer=document.createElement('div');
+  layer.className='fc-confetti';
+  const colors=['#c8102e','#d4a936','#f4ead5','#7ab8e8','#6dd86d','#ff9a4a'];
+  for(let i=0;i<90;i++){
+    const bit=document.createElement('div');
+    bit.className='fc-confetti-bit';
+    bit.style.left=(Math.random()*100)+'%';
+    bit.style.background=colors[Math.floor(Math.random()*colors.length)];
+    bit.style.animationDuration=(2.4+Math.random()*2.4)+'s';
+    bit.style.animationDelay=(Math.random()*0.9)+'s';
+    bit.style.setProperty('--drift',(Math.random()*220-110)+'px');
+    if(Math.random()<0.5) bit.style.borderRadius='50%';
+    layer.appendChild(bit);
+  }
+  document.body.appendChild(layer);
+  setTimeout(function(){ layer.remove(); },7000);
+}
+// Brief screen shake — applied to the map SVG (#msvg), which carries no d3
+// zoom transform of its own, so the CSS animation can't fight the pan/zoom.
+function screenShake(){
+  const el=document.getElementById('msvg');
+  if(!el) return;
+  el.classList.add('fc-shake');
+  clearTimeout(window._fcShakeT);
+  window._fcShakeT=setTimeout(function(){ el.classList.remove('fc-shake'); },520);
+}
+// Build the run-recap stat grid for the game-over / victory overlay.
+function buildRunRecap(turns){
+  const s=(GAME&&GAME.stats)||{wins:0,losses:0,gf:0,ga:0};
+  let conts=0;
+  if(GAME&&GAME.continentsMilestoned){
+    for(const k in GAME.continentsMilestoned){ if(GAME.continentsMilestoned[k]) conts++; }
+  }
+  const aura=(GAME&&GAME.aura)||0;
+  const bw=GAME&&GAME.biggestWin;
+  function tile(ic,val,lbl){
+    return '<div class="g-recap-tile"><span class="g-recap-ic">'+ic+'</span>'
+      +'<span class="g-recap-val">'+val+'</span>'
+      +'<span class="g-recap-lbl">'+lbl+'</span></div>';
+  }
+  let h=tile('⚔️',s.wins+'–'+s.losses,FCLang.t('sim.recap.record'));
+  h+=tile('⚽',s.gf+'–'+s.ga,FCLang.t('sim.recap.goals'));
+  h+=tile('🗓️',(turns||(GAME&&GAME.turn)||0),FCLang.t('sim.recap.turns'));
+  h+=tile('🌍',conts+'/6',FCLang.t('sim.recap.continents'));
+  h+=tile('⭐',aura,FCLang.t('sim.recap.aura'));
+  h+=tile('🔥',bw?bw.score:'—',bw?teamDisplayName(bw.opp):'—');
+  return h;
+}
 function showGameOverOverlay(opts){
   const overlay=document.getElementById('g-over-overlay');
   const title=document.getElementById('g-over-title');
@@ -7447,7 +7533,10 @@ function showGameOverOverlay(opts){
     sub.innerHTML=FCLang.t('sim.over.eliminated',{opp:teamDisplayName(opts.opp),hero:teamDisplayName(opts.hero)})+
       '<br><span style="color:#7a9bb5;font-size:14px">'+FCLang.t('sim.over.3losses',{score:opts.score})+'</span>';
   }
+  const _recap=document.getElementById('g-over-recap');
+  if(_recap) _recap.innerHTML=buildRunRecap(opts.turns);
   overlay.classList.add('open');
+  if(opts.victory && typeof fireConfetti==='function') fireConfetti();
 }
 function hideGameOverOverlay(){
   const overlay=document.getElementById('g-over-overlay');
