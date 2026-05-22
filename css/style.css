@@ -193,10 +193,10 @@ img, svg { display: block; max-width: 100%; height: auto; }
    file. Max-width is generous (1700px) to let the side ads have room on
    wide monitors without pushing the center too tight. */
 .hero-shell {
-  max-width: 1700px;
+  max-width: 1280px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(140px, 180px) 1fr minmax(140px, 180px);
+  grid-template-columns: 1fr;
   gap: 28px;
   align-items: stretch;
   position: relative;
@@ -1238,3 +1238,4 @@ img, svg { display: block; max-width: 100%; height: auto; }
   .section-header { padding: 32px 20px 0; flex-direction: column; gap: 12px; }
   .page { padding: 56px 20px; }
 }
+                                          
