@@ -3230,10 +3230,10 @@ function restoreState(s){
   }
 }
 
-function doReset(){
-  // Snapshot current state as single undoable entry BEFORE wiping anything
-  const prev=captureState();
-  undoStack.push({type:'reset',prev});
+// Wipe the map back to its pristine state — clears conquered colours, moved
+// flags, faded borders, and restores every flag badge. Shared by doReset()
+// (toolbar Reset) and startGameInMode() (so a new game always starts clean).
+function resetMapVisuals(){
   // Clear everything
   [...fadedPairs].forEach(p=>restoreBorder(p));
   Object.keys(colorOverrides).forEach(k=>{
@@ -3264,6 +3264,13 @@ function doReset(){
     b.setAttribute('opacity',1);
   });
   renderHandles();
+}
+function doReset(){
+  // Snapshot current state as single undoable entry BEFORE wiping anything
+  const prev=captureState();
+  undoStack.push({type:'reset',prev});
+  // Wipe the map back to its pristine state.
+  resetMapVisuals();
   // ── Reset the FC Imperialism game state if it's active ──
   if(GAME&&GAME.active){
     // Restart a fresh game with all teams alive and owning their home iso
@@ -5743,11 +5750,14 @@ function startGameInMode(mode,heroId){
   // for clean undo via op.prevMomentumProgress.
   GAME.momentumProgress=0;
   GAME.aura=0; GAME.matchBoost=null; GAME.doubleOrNothing=false; GAME.biggestWin=null;
+  GAME.continentsMilestoned={}; GAME.matchEvent=null; GAME._matchEventKey=null;
   // The specific iso (territory) the arrow hit on the last spin. Captured
   // in gameSpinArrow's animation-end callback. Used by handleConquestWin to
   // move the hero's flag onto the targeted territory rather than the
   // opponent's home centroid.
   GAME.defenderIso=null;
+  // A new game starts on a clean map — clear the previous run's conquests.
+  if(typeof resetMapVisuals==='function') resetMapVisuals();
   gameInit();
   // Force the floating top HUD to reflect the new mode immediately.
   // In Imperialism mode this hides leftover conquest state (e.g., "Russia
@@ -7052,6 +7062,9 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   // Screen shake on a dramatic win — an upset, a boss, or a revenge match.
   if(fifaRating(opp.name)>fifaRating(hero.name)||
      (GAME.matchEvent&&(GAME.matchEvent.isBoss||GAME.matchEvent.isRevenge))) screenShake();
+  // Match resolved — clear the one-match boost + gamble so neither can
+  // carry over into the next match (e.g. a same-opponent revenge match).
+  GAME.matchBoost=null; GAME.doubleOrNothing=false;
   // Push undo record for this win. heroScore/oppScore stored explicitly so
   // undoConquestWin can rewind the stats tally cleanly (no string parsing).
   // prevWinStreak captures the streak value BEFORE this win so undo restores
@@ -7111,6 +7124,9 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   if(GAME.doubleOrNothing){ GAME.aura=0; }
   // Screen shake on an upset loss — a lower-rated side beat the hero.
   if(fifaRating(opp.name)<fifaRating(hero.name)) screenShake();
+  // Match resolved — clear the one-match boost + gamble so neither can
+  // carry over into the next match (e.g. a same-opponent revenge match).
+  GAME.matchBoost=null; GAME.doubleOrNothing=false;
   // ── Momentum penalty for the loss ────────────────────────────────────
   // Snapshot streak BEFORE we reset it so the penalty calc sees how high
   // we were riding.
