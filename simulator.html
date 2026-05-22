@@ -482,6 +482,15 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
   font-variant-numeric:tabular-nums;}
 .g-result-score:focus{outline:none;border-color:#7ab8e8;}
 .g-result-vs{font-size:22px;color:#7a9bb5;font-weight:700;}
+/* ── Pre-match twist card ── gold-accented banner above the preview. */
+.g-result-event{display:flex;align-items:center;gap:12px;
+  background:linear-gradient(180deg,#2a2208 0%,#1a1605 100%);
+  border:1px solid #d4a936;border-radius:8px;padding:11px 14px;margin-bottom:14px;}
+.g-result-event-icon{font-size:30px;line-height:1;flex-shrink:0;}
+.g-result-event-text{display:flex;flex-direction:column;gap:1px;text-align:left;}
+.g-result-event-eyebrow{font-size:9px;font-weight:700;letter-spacing:1.5px;color:#d4a936;}
+.g-result-event-name{font-size:15px;font-weight:700;color:#f4d77a;}
+.g-result-event-desc{font-size:11px;color:#cdb88a;line-height:1.4;}
 /* ── Match preview: live win probability + xG + tactic selector ──
    Sits between the matchup row and the Simulate CTA. Values update on tactic
    change (no Simulate needed) so the player sees how each choice tilts odds. */
@@ -1140,6 +1149,16 @@ body.web-build .g-result-card.revealed .g-sim-btn{
             <div class="g-result-team-label" data-i18n="sim.res.opp">OPPONENT</div>
             <div class="g-result-style" id="g-result-opp-style">—</div>
           </div>
+        </div>
+        <!-- Pre-match twist card — shown only when an event was rolled. Sits
+             above the preview so its effect is already baked into the win-% / xG. -->
+        <div class="g-result-event" id="g-result-event" style="display:none;">
+          <span class="g-result-event-icon" id="g-result-event-icon">🎲</span>
+          <span class="g-result-event-text">
+            <span class="g-result-event-eyebrow" data-i18n="sim.evt.eyebrow">MATCH TWIST</span>
+            <span class="g-result-event-name" id="g-result-event-name"></span>
+            <span class="g-result-event-desc" id="g-result-event-desc"></span>
+          </span>
         </div>
         <!-- Match preview: live win probability + xG that responds to the tactic choice below. -->
         <div class="g-result-preview" id="g-result-preview">
@@ -2047,7 +2066,13 @@ function computeWinValue(hero, opp, heroScore, oppScore, streak){
   // Each streak win compounds the penalty, capped at -50%.
   const gapPenaltyScale = gap > 0 ? Math.min(1, gap/700) : 0;
   const damping = Math.min(0.50, (streak||0) * 0.08 * gapPenaltyScale);
-  return (baseValue + marginBonus) * (1 - damping);
+  let value = (baseValue + marginBonus) * (1 - damping);
+  // Pre-match twist: scale the swing (Grudge Match) + flat win bonus
+  // (Statement Game). Applied here so the modal preview and the real
+  // momentum update stay in lockstep.
+  const ev = (typeof GAME!=='undefined') && GAME && GAME.matchEvent;
+  if(ev){ value = value*(ev.momentumMult||1) + (ev.winBonusMomentum||0); }
+  return value;
 }
 // computeLossFraction: fraction of momentumProgress wiped by a loss.
 // Same gap-first philosophy: losing as a heavy favorite is devastating;
@@ -2076,7 +2101,11 @@ function computeLossFraction(hero, opp, heroScore, oppScore, prevStreak){
   // Margin penalty — each loss-goal beyond the first adds 15%, capped +90%.
   const lossMargin = Math.max(0, oppScore - heroScore);
   const marginMult = 1.0 + Math.min(0.9, Math.max(0, lossMargin - 1) * 0.15);
-  return Math.min(0.75, baseFraction * gapMult * marginMult);
+  let frac = Math.min(0.75, baseFraction * gapMult * marginMult);
+  // Pre-match twist: a Grudge Match also doubles how hard a loss bites.
+  const ev = (typeof GAME!=='undefined') && GAME && GAME.matchEvent;
+  if(ev && ev.momentumMult){ frac = Math.min(0.90, frac * ev.momentumMult); }
+  return frac;
 }
 // Per-team strength-bonus CEILING — the asymptote the hero's bonus approaches.
 // Minnows get a high ceiling (room to grow into competitiveness); top teams
@@ -5989,6 +6018,10 @@ function openResultModal(){
   if(ovrEl){ovrEl.classList.remove('shown','up','down');ovrEl.textContent='';}
   const card=document.querySelector('.g-result-card');
   if(card) card.classList.remove('revealed');
+  // Roll the pre-match twist (once per matchup) and render its card. Done
+  // BEFORE updateResultPreview so the win-% / xG already reflect the event.
+  rollMatchEvent();
+  renderMatchEventCard();
   // Refresh live preview (win prob + xG + tactic-button active state) for the
   // new matchup. Reads GAME.matchTactic which was reset to 'balanced' on spin.
   if(typeof updateResultPreview==='function') updateResultPreview();
@@ -6043,6 +6076,52 @@ function _identityBonus(heroStyle, tactic){
   if(heroStyle==='balanced' || tactic==='balanced') return 0;
   return heroStyle===tactic ? +5 : -5;
 }
+// ── Pre-match Events ("twists") ───────────────────────────────────────────
+// Before ~1 in 3 World Conquest matches a twist is rolled and shown in the
+// result modal. Each twist carries modifier fields consumed downstream:
+//   heroEffDelta / oppEffDelta     — flat effective-rating shift (win-prob + xG)
+//   heroLambdaMult / oppLambdaMult — direct expected-goals multiplier
+//   momentumMult                   — scales BOTH win-gain and loss-fraction
+//   winBonusMomentum               — flat momentum added on top of a win
+// Roughly three jeopardy / two boost / two neutral, so events stay tense.
+const MATCH_EVENT_CHANCE=0.33;
+const MATCH_EVENTS=[
+  {id:'crowd',     icon:'🏟️', oppEffDelta:40, oppLambdaMult:1.15},
+  {id:'striker',   icon:'⭐',  heroLambdaMult:1.30},
+  {id:'grudge',    icon:'🔥',  momentumMult:2.0},
+  {id:'injury',    icon:'🤕',  heroLambdaMult:0.70},
+  {id:'statement', icon:'💰',  winBonusMomentum:0.6},
+  {id:'giants',    icon:'🎯',  oppEffDelta:65},
+  {id:'storm',     icon:'🌧️', heroLambdaMult:0.70, oppLambdaMult:0.70}
+];
+// Roll once per turn — stays stable if the result modal is cancelled and
+// reopened for the same matchup; re-rolls when the matchup changes.
+function rollMatchEvent(){
+  if(!GAME || GAME.mode!=='conquest'){ if(GAME) GAME.matchEvent=null; return; }
+  const key=GAME.turn+'#'+(GAME.defender?GAME.defender.id:'-');
+  if(GAME._matchEventKey===key) return;
+  GAME._matchEventKey=key;
+  GAME.matchEvent=(Math.random()<MATCH_EVENT_CHANCE)
+    ? MATCH_EVENTS[Math.floor(Math.random()*MATCH_EVENTS.length)]
+    : null;
+  if(GAME.matchEvent){
+    gLog('🎲 '+FCLang.t('sim.evt.log',{name:'<b>'+FCLang.t('sim.evt.'+GAME.matchEvent.id+'.name')+'</b>'}));
+  }
+}
+// Fill + show (or hide) the twist card in the result modal.
+function renderMatchEventCard(){
+  const card=document.getElementById('g-result-event');
+  if(!card) return;
+  const ev=GAME&&GAME.matchEvent;
+  if(!ev){ card.style.display='none'; return; }
+  const ic=document.getElementById('g-result-event-icon');
+  const nm=document.getElementById('g-result-event-name');
+  const ds=document.getElementById('g-result-event-desc');
+  if(ic) ic.textContent=ev.icon;
+  if(nm) nm.textContent=FCLang.t('sim.evt.'+ev.id+'.name');
+  if(ds) ds.textContent=FCLang.t('sim.evt.'+ev.id+'.desc');
+  card.style.display='flex';
+}
 // Compute the full per-match Poisson model for the current matchup + tactic.
 // Returns {heroEff, oppEff, heroLambda, oppLambda, pHeroWin, oppStyle, heroStyle}
 // — used by both the live preview render and the actual score simulation, so
@@ -6065,8 +6144,11 @@ function computeMatchModel(tactic){
   const heroTerritorial=getHeroTerritorialBonus(hero);
   const heroMomentum=getHeroMomentumBonus(hero);
   const heroTotalBonus=heroTerritorial+heroMomentum;
-  const heroEff=heroFifa+heroTotalBonus+matchupBonus+idBonus;
-  const oppEff=oppFifa+oppSize*5;
+  let heroEff=heroFifa+heroTotalBonus+matchupBonus+idBonus;
+  let oppEff=oppFifa+oppSize*5;
+  // Pre-match twist: a flat effective-rating shift moves BOTH win-prob and xG.
+  const ev=GAME.matchEvent;
+  if(ev){ heroEff+=ev.heroEffDelta||0; oppEff+=ev.oppEffDelta||0; }
   const avg=(heroEff+oppEff)/2;
   // baseLambda 1.3 → ~2.6 total goals in an even match (realistic). The
   // /1000 exponent (was /800) flattens the rating-gap → goals curve so a
@@ -6074,8 +6156,10 @@ function computeMatchModel(tactic){
   // denominator 450) but does not also balloon the SCORELINE — a mid-tier
   // favourite no longer averages 2.4 xG and routinely wins 5-1 / 6-0.
   const baseLambda=1.3*lambdaMult;
-  const heroLambda=baseLambda*Math.pow(10,(heroEff-avg)/1000);
-  const oppLambda=baseLambda*Math.pow(10,(oppEff-avg)/1000);
+  let heroLambda=baseLambda*Math.pow(10,(heroEff-avg)/1000);
+  let oppLambda=baseLambda*Math.pow(10,(oppEff-avg)/1000);
+  // Twist: direct expected-goals multipliers (injured squad, hot striker, storm).
+  if(ev){ heroLambda*=ev.heroLambdaMult||1; oppLambda*=ev.oppLambdaMult||1; }
   // Win-probability uses the same Elo curve as the auto-resolve in gameResolve,
   // so the preview value matches the implicit odds of the simulator output.
   const pHeroWin=1/(1+Math.pow(10,(oppEff-heroEff)/450));
@@ -7282,6 +7366,7 @@ if(window.FCLang){
     try{ if(typeof gSlots==='function') gSlots(); }catch(e){}
     try{ if(typeof renderHistory==='function') renderHistory(); }catch(e){}
     try{ if(typeof refreshConquestHud==='function') refreshConquestHud(); }catch(e){}
+    try{ if(typeof renderMatchEventCard==='function') renderMatchEventCard(); }catch(e){}
     try{
       const si=document.getElementById('g-team-search');
       if(typeof renderTeamList==='function'&&si) renderTeamList(si.value);
