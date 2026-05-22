@@ -4626,6 +4626,67 @@ function isoCentroid(iso,nearTo){
   }catch(e){return null;}
 }
 
+// Most-interior point of an iso polygon — used for FLAG placement. The plain
+// vertex-average isoCentroid() is biased toward dense-vertex borders (e.g.
+// Peru's winding Amazon/Brazil frontier), which can drop the flag right on a
+// border. This picks the relevant sub-polygon (nearTo-nearest, else largest),
+// grid-samples its fill via isPointInFill, and returns the inside point with
+// the greatest clearance from the boundary — a lightweight pole-of-
+// inaccessibility — so the flag lands comfortably inland.
+function isoInteriorPoint(iso,nearTo){
+  const el=isoPaths[iso];
+  if(!el) return isoCentroid(iso,nearTo);
+  try{
+    const feature=el.__data__;
+    if(!feature||!feature.geometry||typeof el.isPointInFill!=='function') return isoCentroid(iso,nearTo);
+    const geom=feature.geometry;
+    let polys=[];
+    if(geom.type==='Polygon') polys=[geom.coordinates[0]];
+    else if(geom.type==='MultiPolygon') polys=geom.coordinates.map(p=>p[0]);
+    if(!polys.length) return isoCentroid(iso,nearTo);
+    const pp=polys.map(ring=>{
+      let sx=0,sy=0,n=0,minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+      ring.forEach(pt=>{
+        const p=proj(pt); if(!p||isNaN(p[0]))return;
+        sx+=p[0];sy+=p[1];n++;
+        if(p[0]<minX)minX=p[0]; if(p[0]>maxX)maxX=p[0];
+        if(p[1]<minY)minY=p[1]; if(p[1]>maxY)maxY=p[1];
+      });
+      if(n===0)return null;
+      return{cx:sx/n,cy:sy/n,minX:minX,maxX:maxX,minY:minY,maxY:maxY,area:(maxX-minX)*(maxY-minY)};
+    }).filter(x=>x);
+    if(!pp.length) return isoCentroid(iso,nearTo);
+    let target=pp[0];
+    if(nearTo){
+      let bd=Infinity;
+      for(const p of pp){ const d=Math.hypot(p.cx-nearTo[0],p.cy-nearTo[1]); if(d<bd){bd=d;target=p;} }
+    } else {
+      for(const p of pp){ if(p.area>target.area) target=p; }
+    }
+    const svg=el.ownerSVGElement||(el.closest&&el.closest('svg'));
+    if(!svg||!svg.createSVGPoint) return[target.cx,target.cy];
+    const w=target.maxX-target.minX, h=target.maxY-target.minY;
+    if(w<=0||h<=0) return[target.cx,target.cy];
+    const N=16, sp=svg.createSVGPoint(), stepX=w/(N+1), stepY=h/(N+1), grid=[];
+    for(let i=1;i<=N;i++){ for(let j=1;j<=N;j++){
+      const x=target.minX+i*stepX, y=target.minY+j*stepY;
+      sp.x=x; sp.y=y;
+      let inside=false; try{ inside=el.isPointInFill(sp); }catch(e){}
+      grid.push({x:x,y:y,in:inside});
+    }}
+    const ins=grid.filter(g=>g.in);
+    if(!ins.length) return[target.cx,target.cy];
+    let best=null,bestScore=-Infinity;
+    for(const c of ins){
+      let clear=Math.min(c.x-target.minX,target.maxX-c.x,c.y-target.minY,target.maxY-c.y);
+      for(const o of grid){ if(o.in)continue; const d=Math.hypot(o.x-c.x,o.y-c.y); if(d<clear)clear=d; }
+      const score=clear-(nearTo?0.001*Math.hypot(c.x-nearTo[0],c.y-nearTo[1]):0);
+      if(score>bestScore){bestScore=score;best=c;}
+    }
+    return best?[best.x,best.y]:[target.cx,target.cy];
+  }catch(e){ return isoCentroid(iso,nearTo); }
+}
+
 // Is geometry-space point `pt` inside any territory owned by `teamId`?
 // Uses SVG isPointInFill against each owned iso's <path>. isPointInFill
 // works in the path's own user space, so the ancestor zoom transform
@@ -4930,7 +4991,7 @@ function rayCastDefender(attX,attY,angleRad){
   const maxDist=2500;
   let bestT=Infinity, bestIso=null, bestTeam=null;
   // Track near-misses for tiny islands (pass 2 fallback)
-  let nearBestT=Infinity, nearIso=null, nearTeam=null, nearDist=Infinity;
+  let nearBestT=Infinity, nearIso=null, nearTeam=null, nearDist=Infinity, nearCx=0, nearCy=0;
 
   Object.values(GAME.state).forEach(team=>{
     if(team.id===attackerTeamId||!team.alive) return;
@@ -4959,7 +5020,7 @@ function rayCastDefender(attX,attY,angleRad){
             // for flag visual size (so what LOOKS like a hit gets registered)
             const hitRadius=Math.max(ringSize/2+15, 20);
             if(perpDist<hitRadius&&tProj<nearBestT){
-              nearBestT=tProj; nearIso=iso; nearTeam=team; nearDist=perpDist;
+              nearBestT=tProj; nearIso=iso; nearTeam=team; nearDist=perpDist; nearCx=cx; nearCy=cy;
             }
           }
         }
@@ -4984,7 +5045,7 @@ function rayCastDefender(attX,attY,angleRad){
   const NEARMISS_MARGIN = 80;
   if(bestTeam && nearTeam && nearBestT < bestT - NEARMISS_MARGIN){
     return{team:nearTeam, defIso:nearIso, attIso:null,
-           hitX:attX+nearBestT*dx, hitY:attY+nearBestT*dy};
+           hitX:nearCx, hitY:nearCy};
   }
   if(bestTeam){
     return{team:bestTeam, defIso:bestIso, attIso:null,
@@ -4992,7 +5053,7 @@ function rayCastDefender(attX,attY,angleRad){
   }
   if(nearTeam){
     return{team:nearTeam, defIso:nearIso, attIso:null,
-           hitX:attX+nearBestT*dx, hitY:attY+nearBestT*dy};
+           hitX:nearCx, hitY:nearCy};
   }
   return null;
 }
@@ -6582,7 +6643,7 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   //   3. First iso centroid with nearTo bias — last-resort fallback.
   let newPos=null;
   if(GAME.defenderIso){
-    newPos=isoCentroid(GAME.defenderIso,[fromX,fromY]);
+    newPos=isoInteriorPoint(GAME.defenderIso,[fromX,fromY]);
   }
   if(!newPos){
     const oppTeam=teams.find(t=>t.id===opp.id);
@@ -6591,7 +6652,7 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
       if(homePoint&&!isNaN(homePoint[0])) newPos=homePoint;
     }
   }
-  if(!newPos) newPos=isoCentroid(opponentIsoList[0],[fromX,fromY])||defC||[fromX,fromY];
+  if(!newPos) newPos=isoInteriorPoint(opponentIsoList[0],[fromX,fromY])||defC||[fromX,fromY];
   if(heroBadge){
     heroBadge.setAttribute('data-cx',newPos[0]);
     heroBadge.setAttribute('data-cy',newPos[1]);
