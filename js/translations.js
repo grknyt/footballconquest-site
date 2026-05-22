@@ -520,6 +520,13 @@ window.FC_TRANSLATIONS = {
     "sim.boss.desc.final": "The strongest nation on Earth. The ultimate test.",
     "sim.boss.log": "Boss match — {name}, a continental champion!",
     "sim.boss.logfinal": "FINAL BOSS — {name}!",
+    /* O — Aura boosts */
+    "sim.boost.title": "⭐ Aura Boosts",
+    "sim.boost.bus": "Park the Bus",
+    "sim.boost.attack": "All-Out Attack",
+    "sim.boost.reinforce": "Reinforcements",
+    "sim.boost.don": "Double or Nothing",
+    "sim.boost.don.sub": "— win for 2× Aura, lose and forfeit it all",
     /* M — save/load */
     "sim.save.invalid": "Invalid save file.",
     "sim.save.readfail": "Could not read save file: {message}"
@@ -1034,6 +1041,13 @@ window.FC_TRANSLATIONS = {
     "sim.boss.desc.final": "Dünyanın en güçlü ulusu. Nihai sınav.",
     "sim.boss.log": "Patron maçı — {name}, bir kıta şampiyonu!",
     "sim.boss.logfinal": "SON PATRON — {name}!",
+    /* O — Aura boosts */
+    "sim.boost.title": "⭐ Aura Takviyeleri",
+    "sim.boost.bus": "Otobüsü Çek",
+    "sim.boost.attack": "Topyekûn Hücum",
+    "sim.boost.reinforce": "Takviye",
+    "sim.boost.don": "Ya Hep Ya Hiç",
+    "sim.boost.don.sub": "— kazanırsan 2× Aura, kaybedersen tümü gider",
     /* M — save/load */
     "sim.save.invalid": "Geçersiz kayıt dosyası.",
     "sim.save.readfail": "Kayıt dosyası okunamadı: {message}"

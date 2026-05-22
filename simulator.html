@@ -532,6 +532,25 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-result-event.boss .g-result-event-eyebrow{color:#ff6b6b;}
 .g-result-event.boss .g-result-event-name{color:#ff9a9a;}
 .g-result-event.boss .g-result-event-desc{color:#d8a0a0;}
+/* ── Aura boosts panel inside the result modal ── */
+.g-result-boosts{background:#0a1624;border:1px solid #1a2f40;border-radius:8px;padding:12px 14px;margin-bottom:14px;}
+.g-boost-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;
+  font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#7a9bb5;}
+.g-boost-bal{color:#f4d77a;font-size:13px;font-weight:800;letter-spacing:0;}
+.g-boost-btns{display:flex;gap:8px;}
+.g-boost-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  background:#0e2034;border:1px solid #2a3f55;border-radius:7px;padding:9px 6px;cursor:pointer;
+  color:#cfdaea;transition:all .12s;-webkit-tap-highlight-color:transparent;}
+.g-boost-btn:hover:not(:disabled){border-color:#7ab8e8;background:#13283e;}
+.g-boost-btn.active{border-color:#f4d77a;background:#1d2438;box-shadow:inset 0 0 0 1px #f4d77a;}
+.g-boost-btn:disabled{opacity:.4;cursor:not-allowed;}
+.g-boost-ic{font-size:20px;line-height:1;}
+.g-boost-nm{font-size:10px;font-weight:600;text-align:center;line-height:1.2;}
+.g-boost-cost{font-size:10px;font-weight:800;color:#f4d77a;}
+.g-boost-don{display:flex;align-items:center;gap:8px;margin-top:11px;cursor:pointer;
+  font-size:11px;color:#9fb4c8;-webkit-tap-highlight-color:transparent;}
+.g-boost-don input{width:15px;height:15px;accent-color:#c8102e;cursor:pointer;flex-shrink:0;}
+.g-boost-don-txt b{color:#ff9a6b;}
 /* ── Match preview: live win probability + xG + tactic selector ──
    Sits between the matchup row and the Simulate CTA. Values update on tactic
    change (no Simulate needed) so the player sees how each choice tilts odds. */
@@ -1233,6 +1252,35 @@ body.web-build .g-result-card.revealed .g-sim-btn{
               <button class="g-tactic-btn" data-tactic="attacking" type="button" data-i18n="sim.res.att">⚔️ Attacking</button>
             </div>
           </div>
+        </div>
+        <!-- Aura boosts: spend banked Aura on a one-match advantage, or
+             gamble the bank with Double or Nothing. -->
+        <div class="g-result-boosts" id="g-result-boosts">
+          <div class="g-boost-head">
+            <span data-i18n="sim.boost.title">⭐ Aura Boosts</span>
+            <span class="g-boost-bal" id="g-boost-bal">0 ⭐</span>
+          </div>
+          <div class="g-boost-btns" id="g-boost-btns">
+            <button class="g-boost-btn" type="button" data-boost="bus">
+              <span class="g-boost-ic">🛡️</span>
+              <span class="g-boost-nm" data-i18n="sim.boost.bus">Park the Bus</span>
+              <span class="g-boost-cost">2⭐</span>
+            </button>
+            <button class="g-boost-btn" type="button" data-boost="attack">
+              <span class="g-boost-ic">⚡</span>
+              <span class="g-boost-nm" data-i18n="sim.boost.attack">All-Out Attack</span>
+              <span class="g-boost-cost">2⭐</span>
+            </button>
+            <button class="g-boost-btn" type="button" data-boost="reinforce">
+              <span class="g-boost-ic">💪</span>
+              <span class="g-boost-nm" data-i18n="sim.boost.reinforce">Reinforcements</span>
+              <span class="g-boost-cost">3⭐</span>
+            </button>
+          </div>
+          <label class="g-boost-don">
+            <input type="checkbox" id="g-boost-don-check">
+            <span class="g-boost-don-txt">🎲 <b data-i18n="sim.boost.don">Double or Nothing</b> <span data-i18n="sim.boost.don.sub">— win for 2× Aura, lose and forfeit it all</span></span>
+          </label>
         </div>
         <div class="g-result-finish">
           <label><input type="radio" name="finish" value="normal" checked> <span data-i18n="sim.res.ft">FT</span></label>
@@ -5664,6 +5712,7 @@ function startGameInMode(mode,heroId){
   // farming minnows doesn't snowball the way it did. Stored on each win op
   // for clean undo via op.prevMomentumProgress.
   GAME.momentumProgress=0;
+  GAME.aura=0; GAME.matchBoost=null; GAME.doubleOrNothing=false;
   // The specific iso (territory) the arrow hit on the last spin. Captured
   // in gameSpinArrow's animation-end callback. Used by handleConquestWin to
   // move the hero's flag onto the targeted territory rather than the
@@ -6139,6 +6188,7 @@ function openResultModal(){
   // BEFORE updateResultPreview so the win-% / xG already reflect the event.
   rollMatchEvent();
   renderMatchEventCard();
+  if(typeof renderBoostPanel==='function') renderBoostPanel();
   // Refresh live preview (win prob + xG + tactic-button active state) for the
   // new matchup. Reads GAME.matchTactic which was reset to 'balanced' on spin.
   if(typeof updateResultPreview==='function') updateResultPreview();
@@ -6218,6 +6268,7 @@ function rollMatchEvent(){
   const key=GAME.turn+'#'+(GAME.defender?GAME.defender.id:'-');
   if(GAME._matchEventKey===key) return;
   GAME._matchEventKey=key;
+  GAME.matchBoost=null; GAME.doubleOrNothing=false;
   // Boss match: facing a continental champion (or the final boss) overrides
   // the random twist. The champion defends at a rating boost, and beating one
   // banks bonus momentum (winBonusMomentum, applied in computeWinValue).
@@ -6326,6 +6377,7 @@ function checkContinentMilestones(){
     if(p&&p.total>0&&p.owned>=p.total&&!GAME.continentsMilestoned[c.key]){
       GAME.continentsMilestoned[c.key]=true;
       GAME.momentumProgress=(GAME.momentumProgress||0)+1.0;
+      GAME.aura=(GAME.aura||0)+5;
       gLog('🏆 '+FCLang.t('sim.ms.log',{continent:'<b>'+FCLang.t('sim.cont.'+c.key)+'</b>'}));
       showMilestoneToast(c.key);
     }
@@ -6362,6 +6414,64 @@ function renderCampaignPanel(){
   const panel=document.getElementById('g-campaign-panel');
   if(hdr&&panel) hdr.addEventListener('click',()=>panel.classList.toggle('collapsed'));
 })();
+// ── Aura: spendable agency resource ──────────────────────────────────────
+// Earned by winning (handleConquestWin) and by clearing continents. Spent in
+// the result modal on a one-match boost. Boosts reuse the same modifier
+// fields as twist/boss events and stack on top via GAME.matchBoost.
+const BOOSTS={
+  bus:      {cost:2, oppLambdaMult:0.60},
+  attack:   {cost:2, heroLambdaMult:1.40},
+  reinforce:{cost:3, heroEffDelta:50}
+};
+// Buy / toggle / switch the active boost for this match.
+function applyBoost(key){
+  if(!GAME||GAME.mode!=='conquest') return;
+  const b=BOOSTS[key]; if(!b) return;
+  const cur=GAME.matchBoost;
+  if(cur&&cur.key===key){
+    GAME.aura=(GAME.aura||0)+b.cost;          // click active boost again -> refund
+    GAME.matchBoost=null;
+  } else {
+    const refund=cur&&BOOSTS[cur.key]?BOOSTS[cur.key].cost:0;
+    if(((GAME.aura||0)+refund)<b.cost) return;            // can't afford
+    GAME.aura=(GAME.aura||0)+refund-b.cost;
+    GAME.matchBoost={key:key,heroEffDelta:b.heroEffDelta||0,oppEffDelta:b.oppEffDelta||0,
+      heroLambdaMult:b.heroLambdaMult||1,oppLambdaMult:b.oppLambdaMult||1};
+  }
+  renderBoostPanel();
+  if(typeof updateResultPreview==='function') updateResultPreview();
+}
+// Refresh the Aura balance + boost-button states in the result modal.
+function renderBoostPanel(){
+  const panel=document.getElementById('g-result-boosts');
+  if(!panel) return;
+  const aura=(GAME&&GAME.aura)||0;
+  const bal=document.getElementById('g-boost-bal');
+  if(bal) bal.textContent=aura+' ⭐';
+  const cur=GAME&&GAME.matchBoost;
+  panel.querySelectorAll('.g-boost-btn').forEach(function(btn){
+    const key=btn.getAttribute('data-boost');
+    const b=BOOSTS[key]; if(!b) return;
+    const active=!!(cur&&cur.key===key);
+    btn.classList.toggle('active',active);
+    const refund=cur&&BOOSTS[cur.key]?BOOSTS[cur.key].cost:0;
+    btn.disabled=!active&&((aura+refund)<b.cost);
+  });
+  const donChk=document.getElementById('g-boost-don-check');
+  if(donChk) donChk.checked=!!(GAME&&GAME.doubleOrNothing);
+}
+// Wire the boost buttons + Double-or-Nothing toggle (once, at load).
+(function(){
+  const btns=document.getElementById('g-boost-btns');
+  if(btns) btns.addEventListener('click',function(e){
+    const btn=e.target.closest('.g-boost-btn');
+    if(btn&&!btn.disabled) applyBoost(btn.getAttribute('data-boost'));
+  });
+  const don=document.getElementById('g-boost-don-check');
+  if(don) don.addEventListener('change',function(){
+    if(GAME) GAME.doubleOrNothing=don.checked;
+  });
+})();
 // Compute the full per-match Poisson model for the current matchup + tactic.
 // Returns {heroEff, oppEff, heroLambda, oppLambda, pHeroWin, oppStyle, heroStyle}
 // — used by both the live preview render and the actual score simulation, so
@@ -6386,9 +6496,10 @@ function computeMatchModel(tactic){
   const heroTotalBonus=heroTerritorial+heroMomentum;
   let heroEff=heroFifa+heroTotalBonus+matchupBonus+idBonus;
   let oppEff=oppFifa+oppSize*5;
-  // Pre-match twist: a flat effective-rating shift moves BOTH win-prob and xG.
-  const ev=GAME.matchEvent;
-  if(ev){ heroEff+=ev.heroEffDelta||0; oppEff+=ev.oppEffDelta||0; }
+  // Pre-match modifiers — twist/boss event + the player's chosen Aura boost.
+  // A flat effective-rating shift moves BOTH win-prob and xG.
+  const _mods=[GAME.matchEvent,GAME.matchBoost].filter(Boolean);
+  _mods.forEach(function(m){ heroEff+=m.heroEffDelta||0; oppEff+=m.oppEffDelta||0; });
   const avg=(heroEff+oppEff)/2;
   // baseLambda 1.3 → ~2.6 total goals in an even match (realistic). The
   // /1000 exponent (was /800) flattens the rating-gap → goals curve so a
@@ -6398,8 +6509,8 @@ function computeMatchModel(tactic){
   const baseLambda=1.3*lambdaMult;
   let heroLambda=baseLambda*Math.pow(10,(heroEff-avg)/1000);
   let oppLambda=baseLambda*Math.pow(10,(oppEff-avg)/1000);
-  // Twist: direct expected-goals multipliers (injured squad, hot striker, storm).
-  if(ev){ heroLambda*=ev.heroLambdaMult||1; oppLambda*=ev.oppLambdaMult||1; }
+  // Direct expected-goals multipliers from the same modifiers.
+  _mods.forEach(function(m){ heroLambda*=m.heroLambdaMult||1; oppLambda*=m.oppLambdaMult||1; });
   // Win-probability uses the same Elo curve as the auto-resolve in gameResolve,
   // so the preview value matches the implicit odds of the simulator output.
   const pHeroWin=1/(1+Math.pow(10,(oppEff-heroEff)/450));
@@ -6878,8 +6989,16 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   const prevMomentumProgress=GAME.momentumProgress||0;
   const winValue=computeWinValue(hero, opp, heroScore, oppScore, GAME.winStreak);
   GAME.momentumProgress=prevMomentumProgress + winValue;
+  // Aura — snapshot before milestone/win earnings so undoConquestWin restores it.
+  const _prevAura=GAME.aura||0;
   // Campaign: did this conquest just complete a whole continent?
   checkContinentMilestones();
+  // Aura earned: +1 base, +2 upset, +3 boss / +5 final boss, x2 on Double or Nothing.
+  let _auraGain=1;
+  if(fifaRating(opp.name)>fifaRating(hero.name)) _auraGain+=2;
+  if(GAME.matchEvent&&GAME.matchEvent.isBoss) _auraGain+=GAME.matchEvent.finalBoss?5:3;
+  if(GAME.doubleOrNothing) _auraGain*=2;
+  GAME.aura=(GAME.aura||0)+_auraGain;
   // Push undo record for this win. heroScore/oppScore stored explicitly so
   // undoConquestWin can rewind the stats tally cleanly (no string parsing).
   // prevWinStreak captures the streak value BEFORE this win so undo restores
@@ -6887,6 +7006,7 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   // came at the end of a streak that had already been reset by some path).
   undoStack.push({
     type:'conquest-win',
+    prevAura:_prevAura,
     heroId:hero.id, oppId:opp.id, oppName:opp.name,
     conqueredIsos:opponentIsoList,
     prevColors:prevColors,
@@ -6934,6 +7054,8 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   // Remember this opponent so the HUD keeps showing their loss count even
   // after GAME.defender is cleared by the retreat below.
   GAME.lastLossOppId=opp.id;
+  // Double or Nothing: a loss forfeits the entire Aura bank.
+  if(GAME.doubleOrNothing){ GAME.aura=0; }
   // ── Momentum penalty for the loss ────────────────────────────────────
   // Snapshot streak BEFORE we reset it so the penalty calc sees how high
   // we were riding.
@@ -7131,6 +7253,7 @@ function undoConquestWin(op){
   if(typeof op.prevWinStreak==='number') GAME.winStreak=op.prevWinStreak;
   // Restore the pre-win weighted momentum progress.
   if(typeof op.prevMomentumProgress==='number') GAME.momentumProgress=op.prevMomentumProgress;
+  if(typeof op.prevAura==='number') GAME.aura=op.prevAura;
   // 1. Restore loser's alive state
   opp.alive=true;
   // 2. Give back the conquered isos to opp
@@ -7352,7 +7475,7 @@ function updateConquestHud(state){
       const gdClass=gd>0?'gd-pos':(gd<0?'gd-neg':'gd-zero');
       const gdStr=(gd>0?'+':'')+gd;
       conquestStatsEl.style.display='block';
-      conquestStatsEl.innerHTML=FCLang.t('sim.hud.record')+' <b class="w">'+s.wins+'</b>–<b class="l">'+s.losses+'</b><span class="sep">·</span>'+FCLang.t('sim.hud.goals')+' <b>'+s.gf+'</b>–<b>'+s.ga+'</b> (<b class="'+gdClass+'">'+gdStr+'</b>)';
+      conquestStatsEl.innerHTML=FCLang.t('sim.hud.record')+' <b class="w">'+s.wins+'</b>–<b class="l">'+s.losses+'</b><span class="sep">·</span>'+FCLang.t('sim.hud.goals')+' <b>'+s.gf+'</b>–<b>'+s.ga+'</b> (<b class="'+gdClass+'">'+gdStr+'</b>)<span class="sep">·</span>⭐ <b>'+(GAME.aura||0)+'</b>';
     } else {
       conquestStatsEl.style.display='none';
     }
