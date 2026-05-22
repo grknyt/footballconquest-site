@@ -403,10 +403,18 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 #g-leaderboard-clear{padding:7px 13px;font-size:11px;color:#ff8a8a;
   border:1px solid rgba(255,138,138,.3);background:transparent;}
 #g-leaderboard-clear:hover{background:rgba(255,138,138,.1);}
-#g-startup-modal, #g-result-modal{position:absolute;top:0;left:0;width:100%;height:100%;
+#g-startup-modal, #g-result-modal, #g-username-modal{position:absolute;top:0;left:0;width:100%;height:100%;
   background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:50;
   display:none;align-items:center;justify-content:center;}
-#g-startup-modal.open, #g-result-modal.open{display:flex;}
+#g-startup-modal.open, #g-result-modal.open, #g-username-modal.open{display:flex;}
+#g-username-modal{z-index:52;}
+.g-username-card{max-width:380px;text-align:center;}
+.g-username-icon{font-size:40px;margin-bottom:10px;}
+.g-username-desc{font-size:12px;color:#7a9bb5;line-height:1.5;margin-bottom:16px;}
+.g-username-card .g-team-search{margin-bottom:6px;text-align:center;font-size:15px;padding:10px;}
+.g-username-error{font-size:11px;color:#ff8a8a;min-height:15px;margin-bottom:10px;visibility:hidden;}
+.g-username-error.show{visibility:visible;}
+.g-username-card .g-btn.primary{width:100%;padding:11px;font-size:14px;}
 .g-start-card, .g-result-card{background:#0a1624;border:1px solid #2a3f55;border-radius:12px;
   padding:28px;max-width:520px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,.7);}
 .g-start-title, .g-result-title{font-size:18px;font-weight:600;color:#7ab8e8;
@@ -1029,6 +1037,20 @@ body.web-build .g-result-card.revealed .g-sim-btn{
           <div id="g-team-list" class="g-team-list"></div>
           <button id="g-start-conquest" class="g-btn primary" disabled data-i18n="sim.mode.start">Start Conquest</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Username gate: shown once after Play Conquest when no display name is
+         set. A name is required so every run is attributed on the leaderboards. -->
+    <div id="g-username-modal" style="display:none;">
+      <div class="g-start-card g-username-card">
+        <div class="g-username-icon">🏆</div>
+        <div class="g-start-title" data-i18n="sim.user.title">Choose your name</div>
+        <div class="g-username-desc" data-i18n="sim.user.desc">This name represents you on the leaderboards. You can change it later.</div>
+        <input type="text" id="g-username-input" maxlength="24" autocomplete="off"
+               placeholder="Your name" data-i18n-attr="placeholder:sim.user.placeholder" class="g-team-search">
+        <div id="g-username-error" class="g-username-error" data-i18n="sim.user.error">Please enter a name to continue.</div>
+        <button id="g-username-continue" class="g-btn primary" type="button" data-i18n="sim.user.continue">Continue</button>
       </div>
     </div>
 
@@ -6002,13 +6024,16 @@ const MATCHUP_BONUS={
   attacking:{defensive:-30, balanced:+30, attacking:  0}
 };
 // Lambda multiplier from the average aggressiveness of BOTH sides. Def=0,
-// Bal=1, Att=2 numerically; average → multiplier on baseLambda 1.4.
-// Def-vs-Def = boring 0-0 grind; Att-vs-Att = open goalfest.
+// Bal=1, Att=2 numerically; average → multiplier on baseLambda 1.3.
+// Def-vs-Def = low-scoring grind; Att-vs-Att = open game. The spread is
+// deliberately gentle (max 1.2×) — an attacking matchup should mean a
+// slightly more open game, NOT a 4-goal goalfest. An over-wide multiplier
+// is what made Attacking-tactic runs produce constant 5-0 / 6-0 blowouts.
 function _styleScore(s){ return s==='defensive'?0 : (s==='attacking'?2:1); }
 function _lambdaMultFor(heroTactic, oppStyle){
   const avg=(_styleScore(heroTactic)+_styleScore(oppStyle))/2;
-  // 0 → 0.5, 0.5 → 0.7, 1 → 1.0, 1.5 → 1.2, 2 → 1.5
-  return [0.5,0.7,1.0,1.2,1.5][Math.round(avg*2)];
+  // 0 → 0.70, 0.5 → 0.85, 1 → 1.00, 1.5 → 1.10, 2 → 1.20
+  return [0.70,0.85,1.00,1.10,1.20][Math.round(avg*2)];
 }
 // Identity bonus: the hero gains +5 effective FIFA when playing a tactic that
 // matches their country's natural style (Brazil going attacking, Morocco going
@@ -6043,9 +6068,14 @@ function computeMatchModel(tactic){
   const heroEff=heroFifa+heroTotalBonus+matchupBonus+idBonus;
   const oppEff=oppFifa+oppSize*5;
   const avg=(heroEff+oppEff)/2;
-  const baseLambda=1.4*lambdaMult;
-  const heroLambda=baseLambda*Math.pow(10,(heroEff-avg)/800);
-  const oppLambda=baseLambda*Math.pow(10,(oppEff-avg)/800);
+  // baseLambda 1.3 → ~2.6 total goals in an even match (realistic). The
+  // /1000 exponent (was /800) flattens the rating-gap → goals curve so a
+  // strong favourite still WINS often (win-prob curve below is unchanged,
+  // denominator 450) but does not also balloon the SCORELINE — a mid-tier
+  // favourite no longer averages 2.4 xG and routinely wins 5-1 / 6-0.
+  const baseLambda=1.3*lambdaMult;
+  const heroLambda=baseLambda*Math.pow(10,(heroEff-avg)/1000);
+  const oppLambda=baseLambda*Math.pow(10,(oppEff-avg)/1000);
   // Win-probability uses the same Elo curve as the auto-resolve in gameResolve,
   // so the preview value matches the implicit odds of the simulator output.
   const pHeroWin=1/(1+Math.pow(10,(oppEff-heroEff)/450));
@@ -7357,13 +7387,64 @@ function startNewGameFlow(){
   });
 })();
 
+// ── Username gate ──────────────────────────────────────────────
+// Shown once after Play Conquest when the player has no display name yet.
+// A name is REQUIRED before a campaign begins so every leaderboard run is
+// attributed. If a name already exists in localStorage the gate is skipped
+// silently. Escape / backdrop click cancels back to the splash (no game
+// started) so the player is never trapped.
+function openUsernameGate(onDone){
+  if(typeof fcUsername==='function' && fcUsername()){ onDone(); return; }
+  const modal=document.getElementById('g-username-modal');
+  const input=document.getElementById('g-username-input');
+  const errEl=document.getElementById('g-username-error');
+  const contBtn=document.getElementById('g-username-continue');
+  if(!modal||!input||!contBtn){ onDone(); return; }   // fail-open
+  if(errEl) errEl.classList.remove('show');
+  input.value='';
+  modal.classList.add('open');
+  setTimeout(()=>{ try{ input.focus(); }catch(e){} },50);
+  function cleanup(){
+    contBtn.removeEventListener('click',submit);
+    input.removeEventListener('keydown',onKey);
+    modal.removeEventListener('mousedown',onBackdrop);
+  }
+  function submit(){
+    const name=input.value.trim();
+    if(!name){
+      if(errEl) errEl.classList.add('show');
+      try{ input.focus(); }catch(e){}
+      return;
+    }
+    if(typeof fcSetUsername==='function') fcSetUsername(name);
+    if(typeof syncUserStrip==='function') syncUserStrip();
+    cleanup();
+    modal.classList.remove('open');
+    onDone();
+  }
+  function cancel(){
+    cleanup();
+    modal.classList.remove('open');
+    if(typeof window.fcShowSplash==='function') window.fcShowSplash();
+  }
+  function onKey(e){
+    if(e.key==='Enter'){ e.preventDefault(); submit(); }
+    else if(e.key==='Escape'){ e.preventDefault(); cancel(); }
+  }
+  function onBackdrop(e){ if(e.target===modal) cancel(); }
+  contBtn.addEventListener('click',submit);
+  input.addEventListener('keydown',onKey);
+  modal.addEventListener('mousedown',onBackdrop);
+}
+
 // ── Splash launcher wiring ─────────────────────────────────────
 // The splash is shown whenever no game is active. Clicking PLAY CONQUEST
-// hides the splash and opens the existing mode-picker modal (Random
-// Imperialism vs World Conquest). Cancelling the modal brings the splash
-// back. Ending a game also brings the splash back. The show/hide calls
-// are injected directly into startGameInMode, gameEnd, and closeConquestStartup
-// (rather than wrapped here) for reliability with hoisted function declarations.
+// runs the username gate, then hides the splash and opens the existing
+// mode-picker modal (Random Imperialism vs World Conquest). Cancelling the
+// modal brings the splash back. Ending a game also brings the splash back.
+// The show/hide calls are injected directly into startGameInMode, gameEnd,
+// and closeConquestStartup (rather than wrapped here) for reliability with
+// hoisted function declarations.
 (function(){
   const splash=document.getElementById('fc-splash');
   const playBtn=document.getElementById('fc-splash-play');
@@ -7379,8 +7460,10 @@ function startNewGameFlow(){
   };
 
   playBtn.addEventListener('click',()=>{
-    window.fcHideSplash();
-    if(typeof openConquestStartup==='function') openConquestStartup();
+    openUsernameGate(function(){
+      window.fcHideSplash();
+      if(typeof openConquestStartup==='function') openConquestStartup();
+    });
   });
 
   // Splash "Load saved game" button — opens the existing file-picker flow.

@@ -327,6 +327,12 @@ window.FC_TRANSLATIONS = {
     "sim.splash.preview": "BROADCAST PREVIEW",
     "sim.splash.play": "PLAY CONQUEST",
     "sim.splash.load": "LOAD SAVED GAME",
+    /* D2 — username gate */
+    "sim.user.title": "Choose your name",
+    "sim.user.desc": "This name represents you on the leaderboards. You can change it later.",
+    "sim.user.placeholder": "Your name",
+    "sim.user.continue": "Continue",
+    "sim.user.error": "Please enter a name to continue.",
     /* D — mode picker */
     "sim.mode.title": "Choose Game Mode",
     "sim.mode.wc.name": "World Conquest",
@@ -800,6 +806,12 @@ window.FC_TRANSLATIONS = {
     "sim.splash.preview": "YAYIN ÖNİZLEMESİ",
     "sim.splash.play": "FETİH OYNA",
     "sim.splash.load": "KAYDEDİLMİŞ OYUNU YÜKLE",
+    /* D2 — username gate */
+    "sim.user.title": "İsim Gir",
+    "sim.user.desc": "Bu ad seni liderlik tablolarında temsil eder. Daha sonra değiştirebilirsin.",
+    "sim.user.placeholder": "Adın",
+    "sim.user.continue": "Devam Et",
+    "sim.user.error": "Devam etmek için bir ad gir.",
     /* D — mode picker */
     "sim.mode.title": "Oyun Modu Seçin",
     "sim.mode.wc.name": "Dünya Fethi",
