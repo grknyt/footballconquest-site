@@ -532,6 +532,10 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-result-event.boss .g-result-event-eyebrow{color:#ff6b6b;}
 .g-result-event.boss .g-result-event-name{color:#ff9a9a;}
 .g-result-event.boss .g-result-event-desc{color:#d8a0a0;}
+.g-result-event.revenge{background:linear-gradient(180deg,#2e1606 0%,#1a0c03 100%);border-color:#ff7a1a;}
+.g-result-event.revenge .g-result-event-eyebrow{color:#ff9a4a;}
+.g-result-event.revenge .g-result-event-name{color:#ffb877;}
+.g-result-event.revenge .g-result-event-desc{color:#d8b48a;}
 /* ── Aura boosts panel inside the result modal ── */
 .g-result-boosts{background:#0a1624;border:1px solid #1a2f40;border-radius:8px;padding:12px 14px;margin-bottom:14px;}
 .g-boost-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;
@@ -6273,6 +6277,14 @@ function rollMatchEvent(){
   // the random twist. The champion defends at a rating boost, and beating one
   // banks bonus momentum (winBonusMomentum, applied in computeWinValue).
   const defId=GAME.defender?GAME.defender.id:null;
+  // Revenge match: the defender is a nemesis (has beaten the hero and not
+  // been beaten back). Takes priority over a boss match — the grudge is the story.
+  if(defId!=null&&((GAME.lossCounts&&GAME.lossCounts[defId])||0)>0){
+    GAME.matchEvent={id:'revenge',icon:'🔥',isRevenge:true,
+      heroEffDelta:20,winBonusMomentum:1.0};
+    gLog('🔥 '+FCLang.t('sim.rev.log',{name:'<b>'+teamDisplayName(GAME.defender.name)+'</b>'}));
+    return;
+  }
   if(defId!=null&&isChampion(defId)){
     const fin=isFinalBoss(defId);
     GAME.matchEvent={id:fin?'finalboss':'boss',icon:fin?'👑':'⚔️',isBoss:true,
@@ -6294,13 +6306,19 @@ function renderMatchEventCard(){
   const card=document.getElementById('g-result-event');
   if(!card) return;
   const ev=GAME&&GAME.matchEvent;
-  if(!ev){ card.style.display='none'; card.classList.remove('boss'); return; }
+  if(!ev){ card.style.display='none'; card.classList.remove('boss','revenge'); return; }
   const ic=document.getElementById('g-result-event-icon');
   const nm=document.getElementById('g-result-event-name');
   const ds=document.getElementById('g-result-event-desc');
   const ey=card.querySelector('.g-result-event-eyebrow');
   card.classList.toggle('boss',!!ev.isBoss);
-  if(ev.isBoss){
+  card.classList.toggle('revenge',!!ev.isRevenge);
+  if(ev.isRevenge){
+    if(ey) ey.textContent=FCLang.t('sim.rev.eyebrow');
+    if(ic) ic.textContent=ev.icon;
+    if(nm) nm.textContent=FCLang.t('sim.rev.name');
+    if(ds) ds.textContent=FCLang.t('sim.rev.desc');
+  }else if(ev.isBoss){
     if(ey) ey.textContent=FCLang.t(ev.finalBoss?'sim.boss.eyebrow.final':'sim.boss.eyebrow');
     if(ic) ic.textContent=ev.icon;
     if(nm) nm.textContent=FCLang.t(ev.finalBoss?'sim.boss.name.final':'sim.boss.name');
@@ -6997,6 +7015,8 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   let _auraGain=1;
   if(fifaRating(opp.name)>fifaRating(hero.name)) _auraGain+=2;
   if(GAME.matchEvent&&GAME.matchEvent.isBoss) _auraGain+=GAME.matchEvent.finalBoss?5:3;
+  if(GAME.matchEvent&&GAME.matchEvent.isRevenge){ _auraGain+=3;
+    gLog('⚔️ '+FCLang.t('sim.rev.taken',{name:'<b>'+teamDisplayName(opp.name)+'</b>'})); }
   if(GAME.doubleOrNothing) _auraGain*=2;
   GAME.aura=(GAME.aura||0)+_auraGain;
   // Push undo record for this win. heroScore/oppScore stored explicitly so
@@ -7084,7 +7104,13 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   // Increment loss count against this opponent
   GAME.lossCounts[opp.id]=(GAME.lossCounts[opp.id]||0)+1;
   const losses=GAME.lossCounts[opp.id];
+  if(losses===1) gLog('💢 '+FCLang.t('sim.rev.nemesis',{name:'<b>'+teamDisplayName(opp.name)+'</b>'}));
   gLog('   '+FCLang.t('sim.log.lossesto',{opp:teamDisplayName(opp.name),n:losses}));
+  // Second loss to the same opponent (2/3) — a morale collapse halves the Aura bank.
+  if(losses===2 && (GAME.aura||0)>0){
+    GAME.aura=Math.floor(GAME.aura/2);
+    gLog('💔 '+FCLang.t('sim.boost.aurahalf'));
+  }
   if(losses>=3){
     gLog(FCLang.t('sim.log.gameover',{opp:teamDisplayName(opp.name),hero:teamDisplayName(hero.name)}));
     refreshConquestHud({lastResult:{type:'loss',hero:hero.name,opp:opp.name,score:`${heroScore}–${oppScore}`,gameOver:true}});

@@ -527,6 +527,14 @@ window.FC_TRANSLATIONS = {
     "sim.boost.reinforce": "Reinforcements",
     "sim.boost.don": "Double or Nothing",
     "sim.boost.don.sub": "— win for 2× Aura, lose and forfeit it all",
+    "sim.boost.aurahalf": "Morale collapse — Aura bank halved.",
+    /* P — rivalries & nemeses */
+    "sim.rev.eyebrow": "REVENGE MATCH",
+    "sim.rev.name": "Settle the Score",
+    "sim.rev.desc": "This team beat you once — your side is fired up. Make it right.",
+    "sim.rev.log": "Revenge match — {name} beat you before.",
+    "sim.rev.nemesis": "{name} is now your nemesis — beat them to settle the score.",
+    "sim.rev.taken": "Revenge taken — {name} conquered!",
     /* M — save/load */
     "sim.save.invalid": "Invalid save file.",
     "sim.save.readfail": "Could not read save file: {message}"
@@ -1048,6 +1056,14 @@ window.FC_TRANSLATIONS = {
     "sim.boost.reinforce": "Takviye",
     "sim.boost.don": "Ya Hep Ya Hiç",
     "sim.boost.don.sub": "— kazanırsan 2× Aura, kaybedersen tümü gider",
+    "sim.boost.aurahalf": "Moral çöküşü — Aura kasası yarıya indi.",
+    /* P — rivalries & nemeses */
+    "sim.rev.eyebrow": "REVANŞ MAÇI",
+    "sim.rev.name": "Hesaplaşma Vakti",
+    "sim.rev.desc": "Bu takım seni bir kez yendi — takımın hırslı. Bunu telafi et.",
+    "sim.rev.log": "Revanş maçı — {name} seni daha önce yenmişti.",
+    "sim.rev.nemesis": "{name} artık baş düşmanın — hesaplaşmak için onları yen.",
+    "sim.rev.taken": "Revanş alındı — {name} fethedildi!",
     /* M — save/load */
     "sim.save.invalid": "Geçersiz kayıt dosyası.",
     "sim.save.readfail": "Kayıt dosyası okunamadı: {message}"
