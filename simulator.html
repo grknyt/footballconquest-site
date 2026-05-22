@@ -241,6 +241,42 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
 #game-panel.conquest-mode #g-spin-team:not(:disabled){animation:g-action-glow-blue 1.6s ease-in-out infinite;}
 #game-panel.conquest-mode #g-resolve:not(:disabled){animation:g-action-glow-red 1.4s ease-in-out infinite;}
 
+/* ──── Campaign progress panel: six-continent conquest tracker, bottom-left,
+   mirroring the events panel. Shown only while a conquest game is open. */
+#g-campaign-panel{position:absolute;bottom:32px;left:58px;width:248px;
+  background:rgba(7,14,23,.97);border:1px solid #2a3f55;border-radius:10px;
+  display:none;flex-direction:column;z-index:24;overflow:hidden;
+  box-shadow:0 6px 18px rgba(0,0,0,.4);max-height:230px;transition:max-height .25s ease;}
+#game-panel.open.conquest-mode ~ #g-campaign-panel{display:flex;}
+#g-campaign-panel.collapsed{max-height:34px;}
+#g-campaign-header{padding:8px 12px;font-size:10px;color:#7ab8e8;font-weight:600;
+  letter-spacing:.4px;cursor:pointer;display:flex;justify-content:space-between;
+  align-items:center;border-bottom:1px solid #1a2f40;user-select:none;
+  background:#0a1624;text-transform:uppercase;}
+#g-campaign-header:hover{background:#0d1c2e;}
+#g-campaign-toggle{color:#7ab8e8;transition:transform .25s;font-size:9px;}
+#g-campaign-panel.collapsed #g-campaign-toggle{transform:rotate(-90deg);}
+#g-campaign-panel.collapsed #g-campaign-header{border-bottom:none;}
+#g-campaign-body{padding:9px 11px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;}
+.g-cont-row{display:flex;align-items:center;gap:8px;font-size:10px;color:#cfdaea;}
+.g-cont-name{flex:0 0 78px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;}
+.g-cont-bar{flex:1;height:6px;background:#1a2f40;border-radius:3px;overflow:hidden;}
+.g-cont-fill{display:block;height:100%;background:linear-gradient(90deg,#3a8a3a,#6dd86d);transition:width .3s ease;}
+.g-cont-count{flex:0 0 48px;text-align:right;font-variant-numeric:tabular-nums;color:#9fb4c8;font-weight:700;}
+.g-cont-row.done .g-cont-name,.g-cont-row.done .g-cont-count{color:#f4d77a;}
+.g-cont-row.done .g-cont-fill{background:linear-gradient(90deg,#caa23a,#f4d77a);}
+/* Continent-cleared milestone toast — centred celebratory popup. */
+#g-milestone-toast{position:absolute;top:92px;left:50%;
+  transform:translateX(-50%) translateY(-20px);
+  background:linear-gradient(180deg,#1a2f1a,#0b160b);border:2px solid #d4a936;
+  border-radius:14px;padding:16px 44px;text-align:center;z-index:70;opacity:0;
+  pointer-events:none;box-shadow:0 12px 44px rgba(0,0,0,.65);
+  transition:opacity .4s ease,transform .4s ease;}
+#g-milestone-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.g-ms-trophy{font-size:38px;line-height:1;}
+.g-ms-cont{font-size:23px;font-weight:800;color:#f4d77a;letter-spacing:1px;margin-top:4px;}
+.g-ms-sub{font-size:10px;font-weight:700;letter-spacing:3px;color:#8fb88f;margin-top:3px;}
+
 /* ──── Events log panel: collapsible bottom-right card showing the play-by-play ──
    Pinned to the bottom-right, sharing the bottom row with the game-panel
    (centered) and the conquest HUD (bottom-left). Width + max-height tuned
@@ -492,6 +528,10 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-result-event-eyebrow{font-size:9px;font-weight:700;letter-spacing:1.5px;color:#d4a936;}
 .g-result-event-name{font-size:15px;font-weight:700;color:#f4d77a;}
 .g-result-event-desc{font-size:11px;color:#cdb88a;line-height:1.4;}
+.g-result-event.boss{background:linear-gradient(180deg,#2e0c0c 0%,#1a0606 100%);border-color:#c8102e;}
+.g-result-event.boss .g-result-event-eyebrow{color:#ff6b6b;}
+.g-result-event.boss .g-result-event-name{color:#ff9a9a;}
+.g-result-event.boss .g-result-event-desc{color:#d8a0a0;}
 /* ── Match preview: live win probability + xG + tactic selector ──
    Sits between the matchup row and the Simulate CTA. Values update on tactic
    change (no Simulate needed) so the player sees how each choice tilts odds. */
@@ -1314,6 +1354,21 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     <!-- Events log panel: separated from the lower HUD so the action buttons can be
          the focal point. Collapsible — click the header to fold/expand. Visible via
          CSS sibling selector whenever #game-panel is open. -->
+    <!-- Campaign progress: six-continent conquest tracker. Mirrors the events
+         panel on the opposite side; visible only while a conquest game is open. -->
+    <div id="g-campaign-panel">
+      <div id="g-campaign-header">
+        <span data-i18n="sim.cont.title">🌍 Continents</span>
+        <span id="g-campaign-toggle">▼</span>
+      </div>
+      <div id="g-campaign-body"></div>
+    </div>
+    <!-- Continent-cleared milestone toast -->
+    <div id="g-milestone-toast">
+      <div class="g-ms-trophy">🏆</div>
+      <div class="g-ms-cont"></div>
+      <div class="g-ms-sub" data-i18n="sim.ms.sub">CONTINENT CONQUERED</div>
+    </div>
     <div id="g-events-panel">
       <div id="g-events-header">
         <span class="g-events-title" data-i18n="sim.ev.title">🕘 Events</span>
@@ -6163,6 +6218,19 @@ function rollMatchEvent(){
   const key=GAME.turn+'#'+(GAME.defender?GAME.defender.id:'-');
   if(GAME._matchEventKey===key) return;
   GAME._matchEventKey=key;
+  // Boss match: facing a continental champion (or the final boss) overrides
+  // the random twist. The champion defends at a rating boost, and beating one
+  // banks bonus momentum (winBonusMomentum, applied in computeWinValue).
+  const defId=GAME.defender?GAME.defender.id:null;
+  if(defId!=null&&isChampion(defId)){
+    const fin=isFinalBoss(defId);
+    GAME.matchEvent={id:fin?'finalboss':'boss',icon:fin?'👑':'⚔️',isBoss:true,
+      finalBoss:fin,contKey:teamContinent(defId),
+      oppEffDelta:fin?80:40,winBonusMomentum:fin?2.0:1.0};
+    gLog('⚔️ '+FCLang.t(fin?'sim.boss.logfinal':'sim.boss.log',
+      {name:'<b>'+teamDisplayName(GAME.defender.name)+'</b>'}));
+    return;
+  }
   GAME.matchEvent=(Math.random()<MATCH_EVENT_CHANCE)
     ? MATCH_EVENTS[Math.floor(Math.random()*MATCH_EVENTS.length)]
     : null;
@@ -6175,15 +6243,125 @@ function renderMatchEventCard(){
   const card=document.getElementById('g-result-event');
   if(!card) return;
   const ev=GAME&&GAME.matchEvent;
-  if(!ev){ card.style.display='none'; return; }
+  if(!ev){ card.style.display='none'; card.classList.remove('boss'); return; }
   const ic=document.getElementById('g-result-event-icon');
   const nm=document.getElementById('g-result-event-name');
   const ds=document.getElementById('g-result-event-desc');
-  if(ic) ic.textContent=ev.icon;
-  if(nm) nm.textContent=FCLang.t('sim.evt.'+ev.id+'.name');
-  if(ds) ds.textContent=FCLang.t('sim.evt.'+ev.id+'.desc');
+  const ey=card.querySelector('.g-result-event-eyebrow');
+  card.classList.toggle('boss',!!ev.isBoss);
+  if(ev.isBoss){
+    if(ey) ey.textContent=FCLang.t(ev.finalBoss?'sim.boss.eyebrow.final':'sim.boss.eyebrow');
+    if(ic) ic.textContent=ev.icon;
+    if(nm) nm.textContent=FCLang.t(ev.finalBoss?'sim.boss.name.final':'sim.boss.name');
+    if(ds) ds.textContent=ev.finalBoss?FCLang.t('sim.boss.desc.final')
+      :FCLang.t('sim.boss.desc',{continent:FCLang.t('sim.cont.'+ev.contKey)});
+  }else{
+    if(ey) ey.textContent=FCLang.t('sim.evt.eyebrow');
+    if(ic) ic.textContent=ev.icon;
+    if(nm) nm.textContent=FCLang.t('sim.evt.'+ev.id+'.name');
+    if(ds) ds.textContent=FCLang.t('sim.evt.'+ev.id+'.desc');
+  }
   card.style.display='flex';
 }
+// ── Campaign structure: continents, progress, milestones, boss matches ────
+// NATIONS is region-ordered, so each FIFA confederation is a contiguous id
+// range. Counts: UEFA 55, CONMEBOL 10, CONCACAF 35, CAF 54, AFC 47, OFC 11.
+const CONTINENTS=[
+  {key:'uefa',     lo:0,   hi:54 },
+  {key:'conmebol', lo:55,  hi:64 },
+  {key:'concacaf', lo:65,  hi:99 },
+  {key:'caf',      lo:100, hi:153},
+  {key:'afc',      lo:154, hi:200},
+  {key:'ofc',      lo:201, hi:211}
+];
+function teamContinent(id){
+  for(const c of CONTINENTS){ if(id>=c.lo&&id<=c.hi) return c.key; }
+  return null;
+}
+// Each continent's champion = its highest-FIFA nation; the strongest champion
+// of all is the final boss. Computed once, lazily, and cached.
+let _fcChampions=null,_fcFinalBoss=null;
+function _computeChampions(){
+  if(_fcChampions) return;
+  _fcChampions={}; let bAll=null,bAllPts=-1;
+  for(const c of CONTINENTS){
+    let champ=null,cp=-1;
+    for(let id=c.lo;id<=c.hi;id++){
+      const t=teams[id]; if(!t) continue;
+      const pts=fifaRating(t.name);
+      if(pts>cp){cp=pts;champ=id;}
+    }
+    _fcChampions[c.key]=champ;
+    if(cp>bAllPts){bAllPts=cp;bAll=champ;}
+  }
+  _fcFinalBoss=bAll;
+}
+function isChampion(teamId){
+  _computeChampions();
+  for(const k in _fcChampions){ if(_fcChampions[k]===teamId) return true; }
+  return false;
+}
+function isFinalBoss(teamId){ _computeChampions(); return _fcFinalBoss===teamId; }
+// Live per-continent conquest progress — derived from the conquest stack plus
+// the hero's home country, so retreats and undo are reflected automatically.
+function computeContinentProgress(){
+  const prog={};
+  CONTINENTS.forEach(c=>{ prog[c.key]={owned:0,total:c.hi-c.lo+1}; });
+  if(!GAME||GAME.mode!=='conquest') return prog;
+  const home=teamContinent(GAME.heroTeamId);
+  if(home&&prog[home]) prog[home].owned++;
+  (GAME.conquestStack||[]).forEach(e=>{
+    const k=teamContinent(e.opponentId);
+    if(k&&prog[k]) prog[k].owned++;
+  });
+  return prog;
+}
+// Fire a one-time milestone whenever a whole continent has just been cleared.
+function checkContinentMilestones(){
+  if(!GAME||GAME.mode!=='conquest') return;
+  if(!GAME.continentsMilestoned) GAME.continentsMilestoned={};
+  const prog=computeContinentProgress();
+  for(const c of CONTINENTS){
+    const p=prog[c.key];
+    if(p&&p.total>0&&p.owned>=p.total&&!GAME.continentsMilestoned[c.key]){
+      GAME.continentsMilestoned[c.key]=true;
+      GAME.momentumProgress=(GAME.momentumProgress||0)+1.0;
+      gLog('🏆 '+FCLang.t('sim.ms.log',{continent:'<b>'+FCLang.t('sim.cont.'+c.key)+'</b>'}));
+      showMilestoneToast(c.key);
+    }
+  }
+}
+// Celebratory continent-cleared toast.
+function showMilestoneToast(contKey){
+  const toast=document.getElementById('g-milestone-toast');
+  if(!toast) return;
+  const cn=toast.querySelector('.g-ms-cont');
+  if(cn) cn.textContent=FCLang.t('sim.cont.'+contKey);
+  toast.classList.add('show');
+  clearTimeout(window._fcMsTimer);
+  window._fcMsTimer=setTimeout(()=>toast.classList.remove('show'),3400);
+}
+// Refresh the six-continent progress panel.
+function renderCampaignPanel(){
+  const body=document.getElementById('g-campaign-body');
+  if(!body) return;
+  const prog=computeContinentProgress();
+  body.innerHTML=CONTINENTS.map(c=>{
+    const p=prog[c.key]||{owned:0,total:0};
+    const pct=p.total?Math.round(100*p.owned/p.total):0;
+    const done=p.total>0&&p.owned>=p.total;
+    return '<div class="g-cont-row'+(done?' done':'')+'">'
+      +'<span class="g-cont-name">'+FCLang.t('sim.cont.'+c.key)+'</span>'
+      +'<span class="g-cont-bar"><span class="g-cont-fill" style="width:'+pct+'%"></span></span>'
+      +'<span class="g-cont-count">'+p.owned+'/'+p.total+(done?' ✓':'')+'</span></div>';
+  }).join('');
+}
+// Campaign panel collapse toggle.
+(function(){
+  const hdr=document.getElementById('g-campaign-header');
+  const panel=document.getElementById('g-campaign-panel');
+  if(hdr&&panel) hdr.addEventListener('click',()=>panel.classList.toggle('collapsed'));
+})();
 // Compute the full per-match Poisson model for the current matchup + tactic.
 // Returns {heroEff, oppEff, heroLambda, oppLambda, pHeroWin, oppStyle, heroStyle}
 // — used by both the live preview render and the actual score simulation, so
@@ -6700,6 +6878,8 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   const prevMomentumProgress=GAME.momentumProgress||0;
   const winValue=computeWinValue(hero, opp, heroScore, oppScore, GAME.winStreak);
   GAME.momentumProgress=prevMomentumProgress + winValue;
+  // Campaign: did this conquest just complete a whole continent?
+  checkContinentMilestones();
   // Push undo record for this win. heroScore/oppScore stored explicitly so
   // undoConquestWin can rewind the stats tally cleanly (no string parsing).
   // prevWinStreak captures the streak value BEFORE this win so undo restores
@@ -7131,6 +7311,7 @@ function updateConquestHud(state){
   // state: {turn, remaining, lossOpponent, lossCount, lastResult: {type, hero, opp, score, gameOver}}
   const hud=document.getElementById('g-hud');
   if(!hud)return;
+  if(typeof renderCampaignPanel==='function') renderCampaignPanel();
   // Only show in conquest mode
   if(GAME.mode!=='conquest'){
     hud.classList.remove('visible');
