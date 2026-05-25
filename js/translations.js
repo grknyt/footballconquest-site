@@ -455,6 +455,7 @@ window.FC_TRANSLATIONS = {
     "sim.ev.turnsummary": "Turn <b>{turn}</b> · <b>{remaining}</b> left",
     "sim.ev.empty": "Click Pick attacker to begin.",
     "sim.ev.noevents": "No events yet.",
+    "sim.ev.filter": "Match results only",
     /* J — history panel */
     "sim.hist.title": "🕘 History",
     "sim.hist.empty": "No changes yet.<br>Every action you take will appear here.",
@@ -990,6 +991,7 @@ window.FC_TRANSLATIONS = {
     "sim.ev.turnsummary": "Tur <b>{turn}</b> · <b>{remaining}</b> kaldı",
     "sim.ev.empty": "Başlamak için \"Saldırgan seç\" butonuna tıklayın.",
     "sim.ev.noevents": "Henüz bir olay yok.",
+    "sim.ev.filter": "Yalnızca maç sonuçları",
     /* J — history panel */
     "sim.hist.title": "🕘 Geçmiş",
     "sim.hist.empty": "Henüz bir değişiklik yok.<br>Yaptığınız her eylem burada görünecektir.",

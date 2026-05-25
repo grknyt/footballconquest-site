@@ -303,6 +303,12 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
 .g-events-turn-summary b{color:#fff;}
 .g-events-turn-summary .sep{color:#4a6a80;margin:0 4px;}
 #g-events-toggle{color:#7ab8e8;transition:transform .25s;font-size:9px;flex-shrink:0;}
+.g-events-filter{background:transparent;border:1px solid #2a3f55;color:#5a7a95;font-size:11px;
+  line-height:1;padding:3px 6px;border-radius:5px;cursor:pointer;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;}
+.g-events-filter:hover{color:#7ab8e8;border-color:#7ab8e8;}
+.g-events-filter.active{color:#fff;background:#1d5a8c;border-color:#378add;}
+#g-log.results-only .g-log-entry:not(.g-log-result){display:none;}
 #g-events-panel.collapsed #g-events-toggle{transform:rotate(-90deg);}
 #g-events-panel.collapsed #g-events-header{border-bottom:none;}
 
@@ -914,6 +920,7 @@ body.web-build .g-result-scores,
 body.web-build .g-result-finish,
 body.web-build #g-result-pens-row,
 body.web-build #g-result-confirm{display:none!important;}
+body.web-build #fc-menu-undo{display:none!important;}
 /* With Confirm gone, Cancel sits alone — recenter it and dim it as a
    secondary "back out" rather than a primary action. */
 body.web-build .g-result-actions{justify-content:center;}
@@ -1022,7 +1029,6 @@ body.web-build .g-result-card.revealed .g-sim-btn{
       <span id="paint-label" data-i18n="sim.tb.tappick">Tap to pick</span>
     </div>
     <div class="acts">
-      <button class="abtn" id="btn-undo">↩ <span data-i18n="sim.tb.undo">Undo</span><span class="kbadge">⌘Z</span></button>
       <button class="abtn" id="btn-history">🕘 <span data-i18n="sim.tb.history">History</span></button>
       <button class="abtn" id="btn-leaderboard" data-i18n-attr="title:sim.tb.tip.lb" title="View leaderboards (your runs + global)">🏆 <span data-i18n="sim.tb.leaderboards">Leaderboards</span></button>
       <button class="abtn" id="btn-save">💾 <span data-i18n="sim.tb.save">Save</span></button>
@@ -1038,6 +1044,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
         <button class="abtn fc-menu-btn" id="fc-menu-btn" type="button" aria-label="Menu" aria-haspopup="true" aria-expanded="false">☰</button>
         <div class="fc-menu-popover" id="fc-menu" role="menu">
           <div class="fc-menu-item" id="fc-menu-save" role="menuitem"><span class="fc-menu-icon">💾</span><span data-i18n="sim.tb.menu.save">Save game</span></div>
+          <div class="fc-menu-item" id="fc-menu-undo" role="menuitem"><span class="fc-menu-icon">↩</span><span data-i18n="sim.tb.undo">Undo</span></div>
           <div class="fc-menu-item fc-menu-game-only" id="fc-menu-end" role="menuitem"><span class="fc-menu-icon">🎲</span><span data-i18n="sim.tb.menu.newgame">New game</span></div>
           <div class="fc-menu-sep"></div>
           <div class="fc-menu-item danger fc-menu-hide-in-conquest" id="fc-menu-reset" role="menuitem"><span class="fc-menu-icon">⟳</span><span data-i18n="sim.tb.menu.reset">Reset map</span></div>
@@ -1454,6 +1461,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
              is collapsed, so the player can keep tabs on Turn N / remaining
              without expanding the log. Populated by updateConquestHud(). -->
         <span class="g-events-turn-summary" id="g-events-turn-summary"></span>
+        <button type="button" id="g-events-filter" class="g-events-filter" data-i18n-attr="title:sim.ev.filter" title="Match results only">⚽</button>
         <span id="g-events-toggle">▼</span>
       </div>
       <div id="g-log"><div class="g-log-empty" data-i18n="sim.ev.empty">Click Pick attacker to begin.</div></div>
@@ -3071,6 +3079,10 @@ function scaleBadges(k){
 
 // ── Undo / Reset ──────────────────────────────────────────────
 function doUndo(){
+  // Undo is a creator-only tool. In the public web build it is fully
+  // disabled so it cannot be used to game the leaderboard. The offline
+  // build (no web-build class) keeps it for recording.
+  if(document.body.classList.contains('web-build')) return;
   if(!undoStack.length)return;
   const op=undoStack.pop();
   historyIdx=undoStack.length;
@@ -4120,20 +4132,25 @@ const GAME={
   log:[],
 };
 
-function gLog(msg){
-  GAME.log.unshift(msg);
+function gLog(msg,isResult){
+  GAME.log.unshift({h:msg,r:!!isResult});
+  renderGameLog();
+}
+// Render the Events log. Each entry is {h:html, r:isMatchResult}; the r flag
+// drives the "match results only" filter (CSS hides non-result entries).
+function renderGameLog(){
   const box=document.getElementById('g-log');
   if(!box)return;
   if(GAME.log.length===0){box.innerHTML='<div class="g-log-empty">'+FCLang.t('sim.ev.noevents')+'</div>';return;}
-  box.innerHTML=GAME.log.slice(0,20).map(m=>`<div>${m}</div>`).join('');
+  box.innerHTML=GAME.log.slice(0,20).map(e=>{
+    const html=(e&&e.h!=null)?e.h:e;
+    return '<div class="g-log-entry'+((e&&e.r)?' g-log-result':'')+'">'+html+'</div>';
+  }).join('');
 }
 function gLogPop(){
   // Remove the most recent log entry (used by undo to clean up "Arrow points at X" etc.)
   if(GAME.log.length>0) GAME.log.shift();
-  const box=document.getElementById('g-log');
-  if(!box)return;
-  if(GAME.log.length===0){box.innerHTML='<div class="g-log-empty">'+FCLang.t('sim.ev.noevents')+'</div>';return;}
-  box.innerHTML=GAME.log.slice(0,20).map(m=>`<div>${m}</div>`).join('');
+  renderGameLog();
 }
 function gStats(){
   const alive=Object.values(GAME.state).filter(t=>t.alive).length;
@@ -5396,7 +5413,7 @@ function gameResolve(){
   // Include a quick rating summary for viewer context
   const ratingLine=`<span style="color:#7a9bb5;font-size:10px">FIFA: ${teamDisplayName(att.name)} ${Math.round(attFifa)} vs ${teamDisplayName(def.name)} ${Math.round(defFifa)}</span>`;
   gLog(FCLang.t('sim.log.impresult',{att:teamDisplayName(att.name), score:scoreStr+suffix, def:teamDisplayName(def.name),
-    winner:'<b style="color:'+(attWon?'#6dd86d':'#ff8a8a')+'">'+teamDisplayName(winner.name)+'</b>'})+'<br>'+ratingLine);
+    winner:'<b style="color:'+(attWon?'#6dd86d':'#ff8a8a')+'">'+teamDisplayName(winner.name)+'</b>'})+'<br>'+ratingLine,true);
   if(Object.values(GAME.state).filter(t=>t.alive).length===1){
     const champ=Object.values(GAME.state).find(t=>t.alive);
     gLog(FCLang.t('sim.log.champ',{champ:teamDisplayName(champ.name)}));
@@ -5600,7 +5617,6 @@ $('g-spin-arrow').onclick=()=>window.gameSpinArrow();
 $('g-resolve').onclick=()=>window.gameResolve();
 $('g-skip').onclick=gameSkip;
 $('game-close').onclick=()=>setMode('view');
-$('btn-undo').onclick=doUndo;
 $('btn-reset').onclick=doReset;
 $('btn-save').onclick=doSave;
 $('btn-load').onclick=doLoad;
@@ -6940,7 +6956,7 @@ function resolveConquestBattle(won){
 function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   // Log
   gLog(FCLang.t('sim.log.win',{hero:teamDisplayName(hero.name), score:heroScore+'–'+oppScore+suffix, opp:teamDisplayName(opp.name),
-    winner:'<b style="color:#6dd86d">'+teamDisplayName(hero.name)+'</b>'}));
+    winner:'<b style="color:#6dd86d">'+teamDisplayName(hero.name)+'</b>'}),true);
   // Snapshot opponent's previous color (for retreat)
   const opponentIsoList=[...GAME.state[opp.id].ownedIsos];
   const prevColors={};
@@ -7151,7 +7167,7 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   const fromX=heroBadgeNow?parseFloat(heroBadgeNow.getAttribute('data-cx')):0;
   const fromY=heroBadgeNow?parseFloat(heroBadgeNow.getAttribute('data-cy')):0;
   gLog(FCLang.t('sim.log.loss',{hero:teamDisplayName(hero.name), score:heroScore+'–'+oppScore+suffix, opp:teamDisplayName(opp.name),
-    winner:'<b style="color:#ff8a8a">'+teamDisplayName(opp.name)+'</b>'}));
+    winner:'<b style="color:#ff8a8a">'+teamDisplayName(opp.name)+'</b>'}),true);
   // Increment loss count against this opponent
   GAME.lossCounts[opp.id]=(GAME.lossCounts[opp.id]||0)+1;
   const losses=GAME.lossCounts[opp.id];
@@ -7303,7 +7319,7 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
 function undoConquestSpin(op){
   // Clear the current spin's defender + visual overlay; back to "ready to spin" state.
   // Also remove the "Arrow points at X" log line so the log shows no trace of the spin.
-  if(GAME.log[0] && /Arrow points at/.test(GAME.log[0])) gLogPop();
+  if(GAME.log[0] && /Arrow points at/.test(GAME.log[0].h||'')) gLogPop();
   GAME.defender=null;
   GAME.phase='picked-att';
   clearGameOverlay();
@@ -7967,6 +7983,14 @@ function startNewGameFlow(){
   hdr.addEventListener('click',()=>{
     panel.classList.toggle('collapsed');
   });
+  // 'Match results only' filter — hides non-result log entries via a CSS class.
+  const filterBtn=document.getElementById('g-events-filter');
+  if(filterBtn) filterBtn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const log=document.getElementById('g-log');
+    const on=filterBtn.classList.toggle('active');
+    if(log) log.classList.toggle('results-only',on);
+  });
 })();
 
 // ── Username gate ──────────────────────────────────────────────
@@ -8109,6 +8133,13 @@ function openUsernameGate(onDone){
   if(saveItem) saveItem.addEventListener('click',()=>{
     close();
     if(typeof doSave==='function') doSave();
+  });
+
+  // Undo → kept off the visible toolbar (a creator tool, hidden during recording).
+  const undoItem=document.getElementById('fc-menu-undo');
+  if(undoItem) undoItem.addEventListener('click',()=>{
+    close();
+    if(typeof doUndo==='function') doUndo();
   });
 
   // New game → confirm (only if a game is actively in progress), then end the current
