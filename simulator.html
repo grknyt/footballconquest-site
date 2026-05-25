@@ -311,6 +311,32 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
 #g-log.results-only .g-log-entry:not(.g-log-result){display:none;}
 .g-log-num{display:none;color:#7ab8e8;font-weight:700;margin-right:5px;font-variant-numeric:tabular-nums;}
 #g-log.results-only .g-log-num{display:inline;}
+/* Aura instant-win — clickable cost pills on the map + confirm modal */
+.iw-pill{cursor:pointer;}
+.iw-pill rect{transition:fill .12s ease,stroke .12s ease;}
+.iw-pill:hover rect{fill:#1d5a8c;stroke:#ffe27a;}
+.iw-pill text{pointer-events:none;}
+.iw-modal{position:fixed;inset:0;background:rgba(4,9,15,0.74);z-index:300;
+  display:flex;align-items:center;justify-content:center;}
+.iw-box{background:#0c1623;border:1px solid #2a3f55;border-radius:14px;
+  padding:22px 24px;width:310px;max-width:86vw;text-align:center;
+  box-shadow:0 12px 38px rgba(0,0,0,.6);}
+.iw-box-flag{width:88px;height:58px;margin:0 auto 12px;border-radius:3px;
+  border:1px solid rgba(255,255,255,.18);background-size:cover;background-position:center;
+  background-color:#1a2f40;}
+.iw-box-title{font-size:16px;font-weight:800;color:#ffd84d;margin-bottom:8px;}
+.iw-box-desc{font-size:13px;color:#c4d4e2;line-height:1.5;margin-bottom:6px;}
+.iw-box-cost{font-size:13px;color:#9fb3c4;margin-bottom:8px;}
+.iw-box-cost b{color:#ffd84d;}
+.iw-box-warn{font-size:12px;color:#ff8a8a;min-height:15px;margin-bottom:12px;}
+.iw-box-btns{display:flex;gap:10px;}
+.iw-box-btns button{flex:1;padding:9px 0;border-radius:8px;font-size:13px;
+  font-weight:600;cursor:pointer;border:1px solid #2a3f55;}
+.iw-cancel{background:transparent;color:#9fb3c4;}
+.iw-cancel:hover{color:#fff;border-color:#7ab8e8;}
+.iw-confirm{background:#1d5a8c;color:#fff;border-color:#378add;}
+.iw-confirm:hover{background:#2570ad;}
+.iw-confirm:disabled{opacity:.45;cursor:not-allowed;}
 #g-events-panel.collapsed #g-events-toggle{transform:rotate(-90deg);}
 #g-events-panel.collapsed #g-events-header{border-bottom:none;}
 
@@ -3077,6 +3103,7 @@ function scaleBadges(k){
   });
   rescaleGameOverlay(k);
   renderHandles();
+  if(typeof rescaleInstantTargets==='function') rescaleInstantTargets(k);
 }
 
 // ── Undo / Reset ──────────────────────────────────────────────
@@ -4146,7 +4173,7 @@ function renderGameLog(){
   if(GAME.log.length===0){box.innerHTML='<div class="g-log-empty">'+FCLang.t('sim.ev.noevents')+'</div>';return;}
   let resultIdx=0;
   for(const e of GAME.log){ if(e&&e.r) resultIdx++; }
-  box.innerHTML=GAME.log.slice(0,20).map(e=>{
+  box.innerHTML=GAME.log.map(e=>{
     const html=(e&&e.h!=null)?e.h:e;
     const isResult=!!(e&&e.r);
     let num='';
@@ -4273,6 +4300,7 @@ function gameInit(){
 function gameRender(){
   gStats();gSlots();gBtnState();
   syncConquestBadges();
+  if(typeof renderInstantTargets==='function') renderInstantTargets();
 }
 // Defensive cleanup: any team marked alive=false should NOT have a flag on the
 // map. This handles edge cases where the per-action badge.remove() in
@@ -6602,7 +6630,10 @@ function computeMatchModel(tactic){
   _mods.forEach(function(m){ heroLambda*=m.heroLambdaMult||1; oppLambda*=m.oppLambdaMult||1; });
   // Win-probability uses the same Elo curve as the auto-resolve in gameResolve,
   // so the preview value matches the implicit odds of the simulator output.
-  const pHeroWin=1/(1+Math.pow(10,(oppEff-heroEff)/450));
+  // Win probability is capped to 1%-99% — a match is never a literal
+  // certainty, and the preview should never read 100% / 0%.
+  let pHeroWin=1/(1+Math.pow(10,(oppEff-heroEff)/450));
+  pHeroWin=Math.max(0.01,Math.min(0.99,pHeroWin));
   return {heroEff,oppEff,heroLambda,oppLambda,pHeroWin,heroStyle,oppStyle,
           matchupBonus,idBonus,heroTerritorial,heroMomentum,heroTotalBonus,
           winStreak:GAME.winStreak||0};
@@ -6664,6 +6695,29 @@ function simulateConquestScores(){
   } else if(heroGoals<oppGoals){
     oppGoals =Math.min(oppGoals,  cap.winner);
     heroGoals=Math.min(heroGoals, cap.loser);
+  }
+  // Real odds: the winner is decided by a coin flip on the capped win
+  // probability (1%-99%), so a displayed 99% genuinely loses ~1-in-100.
+  // If the sampled scoreline disagrees with the flip, swap the two sides.
+  const heroShouldWin=Math.random()<m.pHeroWin;
+  const sampledHeroWin=(finish==='pens')?(pensHero>pensOpp):(heroGoals>oppGoals);
+  if(sampledHeroWin!==heroShouldWin){
+    let _t=heroGoals;heroGoals=oppGoals;oppGoals=_t;
+    _t=pensHero;pensHero=pensOpp;pensOpp=_t;
+  }
+  // Keep a forced upset believable — the lower-rated winner never wins by
+  // more than a single clear goal (regulation results only).
+  if(finish!=='pens'){
+    const heroWonNow=heroGoals>oppGoals;
+    const upset=heroWonNow?(m.heroEff<m.oppEff):(m.oppEff<m.heroEff);
+    if(upset){
+      const hi=Math.max(heroGoals,oppGoals),lo=Math.min(heroGoals,oppGoals);
+      if(hi-lo>1){
+        const loser=Math.min(lo,1),winner=loser+1;
+        if(heroWonNow){heroGoals=winner;oppGoals=loser;}
+        else{oppGoals=winner;heroGoals=loser;}
+      }
+    }
   }
   return {heroGoals,oppGoals,finish,pensHero,pensOpp};
 }
@@ -7083,13 +7137,16 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   // Campaign: did this conquest just complete a whole continent?
   checkContinentMilestones();
   // Aura earned: +1 base, +2 upset, +3 boss / +5 final boss, x2 on Double or Nothing.
-  let _auraGain=1;
-  if(fifaRating(opp.name)>fifaRating(hero.name)) _auraGain+=2;
-  if(GAME.matchEvent&&GAME.matchEvent.isBoss) _auraGain+=GAME.matchEvent.finalBoss?5:3;
-  if(GAME.matchEvent&&GAME.matchEvent.isRevenge){ _auraGain+=3;
-    gLog('⚔️ '+FCLang.t('sim.rev.taken',{name:'<b>'+teamDisplayName(opp.name)+'</b>'})); }
-  if(GAME.doubleOrNothing) _auraGain*=2;
-  GAME.aura=(GAME.aura||0)+_auraGain;
+  // Instant-win conquests (Aura was already spent up-front) skip the win bonus.
+  if(!GAME._skipAuraReward){
+    let _auraGain=1;
+    if(fifaRating(opp.name)>fifaRating(hero.name)) _auraGain+=2;
+    if(GAME.matchEvent&&GAME.matchEvent.isBoss) _auraGain+=GAME.matchEvent.finalBoss?5:3;
+    if(GAME.matchEvent&&GAME.matchEvent.isRevenge){ _auraGain+=3;
+      gLog('⚔️ '+FCLang.t('sim.rev.taken',{name:'<b>'+teamDisplayName(opp.name)+'</b>'})); }
+    if(GAME.doubleOrNothing) _auraGain*=2;
+    GAME.aura=(GAME.aura||0)+_auraGain;
+  }
   // Run-recap: remember the biggest-margin win of the campaign.
   const _wm=heroScore-oppScore;
   if(!GAME.biggestWin||_wm>GAME.biggestWin.margin)
@@ -7771,6 +7828,177 @@ function drawConquestTrailArrow(x1,y1,x2,y2,opts){
   // Conquest trail removed — the accumulating dotted curved arrows
   // became visual noise over a long run and added needless per-frame
   // SVG rendering cost. Kept as a no-op so all callers stay safe.
+}
+
+// ==========================================================================
+// Aura instant-win - click a nearby weak flag to conquer without playing the
+// match. Eligible: the team is within INSTANT_WIN_RADIUS of the hero's flag
+// AND its current OVR is below 80. Cost scales with OVR in four bands
+// (3/4/5/6 Aura). Strong teams / bosses (OVR>=80) must still be played.
+// ==========================================================================
+const INSTANT_WIN_RADIUS=1000;   // SVG units from the hero flag (viewBox is 10000 wide)
+const INSTANT_WIN_OVR_CAP=80;    // teams at/above this OVR can never be instant-won
+function instantWinCost(ovr){
+  if(ovr>=73) return 6;
+  if(ovr>=66) return 5;
+  if(ovr>=58) return 4;
+  return 3;
+}
+function instantWinEligible(team){
+  if(!GAME||GAME.mode!=='conquest'||!GAME.active) return false;
+  if(!team||!GAME.attacker||team.id===GAME.attacker.id) return false;
+  const st=GAME.state&&GAME.state[team.id];
+  if(!st||!st.alive) return false;
+  const ovr=teamCurrentOverall(team);
+  if(ovr==null||ovr>=INSTANT_WIN_OVR_CAP) return false;
+  const heroC=teamCentroid(GAME.attacker.id), c=teamCentroid(team.id);
+  if(!heroC||!c) return false;
+  return Math.hypot(c[0]-heroC[0],c[1]-heroC[1])<=INSTANT_WIN_RADIUS;
+}
+// Rebuild the clickable Aura-cost pills over every eligible nearby flag.
+function renderInstantTargets(){
+  let layer=document.getElementById('instant-layer');
+  if(!layer){
+    const mg=document.getElementById('mg');
+    if(!mg) return;
+    layer=document.createElementNS('http://www.w3.org/2000/svg','g');
+    layer.setAttribute('id','instant-layer');
+    mg.appendChild(layer);
+  }
+  layer.innerHTML='';
+  if(!GAME||GAME.mode!=='conquest'||!GAME.active||GAME.phase!=='picked-att') return;
+  if(window._fcSpinning||!GAME.attacker) return;
+  const invK=1/currentK();
+  Object.values(GAME.state).forEach(function(st){
+    if(!st.alive||st.id===GAME.attacker.id) return;
+    const team=teams.find(function(t){return t.id===st.id;});
+    if(!team||!instantWinEligible(team)) return;
+    const c=teamCentroid(team.id);
+    if(!c) return;
+    const cost=instantWinCost(teamCurrentOverall(team));
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','iw-pill');
+    g.setAttribute('data-team',String(team.id));
+    g.setAttribute('data-cx',String(c[0]));
+    g.setAttribute('data-cy',String(c[1]));
+    g.setAttribute('transform','translate('+c[0]+','+c[1]+') scale('+invK+')');
+    g.setAttribute('pointer-events','auto');
+    g.innerHTML='<rect x="-115" y="-260" width="230" height="92" rx="16" '+
+      'fill="rgba(10,18,28,0.96)" stroke="#f0c040" stroke-width="3"/>'+
+      '<text x="0" y="-198" text-anchor="middle" font-family="system-ui,sans-serif" '+
+      'font-size="58" font-weight="800" fill="#ffd84d">⚡ '+cost+'⭐</text>';
+    const stop=function(e){e.stopPropagation();};
+    g.addEventListener('pointerdown',stop);
+    g.addEventListener('mousedown',stop);
+    g.addEventListener('click',function(e){e.stopPropagation();openInstantConfirm(team.id);});
+    layer.appendChild(g);
+  });
+}
+// Keep the pills at constant screen size as the map zooms.
+function rescaleInstantTargets(k){
+  if(k==null) k=currentK();
+  const invK=1/k;
+  document.querySelectorAll('#instant-layer .iw-pill').forEach(function(g){
+    g.setAttribute('transform','translate('+g.getAttribute('data-cx')+','+
+      g.getAttribute('data-cy')+') scale('+invK+')');
+  });
+}
+function ensureInstantModal(){
+  let m=document.getElementById('iw-modal');
+  if(m) return m;
+  m=document.createElement('div');
+  m.id='iw-modal';
+  m.className='iw-modal';
+  m.style.display='none';
+  m.innerHTML='<div class="iw-box">'+
+    '<div class="iw-box-flag" id="iw-box-flag"></div>'+
+    '<div class="iw-box-title" id="iw-box-title"></div>'+
+    '<div class="iw-box-desc" id="iw-box-desc"></div>'+
+    '<div class="iw-box-cost" id="iw-box-cost"></div>'+
+    '<div class="iw-box-warn" id="iw-box-warn"></div>'+
+    '<div class="iw-box-btns">'+
+      '<button type="button" class="iw-cancel" id="iw-cancel"></button>'+
+      '<button type="button" class="iw-confirm" id="iw-confirm"></button>'+
+    '</div></div>';
+  document.body.appendChild(m);
+  m.addEventListener('click',function(e){if(e.target===m) closeInstantConfirm();});
+  m.querySelector('#iw-cancel').addEventListener('click',closeInstantConfirm);
+  m.querySelector('#iw-confirm').addEventListener('click',executeInstantWin);
+  return m;
+}
+function closeInstantConfirm(){
+  const m=document.getElementById('iw-modal');
+  if(m) m.style.display='none';
+  if(GAME) GAME._instantTargetId=null;
+}
+function openInstantConfirm(teamId){
+  const team=teams.find(function(t){return t.id===teamId;});
+  if(!team||!instantWinEligible(team)) return;
+  const ovr=teamCurrentOverall(team);
+  const cost=instantWinCost(ovr);
+  const have=GAME.aura||0;
+  GAME._instantTargetId=teamId;
+  const m=ensureInstantModal();
+  const b64=FLAG_B64[team.name];
+  m.querySelector('#iw-box-flag').style.backgroundImage=
+    b64?('url(data:image/png;base64,'+b64+')'):'none';
+  m.querySelector('#iw-box-title').textContent=FCLang.t('sim.iw.title');
+  m.querySelector('#iw-box-desc').innerHTML=FCLang.t('sim.iw.desc',
+    {name:'<b>'+teamDisplayName(team.name)+'</b>',ovr:ovr});
+  m.querySelector('#iw-box-cost').innerHTML=FCLang.t('sim.iw.cost',
+    {cost:'<b>'+cost+'</b>',have:have});
+  m.querySelector('#iw-cancel').textContent=FCLang.t('sim.iw.cancel');
+  m.querySelector('#iw-confirm').textContent=FCLang.t('sim.iw.confirm');
+  const warn=m.querySelector('#iw-box-warn');
+  const confirmBtn=m.querySelector('#iw-confirm');
+  if(have<cost){
+    warn.textContent=FCLang.t('sim.iw.notenough',{cost:cost});
+    confirmBtn.disabled=true;
+  } else {
+    warn.textContent='';
+    confirmBtn.disabled=false;
+  }
+  m.style.display='flex';
+}
+function executeInstantWin(){
+  const team=teams.find(function(t){return t.id===(GAME&&GAME._instantTargetId);});
+  if(!team||!instantWinEligible(team)){ closeInstantConfirm(); return; }
+  const hero=GAME.attacker;
+  if(!hero){ closeInstantConfirm(); return; }
+  const cost=instantWinCost(teamCurrentOverall(team));
+  const auraBefore=GAME.aura||0;
+  if(auraBefore<cost) return;            // confirm button is disabled; guard anyway
+  GAME.aura=auraBefore-cost;             // spend the Aura up-front
+  // Set up the matchup so handleConquestWin conquers the right team and lands
+  // the hero flag on the nearest of that team's territories.
+  GAME.defender=team;
+  const heroC=teamCentroid(hero.id);
+  let bestIso=null,bestD=Infinity;
+  Array.from(GAME.state[team.id].ownedIsos).forEach(function(iso){
+    const ic=isoCentroid(iso,heroC);
+    if(ic){
+      const d=Math.hypot(ic[0]-(heroC?heroC[0]:0),ic[1]-(heroC?heroC[1]:0));
+      if(d<bestD){bestD=d;bestIso=iso;}
+    }
+  });
+  GAME.defenderIso=bestIso;
+  // A clean, believable winning scoreline derived from the match model.
+  let hg=2,og=0;
+  const mm=computeMatchModel();
+  if(mm){
+    hg=Math.max(2,Math.round(mm.heroLambda));
+    og=Math.max(0,Math.min(Math.round(mm.oppLambda),hg-1));
+  }
+  gLog(FCLang.t('sim.iw.log',{name:'<b>'+teamDisplayName(team.name)+'</b>',cost:cost}));
+  // Resolve as a normal win, but suppress the win-Aura bonus (Aura was the cost).
+  GAME._skipAuraReward=true;
+  try{ handleConquestWin(hero,team,hg,og,''); }
+  finally{ GAME._skipAuraReward=false; }
+  // Make undo (creator build) refund the Aura that was spent.
+  const rec=undoStack[undoStack.length-1];
+  if(rec&&rec.type==='conquest-win') rec.prevAura=auraBefore;
+  closeInstantConfirm();
+  if(typeof refreshConquestHud==='function') refreshConquestHud();
 }
 
 // Initialize after DOM ready
