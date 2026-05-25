@@ -38,12 +38,12 @@
 <article class="page">
   <div class="page-eyebrow" data-i18n="fr.eyebrow">CHAPTER 02 · THE ARCHIVE</div>
   <h1 class="page-title" data-i18n="fr.title">Featured runs.</h1>
-  <p class="page-lead" data-i18n="fr.lead">The best campaigns from the channels — pick a team, watch them try to conquer the world.</p>
+  <p class="page-lead" data-i18n="fr.lead">The best campaigns — pick a team, watch them try to conquer the world.</p>
 
-  <h2 data-i18n="fr.en.h">English-language campaigns</h2>
-  <p data-i18n-html="fr.en.p">From the <a href="https://www.youtube.com/@Ghiellini" target="_blank" style="color:var(--red);">@Ghiellini channel</a>.</p>
+  <h2 data-i18n="fr.en.h" data-lang-only="en">Featured campaigns</h2>
+  <p data-i18n-html="fr.en.p" data-lang-only="en">From the <a href="https://www.youtube.com/@Ghiellini" target="_blank" style="color:var(--red);">@Ghiellini channel</a>.</p>
 
-  <div class="video-grid">
+  <div class="video-grid" data-lang-only="en">
     <div class="video-card">
       <div class="video-embed">
         <iframe src="https://www.youtube.com/embed/UyYYYPODCPg" title="World Cup With Every Country" loading="lazy" allowfullscreen></iframe>
@@ -64,10 +64,10 @@
     </div>
   </div>
 
-  <h2 data-i18n="fr.tr.h">Turkish-language campaigns</h2>
-  <p data-i18n-html="fr.tr.p">From the <a href="https://www.youtube.com/@GRKN7" target="_blank" style="color:var(--red);">@GRKN7 channel</a>.</p>
+  <h2 data-i18n="fr.tr.h" data-lang-only="tr">Turkish-language campaigns</h2>
+  <p data-i18n-html="fr.tr.p" data-lang-only="tr">From the <a href="https://www.youtube.com/@GRKN7" target="_blank" style="color:var(--red);">@GRKN7 channel</a>.</p>
 
-  <div class="video-grid">
+  <div class="video-grid" data-lang-only="tr">
     <div class="video-card">
       <div class="video-embed">
         <iframe src="https://www.youtube.com/embed/g6IP_3IO3zY" title="Türkiye Emperyalizmi" loading="lazy" allowfullscreen></iframe>
@@ -99,7 +99,8 @@
     <div class="footer-brand">
       <div class="brand-mark large">FC</div>
       <div>FOOTBALL CONQUEST</div>
-      <div class="footer-tag">© 2026 · Made by <a href="https://www.youtube.com/@Ghiellini">Ghiellini</a> &amp; <a href="https://www.youtube.com/@GRKN7">GRKN7</a></div>
+      <div class="footer-tag" data-lang-only="en">© 2026 · Made by <a href="https://www.youtube.com/@Ghiellini">Ghiellini</a></div>
+      <div class="footer-tag" data-lang-only="tr">© 2026 · <a href="https://www.youtube.com/@GRKN7">GRKN7</a> tarafından yapıldı</div>
     </div>
     <div class="footer-col">
       <div class="footer-heading" data-i18n="footer.play">PLAY</div>
@@ -109,8 +110,8 @@
     </div>
     <div class="footer-col">
       <div class="footer-heading" data-i18n="footer.channels">CHANNELS</div>
-      <a href="https://www.youtube.com/@Ghiellini" target="_blank">@Ghiellini (EN)</a>
-      <a href="https://www.youtube.com/@GRKN7" target="_blank">@GRKN7 (TR)</a>
+      <a href="https://www.youtube.com/@Ghiellini" target="_blank" data-lang-only="en">@Ghiellini</a>
+      <a href="https://www.youtube.com/@GRKN7" target="_blank" data-lang-only="tr">@GRKN7</a>
     </div>
     <div class="footer-col">
       <div class="footer-heading" data-i18n="footer.legal">LEGAL</div>
@@ -126,8 +127,4 @@
   </div>
 </footer>
 
-<!-- Localization: translations dictionary + i18n engine. -->
-<script src="/js/translations.js"></script>
-<script src="/js/i18n.js"></script>
-</body>
-</html>
+<!-- Localization: translations dictionary + i18n engin

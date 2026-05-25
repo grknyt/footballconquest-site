@@ -156,15 +156,15 @@ window.FC_TRANSLATIONS = {
     "htp.faq2.h": "Can I use this in my YouTube videos?",
     "htp.faq2.p": "Yes, absolutely. Make all the videos you want with it. A small credit to footballconquest.com in the description is appreciated but not required.",
     "htp.faq3.h": "Is there a mobile app?",
-    "htp.faq3.p": "Not yet. A mobile version with club leagues (Premier League, La Liga, Serie A, Bundesliga, Süper Lig) is in development. Sign up for updates from the @Ghiellini or @GRKN7 YouTube channels.",
+    "htp.faq3.p": "Not yet. A mobile version with club leagues (Premier League, La Liga, Serie A, Bundesliga, Süper Lig) is in development. Subscribe to the @Ghiellini YouTube channel for updates.",
     "htp.faq4.h": "Can I add custom flags?",
     "htp.faq4.p": "Not in the simulator itself yet — but if you want custom maps with your own flag designs, check out the <a href=\"https://grkn.shop\" target=\"_blank\" style=\"color:var(--red);\">PSD map packs</a> at grkn.shop.",
 
     /* ── featured-runs page ── */
     "fr.eyebrow": "CHAPTER 02 · THE ARCHIVE",
     "fr.title": "Featured runs.",
-    "fr.lead": "The best campaigns from the channels — pick a team, watch them try to conquer the world.",
-    "fr.en.h": "English-language campaigns",
+    "fr.lead": "The best campaigns — pick a team, watch them try to conquer the world.",
+    "fr.en.h": "Featured campaigns",
     "fr.en.p": "From the <a href=\"https://www.youtube.com/@Ghiellini\" target=\"_blank\" style=\"color:var(--red);\">@Ghiellini channel</a>.",
     "fr.video1.title": "CAN ENGLAND TAKE OVER THE WORLD?",
     "fr.video1.sub": "Featured · 20 min · @Ghiellini",
@@ -186,10 +186,10 @@ window.FC_TRANSLATIONS = {
     "ab.title": "About this project.",
     "ab.lead": "Football Conquest started as a tool to make better videos. It turned into something the community could play with too.",
     "ab.who.h": "Who made this",
-    "ab.who.p1": "Hi, I'm Gürkan. I run two YouTube channels focused on offline EA Sports FC content:",
-    "ab.who.li1": "<strong><a href=\"https://www.youtube.com/@Ghiellini\" target=\"_blank\" style=\"color:var(--red);\">@Ghiellini</a></strong> — English-language career-mode and simulation videos.",
+    "ab.who.p1": "Hi, I'm Gürkan. I run a YouTube channel focused on offline EA Sports FC content:",
+    "ab.who.li1": "<strong><a href=\"https://www.youtube.com/@Ghiellini\" target=\"_blank\" style=\"color:var(--red);\">@Ghiellini</a></strong> — career-mode and simulation videos.",
     "ab.who.li2": "<strong><a href=\"https://www.youtube.com/@GRKN7\" target=\"_blank\" style=\"color:var(--red);\">@GRKN7</a></strong> — The same content for the Turkish-language audience.",
-    "ab.who.p2": "Combined, the channels reach more than 700,000 subscribers who care a lot about offline FC content: career-mode runs, club rebuilds, World Cup simulations, and the kind of Imperialism format you're holding in your hand right now.",
+    "ab.who.p2": "The channel reaches a large community of fans who care a lot about offline FC content: career-mode runs, club rebuilds, World Cup simulations, and the kind of Imperialism format you're holding in your hand right now.",
     "ab.why.h": "Why we built it",
     "ab.why.p1": "The Imperialism format — a single team trying to conquer the world one match at a time — has been a fan favourite for years. But making it on video was hard. You needed Photoshop, a 30,000-pixel map file, and a lot of patience between matches to manually paint conquered territory and reposition flags.",
     "ab.why.p2": "This simulator does all of that automatically. Pick your team, play the matches in FC 26, enter the scores, and the map updates itself. What used to take 20 minutes between matches now takes 20 seconds.",
@@ -210,7 +210,7 @@ window.FC_TRANSLATIONS = {
     "ab.next.li3": "<strong>Sharable result pages</strong> — when your campaign ends, get a URL that anyone can visit to see your final map and turn-by-turn history.",
     "ab.next.li4": "<strong>More languages</strong> — Spanish and Arabic next, then whichever audiences ask for it.",
     "ab.touch.h": "Get in touch",
-    "ab.touch.p1": "Found a bug? Have an idea? Want to feature your own run? Drop a comment on either channel, or message us directly on YouTube.",
+    "ab.touch.p1": "Found a bug? Have an idea? Want to feature your own run? Drop a comment on the channel, or message us directly on YouTube.",
     "ab.touch.p2": "Or, if you want to support the work directly, our paid <a href=\"https://grkn.shop\" target=\"_blank\" style=\"color:var(--red);\">PSD map packs at grkn.shop</a> are how we pay for the hosting and keep this free.",
     "ab.ack.h": "Acknowledgements",
     "ab.ack.p": "This simulator uses public-domain world geographic data from Natural Earth, the d3.js library for projection math, and FIFA's published World Ranking points (April 2026 edition). Not affiliated with FIFA, EA Sports, or any football federation.",
@@ -252,7 +252,7 @@ window.FC_TRANSLATIONS = {
     "pr.changes.h": "Changes to this policy",
     "pr.changes.p": "We may update this Privacy Policy from time to time. The \"Last updated\" date at the top of this page indicates when this policy was last revised. We encourage you to review this page periodically.",
     "pr.contact.h": "Contact",
-    "pr.contact.p": "If you have questions about this Privacy Policy or our data practices, you can reach us through our YouTube channels: <a href=\"https://www.youtube.com/@Ghiellini\" target=\"_blank\">@Ghiellini</a> or <a href=\"https://www.youtube.com/@GRKN7\" target=\"_blank\">@GRKN7</a>.",
+    "pr.contact.p": "If you have questions about this Privacy Policy or our data practices, you can reach us through our YouTube channel: <a href=\"https://www.youtube.com/@Ghiellini\" target=\"_blank\">@Ghiellini</a>.",
 
     /* ── terms of service page ── */
     "tos.title": "Terms of Service.",
@@ -295,7 +295,7 @@ window.FC_TRANSLATIONS = {
     "tos.law.h": "Governing law",
     "tos.law.p": "These Terms are governed by the laws of the Province of Alberta, Canada, without regard to its conflict of laws provisions. Any disputes shall be resolved in the courts of Alberta.",
     "tos.contact.h": "Contact",
-    "tos.contact.p": "For questions about these Terms, contact us through our YouTube channels: <a href=\"https://www.youtube.com/@Ghiellini\" target=\"_blank\">@Ghiellini</a> or <a href=\"https://www.youtube.com/@GRKN7\" target=\"_blank\">@GRKN7</a>.",
+    "tos.contact.p": "For questions about these Terms, contact us through our YouTube channel: <a href=\"https://www.youtube.com/@Ghiellini\" target=\"_blank\">@Ghiellini</a>.",
 
     /* ════════ SIMULATOR (simulator.html) ════════ */
     /* A — toolbar */
@@ -699,14 +699,14 @@ window.FC_TRANSLATIONS = {
     "htp.faq2.h": "Bunu YouTube videolarımda kullanabilir miyim?",
     "htp.faq2.p": "Evet, kesinlikle. İstediğin kadar video yap. Açıklamada footballconquest.com'a küçük bir atıf yapman makbule geçer ama zorunlu değildir.",
     "htp.faq3.h": "Mobil uygulama var mı?",
-    "htp.faq3.p": "Henüz yok. Kulüp liglerini (Premier Lig, La Liga, Serie A, Bundesliga, Süper Lig) içeren bir mobil sürüm geliştiriliyor. Güncellemeler için @Ghiellini veya @GRKN7 YouTube kanallarını takip et.",
+    "htp.faq3.p": "Henüz yok. Kulüp liglerini (Premier Lig, La Liga, Serie A, Bundesliga, Süper Lig) içeren bir mobil sürüm geliştiriliyor. Güncellemeler için @GRKN7 YouTube kanalını takip et.",
     "htp.faq4.h": "Özel bayraklar ekleyebilir miyim?",
     "htp.faq4.p": "Henüz simülatörün kendisinde değil — ama kendi bayrak tasarımlarınla özel haritalar istiyorsan, grkn.shop'taki <a href=\"https://grkn.shop\" target=\"_blank\" style=\"color:var(--red);\">PSD harita paketlerine</a> göz at.",
 
     /* ── featured-runs page ── */
     "fr.eyebrow": "BÖLÜM 02 · ARŞİV",
     "fr.title": "Öne çıkan seferler.",
-    "fr.lead": "Kanallardan en iyi kampanyalar — bir takım seç, dünyayı fethetme çabalarını izle.",
+    "fr.lead": "En iyi kampanyalar — bir takım seç, dünyayı fethetme çabalarını izle.",
     "fr.en.h": "İngilizce kampanyalar",
     "fr.en.p": "<a href=\"https://www.youtube.com/@Ghiellini\" target=\"_blank\" style=\"color:var(--red);\">@Ghiellini kanalından</a>.",
     "fr.video1.title": "İNGİLTERE DÜNYAYI ELE GEÇİREBİLİR Mİ?",
@@ -715,7 +715,7 @@ window.FC_TRANSLATIONS = {
     "fr.soon.sub": "Sonraki kampanya yakında",
     "fr.upcoming": "YAKINDA GELİYOR",
     "fr.notif": "Bildirimler için abone ol",
-    "fr.tr.h": "Türkçe kampanyalar",
+    "fr.tr.h": "Öne çıkan kampanyalar",
     "fr.tr.p": "<a href=\"https://www.youtube.com/@GRKN7\" target=\"_blank\" style=\"color:var(--red);\">@GRKN7 kanalından</a>.",
     "fr.soon2": "İlk Türkçe kampanya yakında",
     "fr.soon3": "Daha fazla bölüm geliyor",
@@ -729,10 +729,10 @@ window.FC_TRANSLATIONS = {
     "ab.title": "Bu proje hakkında.",
     "ab.lead": "Football Conquest, daha iyi videolar yapmak için bir araç olarak başladı. Topluluğun da oynayabileceği bir şeye dönüştü.",
     "ab.who.h": "Bunu kim yaptı",
-    "ab.who.p1": "Merhaba, ben Gürkan. Çevrimdışı EA Sports FC içeriğine odaklanan iki YouTube kanalı işletiyorum:",
+    "ab.who.p1": "Merhaba, ben Gürkan. Çevrimdışı EA Sports FC içeriğine odaklanan bir YouTube kanalı işletiyorum:",
     "ab.who.li1": "<strong><a href=\"https://www.youtube.com/@Ghiellini\" target=\"_blank\" style=\"color:var(--red);\">@Ghiellini</a></strong> — İngilizce kariyer modu ve simülasyon videoları.",
-    "ab.who.li2": "<strong><a href=\"https://www.youtube.com/@GRKN7\" target=\"_blank\" style=\"color:var(--red);\">@GRKN7</a></strong> — Türkçe konuşan izleyiciler için aynı içerik.",
-    "ab.who.p2": "Kanallar birlikte, çevrimdışı FC içeriğine çok değer veren 700.000'den fazla aboneye ulaşıyor: kariyer modu seferleri, kulüp yeniden inşaları, Dünya Kupası simülasyonları ve şu anda elinde tuttuğun türden bir Emperyalizm formatı.",
+    "ab.who.li2": "<strong><a href=\"https://www.youtube.com/@GRKN7\" target=\"_blank\" style=\"color:var(--red);\">@GRKN7</a></strong> — kariyer modu ve simülasyon videoları.",
+    "ab.who.p2": "Kanal, çevrimdışı FC içeriğine çok değer veren geniş bir hayran topluluğuna ulaşıyor: kariyer modu seferleri, kulüp yeniden inşaları, Dünya Kupası simülasyonları ve şu anda elinde tuttuğun türden bir Emperyalizm formatı.",
     "ab.why.h": "Bunu neden yaptık",
     "ab.why.p1": "Emperyalizm formatı — tek bir takımın her seferinde bir maç oynayarak dünyayı fethetmeye çalışması — yıllardır hayranların favorisi oldu. Ama bunu videoda yapmak zordu. Photoshop'a, 30.000 piksellik bir harita dosyasına ve fethedilen toprağı elle boyamak ve bayrakları yeniden yerleştirmek için maçlar arasında çok sabra ihtiyacın vardı.",
     "ab.why.p2": "Bu simülatör tüm bunları otomatik olarak yapar. Takımını seç, maçları FC 26'da oyna, skorları gir ve harita kendini günceller. Eskiden maçlar arasında 20 dakika süren işlem artık 20 saniye sürüyor.",
@@ -753,7 +753,7 @@ window.FC_TRANSLATIONS = {
     "ab.next.li3": "<strong>Paylaşılabilir sonuç sayfaları</strong> — kampanyan bittiğinde, herkesin son haritanı ve tur tur geçmişini görmek için ziyaret edebileceği bir bağlantı al.",
     "ab.next.li4": "<strong>Daha fazla dil</strong> — sırada İspanyolca ve Arapça, ardından hangi izleyici kitlesi isterse o.",
     "ab.touch.h": "İletişime geç",
-    "ab.touch.p1": "Bir hata mı buldun? Bir fikrin mi var? Kendi seferinin öne çıkmasını mı istiyorsun? Kanallardan birine yorum bırak ya da YouTube'dan bize doğrudan mesaj at.",
+    "ab.touch.p1": "Bir hata mı buldun? Bir fikrin mi var? Kendi seferinin öne çıkmasını mı istiyorsun? Kanala yorum bırak ya da YouTube'dan bize doğrudan mesaj at.",
     "ab.touch.p2": "Ya da çalışmayı doğrudan desteklemek istersen, grkn.shop'taki ücretli <a href=\"https://grkn.shop\" target=\"_blank\" style=\"color:var(--red);\">PSD harita paketlerimiz</a> barındırma masrafını karşıladığımız ve bunu ücretsiz tuttuğumuz yöntemdir.",
     "ab.ack.h": "Teşekkürler",
     "ab.ack.p": "Bu simülatör, Natural Earth'ten kamu malı dünya coğrafi verilerini, izdüşüm matematiği için d3.js kütüphanesini ve FIFA'nın yayımladığı Dünya Sıralaması puanlarını (Nisan 2026 sürümü) kullanır. FIFA, EA Sports veya herhangi bir futbol federasyonu ile bağlantılı değildir.",
@@ -795,7 +795,7 @@ window.FC_TRANSLATIONS = {
     "pr.changes.h": "Bu politikadaki değişiklikler",
     "pr.changes.p": "Bu Gizlilik Politikasını zaman zaman güncelleyebiliriz. Bu sayfanın üstündeki \"Son güncelleme\" tarihi, bu politikanın en son ne zaman revize edildiğini gösterir. Bu sayfayı düzenli olarak gözden geçirmeni öneririz.",
     "pr.contact.h": "İletişim",
-    "pr.contact.p": "Bu Gizlilik Politikası veya veri uygulamalarımız hakkında sorun varsa, YouTube kanallarımız aracılığıyla bize ulaşabilirsin: <a href=\"https://www.youtube.com/@Ghiellini\" target=\"_blank\">@Ghiellini</a> veya <a href=\"https://www.youtube.com/@GRKN7\" target=\"_blank\">@GRKN7</a>.",
+    "pr.contact.p": "Bu Gizlilik Politikası veya veri uygulamalarımız hakkında sorun varsa, YouTube kanalımız aracılığıyla bize ulaşabilirsin: <a href=\"https://www.youtube.com/@GRKN7\" target=\"_blank\">@GRKN7</a>.",
 
     /* ── terms of service page ── */
     "tos.title": "Hizmet Şartları.",
@@ -838,7 +838,7 @@ window.FC_TRANSLATIONS = {
     "tos.law.h": "Geçerli hukuk",
     "tos.law.p": "Bu Şartlar, kanunlar ihtilafı hükümleri dikkate alınmaksızın Kanada'nın Alberta Eyaleti yasalarına tabidir. Her türlü uyuşmazlık Alberta mahkemelerinde çözülecektir.",
     "tos.contact.h": "İletişim",
-    "tos.contact.p": "Bu Şartlarla ilgili sorular için YouTube kanallarımız aracılığıyla bize ulaş: <a href=\"https://www.youtube.com/@Ghiellini\" target=\"_blank\">@Ghiellini</a> veya <a href=\"https://www.youtube.com/@GRKN7\" target=\"_blank\">@GRKN7</a>.",
+    "tos.contact.p": "Bu Şartlarla ilgili sorular için YouTube kanalımız aracılığıyla bize ulaş: <a href=\"https://www.youtube.com/@GRKN7\" target=\"_blank\">@GRKN7</a>.",
 
     /* ════════ SIMULATOR (simulator.html) ════════ */
     /* A — toolbar */

@@ -1238,4 +1238,8 @@ img, svg { display: block; max-width: 100%; height: auto; }
   .section-header { padding: 32px 20px 0; flex-direction: column; gap: 12px; }
   .page { padding: 56px 20px; }
 }
-                                          
+
+/* Audience separation — show only the channel/content matching the
+   active site language. <html lang> is kept in sync by js/i18n.js. */
+html[lang="en"] [data-lang-only="tr"],
+html[lang="tr"] [data-lang-only="en"]{display:none!important;}
