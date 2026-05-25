@@ -309,6 +309,8 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
 .g-events-filter:hover{color:#7ab8e8;border-color:#7ab8e8;}
 .g-events-filter.active{color:#fff;background:#1d5a8c;border-color:#378add;}
 #g-log.results-only .g-log-entry:not(.g-log-result){display:none;}
+.g-log-num{display:none;color:#7ab8e8;font-weight:700;margin-right:5px;font-variant-numeric:tabular-nums;}
+#g-log.results-only .g-log-num{display:inline;}
 #g-events-panel.collapsed #g-events-toggle{transform:rotate(-90deg);}
 #g-events-panel.collapsed #g-events-header{border-bottom:none;}
 
@@ -4142,9 +4144,14 @@ function renderGameLog(){
   const box=document.getElementById('g-log');
   if(!box)return;
   if(GAME.log.length===0){box.innerHTML='<div class="g-log-empty">'+FCLang.t('sim.ev.noevents')+'</div>';return;}
+  let resultIdx=0;
+  for(const e of GAME.log){ if(e&&e.r) resultIdx++; }
   box.innerHTML=GAME.log.slice(0,20).map(e=>{
     const html=(e&&e.h!=null)?e.h:e;
-    return '<div class="g-log-entry'+((e&&e.r)?' g-log-result':'')+'">'+html+'</div>';
+    const isResult=!!(e&&e.r);
+    let num='';
+    if(isResult){ num='<span class="g-log-num">'+resultIdx+'.</span>'; resultIdx--; }
+    return '<div class="g-log-entry'+(isResult?' g-log-result':'')+'">'+num+html+'</div>';
   }).join('');
 }
 function gLogPop(){
@@ -4791,6 +4798,18 @@ function isoCentroid(iso,nearTo){
 // the greatest clearance from the boundary — a lightweight pole-of-
 // inaccessibility — so the flag lands comfortably inland.
 function isoInteriorPoint(iso,nearTo){
+  // UK home nations (England 826, Scotland 9001, Wales 9002, N.Ireland 9003)
+  // all share the WHOLE-UK <path> geometry — they are separated only by a
+  // visual clip-path, which isPointInFill ignores. A geometry search would
+  // land the flag in the wrong nation (e.g. Wales -> N.Ireland), so for these
+  // four isos use the team's known home centroid instead.
+  if(iso==826||iso==9001||iso==9002||iso==9003){
+    const _t=teams.find(x=>x.iso==iso);
+    if(_t){
+      const _p=proj([_t.cx,_t.cy]);
+      if(_p&&!isNaN(_p[0])&&!isNaN(_p[1])) return _p;
+    }
+  }
   const el=isoPaths[iso];
   if(!el) return isoCentroid(iso,nearTo);
   try{
@@ -7749,54 +7768,9 @@ function updateHeroGlow(){
 }
 
 function drawConquestTrailArrow(x1,y1,x2,y2,opts){
-  opts=opts||{};
-  const color=opts.color||'rgba(255,255,255,0.45)';
-  const headColor=opts.headColor||'rgba(255,255,255,0.65)';
-  const cls=opts.class||'g-trail-arrow';
-  const g=document.getElementById('conquest-trail-layer');
-  if(!g)return;
-  const wrap=document.createElementNS('http://www.w3.org/2000/svg','g');
-  wrap.setAttribute('class',cls);
-  // Build a curved path (quadratic bezier) instead of a straight line.
-  // Control point is offset perpendicular to the line by ~12% of its length, creating a gentle arc.
-  const dx=x2-x1, dy=y2-y1;
-  const len=Math.hypot(dx,dy);
-  if(len<5){g.appendChild(wrap);return;}
-  // Perpendicular unit vector (rotate 90°)
-  const px=-dy/len, py=dx/len;
-  // Curve offset — alternate direction based on coordinates so consecutive arrows curve different ways
-  const dir=((x1+y1+x2+y2)|0)%2===0?1:-1;
-  const offset=len*0.18*dir;
-  const cpX=(x1+x2)/2+px*offset;
-  const cpY=(y1+y2)/2+py*offset;
-  // Curved dotted path. Stop short of the endpoint so the arrowhead can sit cleanly at the tip.
-  const tipBack=14; // pull path end back from arrow tip
-  // To shrink the path, compute the tangent at t=1 and back off along it.
-  // For a quadratic bezier, tangent at t=1 is 2*(P2-P1) — i.e., direction from CP to end.
-  const tdx=x2-cpX, tdy=y2-cpY, tlen=Math.hypot(tdx,tdy)||1;
-  const tipX=x2-(tdx/tlen)*tipBack;
-  const tipY=y2-(tdy/tlen)*tipBack;
-  const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-  path.setAttribute('d',`M ${x1} ${y1} Q ${cpX} ${cpY} ${tipX} ${tipY}`);
-  path.setAttribute('fill','none');
-  path.setAttribute('stroke',color);
-  path.setAttribute('stroke-width',2.5);
-  path.setAttribute('stroke-linecap','round');
-  // True dotted pattern (very short dash with bigger gap)
-  path.setAttribute('stroke-dasharray','0.1 10');
-  wrap.appendChild(path);
-  // Arrowhead at the end — small, subtle, follows the curve's final tangent
-  const ang=Math.atan2(y2-tipY,x2-tipX);
-  const headSize=14;
-  const hx1=x2-Math.cos(ang-Math.PI/6)*headSize;
-  const hy1=y2-Math.sin(ang-Math.PI/6)*headSize;
-  const hx2=x2-Math.cos(ang+Math.PI/6)*headSize;
-  const hy2=y2-Math.sin(ang+Math.PI/6)*headSize;
-  const head=document.createElementNS('http://www.w3.org/2000/svg','polygon');
-  head.setAttribute('points',`${x2},${y2} ${hx1},${hy1} ${hx2},${hy2}`);
-  head.setAttribute('fill',headColor);
-  wrap.appendChild(head);
-  g.appendChild(wrap);
+  // Conquest trail removed — the accumulating dotted curved arrows
+  // became visual noise over a long run and added needless per-frame
+  // SVG rendering cost. Kept as a no-op so all callers stay safe.
 }
 
 // Initialize after DOM ready
