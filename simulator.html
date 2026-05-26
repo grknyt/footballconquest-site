@@ -77,7 +77,7 @@ display:flex;flex-direction:row;align-items:center;justify-content:space-between
 .g-slots{display:flex;gap:6px;align-items:center;flex-shrink:0;}
 .g-slot{background:#0e2034;border:1px solid #1a2f40;border-radius:6px;padding:6px 10px;
 min-width:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
-.g-slot-label{font-size:9px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.g-slot-label{font-size:11px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
 .g-slot-val{font-size:12px;color:#fff;font-weight:500;margin-top:3px;text-align:center;line-height:1.15;}
 .g-slot-flag{width:48px;height:32px;border:1px solid rgba(255,255,255,0.2);border-radius:2px;
   background-size:cover;background-position:center;margin-top:4px;}
@@ -243,26 +243,30 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
 
 /* ──── Campaign progress panel: six-continent conquest tracker, bottom-left,
    mirroring the events panel. Shown only while a conquest game is open. */
-#g-campaign-panel{position:absolute;bottom:32px;left:58px;width:248px;
-  background:rgba(7,14,23,.97);border:1px solid #2a3f55;border-radius:10px;
-  display:none;flex-direction:column;z-index:24;overflow:hidden;
-  box-shadow:0 6px 18px rgba(0,0,0,.4);max-height:230px;transition:max-height .25s ease;}
-#game-panel.open.conquest-mode ~ #g-campaign-panel{display:flex;}
-#g-campaign-panel.collapsed{max-height:34px;}
-#g-campaign-header{padding:8px 12px;font-size:10px;color:#7ab8e8;font-weight:600;
-  letter-spacing:.4px;cursor:pointer;display:flex;justify-content:space-between;
+/* Bottom-left stack — campaign (continents) on top, events log below. Both
+   collapse independently; the wrapper just anchors them to the corner. */
+#g-left-stack{position:absolute;bottom:32px;left:58px;display:none;
+  flex-direction:column;gap:8px;z-index:24;}
+#game-panel.open ~ #g-left-stack{display:flex;}
+#g-campaign-panel{width:300px;background:rgba(7,14,23,.97);border:1px solid #2a3f55;
+  border-radius:10px;display:none;flex-direction:column;overflow:hidden;
+  box-shadow:0 6px 18px rgba(0,0,0,.4);max-height:240px;transition:max-height .25s ease;}
+#game-panel.open.conquest-mode ~ #g-left-stack #g-campaign-panel{display:flex;}
+#g-campaign-panel.collapsed{max-height:38px;}
+#g-campaign-header{padding:9px 13px;font-size:12px;color:#7ab8e8;font-weight:700;
+  letter-spacing:.5px;cursor:pointer;display:flex;justify-content:space-between;
   align-items:center;border-bottom:1px solid #1a2f40;user-select:none;
   background:#0a1624;text-transform:uppercase;}
 #g-campaign-header:hover{background:#0d1c2e;}
-#g-campaign-toggle{color:#7ab8e8;transition:transform .25s;font-size:9px;}
+#g-campaign-toggle{color:#7ab8e8;transition:transform .25s;font-size:11px;}
 #g-campaign-panel.collapsed #g-campaign-toggle{transform:rotate(-90deg);}
 #g-campaign-panel.collapsed #g-campaign-header{border-bottom:none;}
-#g-campaign-body{padding:9px 11px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;}
-.g-cont-row{display:flex;align-items:center;gap:8px;font-size:10px;color:#cfdaea;}
-.g-cont-name{flex:0 0 78px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;}
+#g-campaign-body{padding:10px 12px;display:flex;flex-direction:column;gap:7px;overflow-y:auto;}
+.g-cont-row{display:flex;align-items:center;gap:9px;font-size:12px;color:#cfdaea;}
+.g-cont-name{flex:0 0 88px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;}
 .g-cont-bar{flex:1;height:6px;background:#1a2f40;border-radius:3px;overflow:hidden;}
 .g-cont-fill{display:block;height:100%;background:linear-gradient(90deg,#3a8a3a,#6dd86d);transition:width .3s ease;}
-.g-cont-count{flex:0 0 48px;text-align:right;font-variant-numeric:tabular-nums;color:#9fb4c8;font-weight:700;}
+.g-cont-count{flex:0 0 54px;text-align:right;font-variant-numeric:tabular-nums;color:#9fb4c8;font-weight:700;font-size:12px;}
 .g-cont-row.done .g-cont-name,.g-cont-row.done .g-cont-count{color:#f4d77a;}
 .g-cont-row.done .g-cont-fill{background:linear-gradient(90deg,#caa23a,#f4d77a);}
 /* Continent-cleared milestone toast — centred celebratory popup. */
@@ -282,34 +286,34 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
    (centered) and the conquest HUD (bottom-left). Width + max-height tuned
    to mirror the conquest HUD on the opposite side so the three elements
    form a balanced bottom triptych. */
-#g-events-panel{position:absolute;bottom:32px;right:58px;width:300px;
-  background:rgba(7,14,23,.97);border:1px solid #2a3f55;border-radius:10px;
-  display:none;flex-direction:column;z-index:24;overflow:hidden;
+#g-events-panel{width:300px;background:rgba(7,14,23,.97);
+  border:1px solid #2a3f55;border-radius:10px;
+  display:none;flex-direction:column;overflow:hidden;
   box-shadow:0 6px 18px rgba(0,0,0,.4);
-  max-height:260px;transition:max-height .25s ease;}
-#game-panel.open ~ #g-events-panel{display:flex;}
-#g-events-panel.collapsed{max-height:34px;}
-#g-events-header{padding:8px 12px;font-size:10px;color:#7ab8e8;font-weight:600;
-  letter-spacing:.4px;cursor:pointer;display:flex;justify-content:space-between;
+  max-height:280px;transition:max-height .25s ease;}
+#game-panel.open ~ #g-left-stack #g-events-panel{display:flex;}
+#g-events-panel.collapsed{max-height:38px;}
+#g-events-header{padding:9px 13px;font-size:12px;color:#7ab8e8;font-weight:700;
+  letter-spacing:.5px;cursor:pointer;display:flex;justify-content:space-between;
   align-items:center;gap:10px;border-bottom:1px solid #1a2f40;user-select:none;background:#0a1624;}
 #g-events-header:hover{background:#0d1c2e;}
 .g-events-title{flex-shrink:0;}
 /* Turn summary chip — small pill sitting between the "Events" label and the
    toggle chevron. Stays visible even when the panel is collapsed so the
    player can read "Turn 9 · 203 LEFT" at a glance from anywhere. */
-.g-events-turn-summary{flex:1;text-align:right;font-size:10px;font-weight:700;
+.g-events-turn-summary{flex:1;text-align:right;font-size:12px;font-weight:700;
   letter-spacing:.6px;color:#cfdaea;text-transform:uppercase;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .g-events-turn-summary b{color:#fff;}
 .g-events-turn-summary .sep{color:#4a6a80;margin:0 4px;}
-#g-events-toggle{color:#7ab8e8;transition:transform .25s;font-size:9px;flex-shrink:0;}
-.g-events-filter{background:transparent;border:1px solid #2a3f55;color:#5a7a95;font-size:11px;
+#g-events-toggle{color:#7ab8e8;transition:transform .25s;font-size:11px;flex-shrink:0;}
+.g-events-filter{background:transparent;border:1px solid #2a3f55;color:#5a7a95;font-size:13px;
   line-height:1;padding:3px 6px;border-radius:5px;cursor:pointer;flex-shrink:0;
   -webkit-tap-highlight-color:transparent;}
 .g-events-filter:hover{color:#7ab8e8;border-color:#7ab8e8;}
 .g-events-filter.active{color:#fff;background:#1d5a8c;border-color:#378add;}
 #g-log.results-only .g-log-entry:not(.g-log-result){display:none;}
-.g-log-num{display:none;color:#7ab8e8;font-weight:700;margin-right:5px;font-variant-numeric:tabular-nums;}
+.g-log-num{display:none;color:#7ab8e8;font-weight:700;margin-right:6px;font-variant-numeric:tabular-nums;font-size:13px;}
 #g-log.results-only .g-log-num{display:inline;}
 /* Aura instant-win — clickable cost pills on the map + confirm modal */
 .iw-pill{cursor:pointer;}
@@ -345,22 +349,37 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
 /* Old free-floating metrics strip — superseded by the in-panel layout below.
    Kept in DOM (so any code paths that touch it don't crash) but hidden. */
 #g-metrics-panel{display:none!important;}
-/* AURA — big horizontal bar above the flags, full-width of the panel body.
-   The brand-red AURA label sits left of a gold gradient fill so the bank is
-   the most prominent thing in the bottom UI. */
-.g-aura-hbar{display:none;align-items:center;gap:10px;padding:10px 14px 8px;}
-#game-panel.open.conquest-mode .g-aura-hbar{display:flex;}
-.g-aura-hbar-label{font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
-  font-size:22px;letter-spacing:3px;color:#c8102e;text-transform:uppercase;
-  text-shadow:0 0 8px rgba(200,16,46,.35);flex:0 0 auto;}
-.g-aura-hbar-star{color:#c8102e;font-size:16px;flex:0 0 auto;}
-.g-aura-hbar-track{flex:1;height:18px;background:#0e1a2a;
-  border:1px solid #d4a936;border-radius:10px;overflow:hidden;
-  box-shadow:inset 0 1px 4px rgba(0,0,0,.5);}
-.g-aura-hbar-fill{height:100%;width:0;
+/* Top metrics row: AURA bar on the LEFT (above the T+M vertical bars in
+   the row below) and the RECORD/GOALS stats on the RIGHT, filling the rest. */
+.g-top-row{display:none;align-items:center;gap:14px;padding:8px 14px 6px;}
+#game-panel.open.conquest-mode .g-top-row{display:flex;}
+.g-top-row .g-conquest-stats{flex:1;margin:0;}
+/* AURA pill — same unified design as before, but now sized for the left
+   slot of the top row (was full width). */
+.g-aura-hbar{position:relative;display:none;margin:0;width:210px;flex:0 0 auto;
+  height:30px;
+  background:linear-gradient(135deg,#1a1117 0%,#2a1820 100%);
+  border:1px solid #d4a936;border-radius:9px;overflow:hidden;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.6),0 0 14px rgba(212,169,54,.15);}
+#game-panel.open.conquest-mode .g-aura-hbar{display:block;}
+.g-aura-hbar-fill{position:absolute;inset:0;width:0;
   background:linear-gradient(90deg,#c89a26 0%,#f4d77a 50%,#ffd54a 100%);
-  border-radius:8px;transition:width .4s ease;
-  box-shadow:inset 0 0 10px rgba(255,213,74,.6);}
+  transition:width .45s cubic-bezier(.22,.61,.36,1);
+  box-shadow:inset 0 0 14px rgba(255,213,74,.5);}
+.g-aura-hbar-label{position:relative;z-index:2;height:100%;
+  display:flex;align-items:center;padding:0 14px;gap:9px;
+  pointer-events:none;}
+.g-aura-hbar-text{font-family:Impact,'Arial Black','Helvetica Neue Black',sans-serif;
+  font-size:23px;font-weight:900;letter-spacing:.5px;color:#c8102e;text-transform:uppercase;
+  /* Sharp 1px dark outline via 4-direction text-shadow trick — no soft glow, no
+     halo, so the red letters stay crisp on both the dark empty bar AND the
+     gold fill once Aura accumulates. */
+  text-shadow:-1px -1px 0 #0a0408,1px -1px 0 #0a0408,-1px 1px 0 #0a0408,1px 1px 0 #0a0408;}
+.g-aura-hbar-star{color:#c8102e;font-size:19px;font-weight:900;
+  line-height:1;filter:none;}
+.g-aura-hbar-val{margin-left:auto;font-family:Menlo,Consolas,monospace;
+  font-size:14px;font-weight:900;color:#c8102e;letter-spacing:.5px;
+  text-shadow:none;}
 /* Territory + Momentum — thin vertical bars to the LEFT of the attacker slot,
    inside the .g-slots flex row. */
 .g-tm-bars{display:none;flex-direction:row;align-items:stretch;gap:8px;
@@ -471,7 +490,7 @@ body.web-build #fc-menu-hide-ui{display:none!important;}
 /* Campaign stats strip inside the conquest game panel — sits above the
    flags row. Format mirrors the old HUD stats line: "RECORD W–L · GOALS
    GF–GA (±GD)". Hidden until the player has played their first match. */
-.g-conquest-stats{font-size:11px;font-weight:700;letter-spacing:1px;
+.g-conquest-stats{font-size:13px;font-weight:700;letter-spacing:1px;
   color:#7a9bb5;text-transform:uppercase;text-align:center;
   padding:6px 14px 0;line-height:1.4;}
 .g-conquest-stats b{color:#fff;font-weight:800;}
@@ -482,11 +501,12 @@ body.web-build #fc-menu-hide-ui{display:none!important;}
 .g-conquest-stats b.gd-zero{color:#cfdaea;}
 .g-conquest-stats .sep{color:#4a6a80;margin:0 8px;}
 #g-events-panel #g-log{flex:1;min-height:0;max-height:none;overflow-y:auto;
+  font-size:13px;line-height:1.5;
   padding:8px 13px;background:transparent;border-radius:0;
   font-size:12px;line-height:1.55;color:#b8c9d8;}
 .g-log{font-size:13px;color:#cfdaea;flex:1;min-width:0;max-height:110px;overflow-y:auto;
 background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
-.g-log-empty{color:#4a6a80;font-style:italic;text-align:center;}
+.g-log-empty{color:#4a6a80;font-style:italic;text-align:center;font-size:12px;}
 .g-stats{display:flex;gap:6px;font-size:10px;color:#7a9bb5;}
 .g-stat{background:#0a1624;padding:3px 8px;border-radius:10px;}
 /* ── Game overlay lives inside the main SVG group so it scales/pans with the map ── */
@@ -1580,11 +1600,16 @@ body.web-build .g-result-card.revealed .g-sim-btn{
         <!-- Campaign stats strip — RECORD + GOALS sit above the two flags
              in conquest mode (per Gürkan's visual mockup). Populated by
              updateConquestHud(). Hidden in imperialism mode. -->
-        <div class="g-conquest-stats" id="g-conquest-stats" style="display:none;"></div>
-        <div class="g-aura-hbar">
-          <span class="g-aura-hbar-label" data-i18n="sim.metric.aura">AURA</span>
-          <span class="g-aura-hbar-star">⭐</span>
-          <div class="g-aura-hbar-track"><div class="g-aura-hbar-fill" id="g-aura-hbar-fill"></div></div>
+        <div class="g-top-row">
+          <div class="g-aura-hbar">
+            <div class="g-aura-hbar-fill" id="g-aura-hbar-fill"></div>
+            <div class="g-aura-hbar-label">
+              <span class="g-aura-hbar-text" data-i18n="sim.metric.aura">AURA</span>
+              <span class="g-aura-hbar-star">★</span>
+              <span class="g-aura-hbar-val" id="g-aura-hbar-val">0</span>
+            </div>
+          </div>
+          <div class="g-conquest-stats" id="g-conquest-stats" style="display:none;"></div>
         </div>
         <div class="g-slots">
           <div class="g-tm-bars">
@@ -1633,6 +1658,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
          CSS sibling selector whenever #game-panel is open. -->
     <!-- Campaign progress: six-continent conquest tracker. Mirrors the events
          panel on the opposite side; visible only while a conquest game is open. -->
+    <div id="g-left-stack">
     <div id="g-campaign-panel">
       <div id="g-campaign-header">
         <span data-i18n="sim.cont.title">🌍 Continents</span>
@@ -1676,6 +1702,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
         <span id="g-events-toggle">▼</span>
       </div>
       <div id="g-log"><div class="g-log-empty" data-i18n="sim.ev.empty">Click Pick attacker to begin.</div></div>
+    </div>
     </div>
     <div id="history-panel">
       <div id="history-header">
@@ -7898,15 +7925,13 @@ function updateConquestHud(state){
   const conquestStatsEl=document.getElementById('g-conquest-stats');
   if(conquestStatsEl){
     const s=GAME.stats||{wins:0,losses:0,gf:0,ga:0};
-    if((s.wins+s.losses)>0){
-      const gd=s.gf-s.ga;
-      const gdClass=gd>0?'gd-pos':(gd<0?'gd-neg':'gd-zero');
-      const gdStr=(gd>0?'+':'')+gd;
-      conquestStatsEl.style.display='block';
-      conquestStatsEl.innerHTML=FCLang.t('sim.hud.record')+' <b class="w">'+s.wins+'</b>–<b class="l">'+s.losses+'</b><span class="sep">·</span>'+FCLang.t('sim.hud.goals')+' <b>'+s.gf+'</b>–<b>'+s.ga+'</b> (<b class="'+gdClass+'">'+gdStr+'</b>)<span class="sep">·</span>⭐ <b>'+(GAME.aura||0)+'</b>';
-    } else {
-      conquestStatsEl.style.display='none';
-    }
+    // Always render from match 0 so the AURA bar does not reflow when the
+    // first match resolves. Pre-match: shows 0-0 / 0-0 (0).
+    const gd=s.gf-s.ga;
+    const gdClass=gd>0?'gd-pos':(gd<0?'gd-neg':'gd-zero');
+    const gdStr=(gd>0?'+':'')+gd;
+    conquestStatsEl.style.display='block';
+    conquestStatsEl.innerHTML=FCLang.t('sim.hud.record')+' <b class="w">'+s.wins+'</b>–<b class="l">'+s.losses+'</b><span class="sep">·</span>'+FCLang.t('sim.hud.goals')+' <b>'+s.gf+'</b>–<b>'+s.ga+'</b> (<b class="'+gdClass+'">'+gdStr+'</b>)';
   }
   if(statsEl) statsEl.style.display='none';
   // Loss warning — relocated from the floating HUD to the strip ABOVE the
@@ -7959,12 +7984,15 @@ function renderMetricsPanel(){
   const mom =getHeroMomentumBonus(hero);
   const aura=GAME.aura||0;
   const auraMax=Math.max(20, aura);   // soft growing cap so the bar has headroom
-  // AURA horizontal bar
+  // AURA horizontal bar — fill grows behind the AURA + ⭐ label, with the
+  // actual count shown on the right of the bar.
   const aFill=document.getElementById('g-aura-hbar-fill');
   if(aFill){
     const pct=Math.max(0, Math.min(100, Math.round(aura/auraMax*100)));
     aFill.style.width=pct+'%';
   }
+  const aVal=document.getElementById('g-aura-hbar-val');
+  if(aVal) aVal.textContent=String(aura);
   // Territory + Momentum vertical bars (fill from the bottom up)
   function setVbar(id, val, max){
     const fill=document.getElementById(id+'-fill');
