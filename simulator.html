@@ -358,6 +358,35 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
 .g-metric-fill.aura{background:linear-gradient(90deg,#c89a26,#f4d77a);}
 .g-metric-val{flex:0 0 40px;text-align:right;color:#fff;font-weight:700;
   font-size:11px;font-variant-numeric:tabular-nums;}
+/* Ultimate ("Lion's Roar" for England) — a third action row in the
+   conquest game-panel. Only visible in conquest mode. */
+.g-actions-ult{display:none;}
+#game-panel.conquest-mode .g-actions-ult{display:flex;justify-content:center;}
+.g-btn.g-btn-ult{background:linear-gradient(135deg,#7a0a1d,#c8102e);
+  color:#fff;border:1px solid #d4a936;padding:9px 16px;font-size:11px;
+  letter-spacing:.6px;font-weight:700;min-width:160px;border-radius:6px;
+  transition:all .15s;}
+.g-btn.g-btn-ult:not(:disabled):hover{
+  background:linear-gradient(135deg,#a01030,#e63250);
+  border-color:#ffd54a;}
+.g-btn.g-btn-ult:disabled{opacity:.32;cursor:not-allowed;}
+.g-btn.g-btn-ult:not(:disabled){animation:g-action-glow-gold 2.2s ease-in-out infinite;}
+.g-ult-cost{color:#ffd54a;margin-left:6px;font-weight:800;font-variant-numeric:tabular-nums;}
+@keyframes g-action-glow-gold{
+  0%,100%{box-shadow:0 0 0 0 rgba(212,169,54,0);}
+  50%   {box-shadow:0 0 16px 2px rgba(212,169,54,.55);}}
+/* Lion's Roar — vibrating strike lines + radial shockwave ring. */
+.g-ult-strike{
+  stroke-dasharray:14 8;
+  animation: g-ult-strike-shimmer .35s linear infinite,
+             g-ult-strike-pulse   .14s ease-in-out infinite;
+}
+@keyframes g-ult-strike-shimmer{ to{stroke-dashoffset:-44;} }
+@keyframes g-ult-strike-pulse{
+  0%,100%{opacity:1;stroke-width:34;}
+  50%   {opacity:.55;stroke-width:24;}
+}
+.g-ult-shockwave{pointer-events:none;}
 #g-events-panel.collapsed #g-events-toggle{transform:rotate(-90deg);}
 #g-events-panel.collapsed #g-events-header{border-bottom:none;}
 
@@ -964,6 +993,9 @@ body.fc-splash-active #btn-history{display:none;}
    ship an OFFLINE build (for Gürkan / content creators who want to play
    matches in FC 26 and key in real scores), remove `class="web-build"`
    from <body> below and everything below re-appears. */
+body.web-build{user-select:none;-webkit-user-select:none;-ms-user-select:none;}
+body.web-build input,body.web-build textarea,body.web-build select,
+body.web-build [contenteditable]{user-select:text;-webkit-user-select:text;-ms-user-select:text;}
 body.web-build .g-result-or,
 body.web-build .g-result-scores,
 body.web-build .g-result-finish,
@@ -1059,6 +1091,30 @@ body.web-build .g-result-card.revealed .g-sim-btn{
 <!-- web-build = simulate-only public site. Remove the class to enable
      manual score entry for offline / creator builds. -->
 <body class="web-build">
+<script>
+/* Casual-deterrent layer. Only active when body.web-build is set, so the
+   offline creator build (no class) is unaffected. None of this stops a
+   determined person — Network tab, incognito + curl, browser extensions
+   all bypass it — but it stops the right-click + View Source path that
+   covers most opportunistic copy-pasters. */
+(function(){
+  if(!document.body||!document.body.classList.contains('web-build')) return;
+  // Right-click: kill the context menu so "View Page Source" / "Save As"
+  // aren't one click away.
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  // Keyboard shortcuts: F12, Ctrl+Shift+I/J/C (DevTools), Ctrl+U (view
+  // source), Ctrl+S (save page). Browsers can still allow these via the
+  // application menu, which is fine — we're filtering casual paths, not
+  // building a vault.
+  document.addEventListener('keydown', function(e){
+    var k=(e.key||'').toLowerCase();
+    var mod=e.ctrlKey||e.metaKey;
+    if(k==='f12'){ e.preventDefault(); return false; }
+    if(mod && e.shiftKey && (k==='i'||k==='j'||k==='c')){ e.preventDefault(); return false; }
+    if(mod && !e.shiftKey && (k==='u'||k==='s')){ e.preventDefault(); return false; }
+  });
+})();
+</script>
 <div id="app">
   <div id="hdr">
     <span class="fc-logo" aria-label="Football Conquest">FC</span>
@@ -1481,6 +1537,9 @@ body.web-build .g-result-card.revealed .g-sim-btn{
           <div class="g-actions">
             <button class="g-btn danger" id="g-resolve" disabled data-i18n="sim.gp.playmatch">⚔️ Play Match</button>
             <button class="g-btn ghost" id="g-skip" disabled data-i18n="sim.gp.skipturn">Skip turn</button>
+          </div>
+          <div class="g-actions g-actions-ult">
+            <button class="g-btn g-btn-ult" id="g-ult" disabled data-i18n-attr="title:sim.ult.tip" title="Spend Aura to wipe up to 5 weak teams in a straight line">🦁 <span id="g-ult-label">Lion's Roar</span> <span class="g-ult-cost" id="g-ult-cost"></span></button>
           </div>
         </div>
       </div>
@@ -5702,6 +5761,7 @@ $('btn-game').onclick=()=>setMode('game');
 $('g-spin-team').onclick=()=>window.gameSpinTeam();
 $('g-spin-arrow').onclick=()=>window.gameSpinArrow();
 $('g-resolve').onclick=()=>window.gameResolve();
+const _ultBtn=document.getElementById('g-ult'); if(_ultBtn) _ultBtn.onclick=function(){ if(typeof unleashUltimate==='function') unleashUltimate(); };
 $('g-skip').onclick=gameSkip;
 $('game-close').onclick=()=>setMode('view');
 $('btn-reset').onclick=doReset;
@@ -7249,7 +7309,7 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   gSlots();
   gameRender();
   // Pan to hero's new position
-  panTo([newPos[0],newPos[1]],Math.max(6,currentK()));
+  if(!GAME._skipPan) panTo([newPos[0],newPos[1]],Math.max(6,currentK()));
   // Refresh floating HUD with the win
   refreshConquestHud({lastResult:{type:'win',hero:hero.name,opp:opp.name,score:`${heroScore}–${oppScore}`}});
   // Check for total victory
@@ -7828,6 +7888,7 @@ function renderMetricsPanel(){
 function refreshConquestHud(extra){
   if(GAME.mode!=='conquest')return;
   if(typeof renderMetricsPanel==='function') renderMetricsPanel();
+  if(typeof updateUltBtn==='function') updateUltBtn();
   let lossOpponent=null, lossCount=0;
   // Primary: show losses against the CURRENT defender (the team about to be
   // attacked). This is the active threat while spinning is resolved.
@@ -8048,6 +8109,311 @@ function openInstantConfirm(teamId){
   }
   m.style.display='flex';
 }
+// ══════════════════════════════════════════════════════════════════════════
+// Ultimate — a team-flavoured "ult" that fires in a random direction and
+// instant-wins up to 5 weak (OVR < 80) enemy teams in that path for Aura.
+// Coexists with the click-a-flag instant-win; same eligibility, same per-OVR
+// cost (3–6 per team, so a full 5-target roar typically costs 15–30 Aura).
+// ══════════════════════════════════════════════════════════════════════════
+const ULTIMATE_NAMES = {
+  826: "Lion's Roar"      // England — Gürkan's first ult flavour.
+  // Add more per-team names here, keyed by team.iso.
+};
+const ULT_MAX_TARGETS = 5;
+const ULT_RADIUS      = 2500;   // SVG units — how far the roar reaches.
+function getUltName(team){
+  if(team && ULTIMATE_NAMES[team.iso]) return ULTIMATE_NAMES[team.iso];
+  try{ return FCLang.t('sim.ult.default'); }catch(e){ return 'Conquest Strike'; }
+}
+// Radial targeting: pick the closest up-to-N weak (OVR<80) enemy teams
+// within ULT_RADIUS of the hero. A roar radiates outward — no direction.
+function findUltTargets(hero){
+  const heroC=teamCentroid(hero.id);
+  if(!heroC) return [];
+  const out=[];
+  Object.values(GAME.state).forEach(function(st){
+    if(!st.alive || st.id===hero.id) return;
+    const team=teams.find(function(t){return t.id===st.id;});
+    if(!team) return;
+    const ovr=teamCurrentOverall(team);
+    if(ovr==null || ovr>=INSTANT_WIN_OVR_CAP) return;
+    const c=teamCentroid(team.id);
+    if(!c) return;
+    const d=Math.hypot(c[0]-heroC[0], c[1]-heroC[1]);
+    if(d>ULT_RADIUS) return;
+    out.push({team:team, dist:d, ovr:ovr, cost:instantWinCost(ovr)});
+  });
+  out.sort(function(a,b){return a.dist-b.dist;});
+  return out.slice(0, ULT_MAX_TARGETS);
+}
+function updateUltBtn(){
+  const btn=document.getElementById('g-ult');
+  if(!btn) return;
+  const lblEl=document.getElementById('g-ult-label');
+  const costEl=document.getElementById('g-ult-cost');
+  const inConquest = GAME && GAME.mode==='conquest' && GAME.active && GAME.attacker;
+  if(lblEl) lblEl.textContent = inConquest ? getUltName(GAME.attacker) : "Lion's Roar";
+  const aura=(GAME&&GAME.aura)||0;
+  if(costEl) costEl.textContent = inConquest ? ('⭐'+aura) : '';
+  btn.disabled = !inConquest
+    || GAME.phase!=='picked-att'
+    || window._fcSpinning
+    || aura < instantWinCost(0);
+}
+// Three expanding concentric rings emanating from the hero — gold, orange,
+// crimson, staggered. Fades out as it reaches the radius cap. Pure cosmetic.
+function drawUltShockwave(hero){
+  const heroC=teamCentroid(hero.id);
+  if(!heroC) return;
+  const layer=document.getElementById('game-layer');
+  if(!layer) return;
+  const colors=['#ffd54a','#ff7700','#c8102e'];
+  const widths=[70,52,40];
+  for(let i=0;i<3;i++){
+    (function(idx){
+      setTimeout(function(){
+        const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        ring.setAttribute('cx', heroC[0]);
+        ring.setAttribute('cy', heroC[1]);
+        ring.setAttribute('r', 0);
+        ring.setAttribute('fill', 'none');
+        ring.setAttribute('stroke', colors[idx]);
+        ring.setAttribute('stroke-width', widths[idx]);
+        ring.setAttribute('opacity', 0.9);
+        ring.setAttribute('class', 'g-ult-shockwave');
+        ring.style.filter='drop-shadow(0 0 40px #ffd54a)';
+        layer.appendChild(ring);
+        const startTime=performance.now();
+        const duration=1700;
+        function animate(now){
+          const t=(now-startTime)/duration;
+          if(t>=1){ if(ring.parentNode) ring.parentNode.removeChild(ring); return; }
+          const eased=1-Math.pow(1-t,2);
+          ring.setAttribute('r', (ULT_RADIUS*eased).toFixed(0));
+          ring.setAttribute('opacity', (0.9*(1-t)).toFixed(2));
+          requestAnimationFrame(animate);
+        }
+        requestAnimationFrame(animate);
+      }, idx*170);
+    })(i);
+  }
+}
+// Draw all five vibrating gold strike lines simultaneously — they lock onto
+// every target the moment the roar starts. CSS handles the shimmer/pulse.
+function drawAllUltStrikes(hero, targets){
+  const heroC=teamCentroid(hero.id);
+  if(!heroC) return;
+  const layer=document.getElementById('game-layer');
+  if(!layer) return;
+  targets.forEach(function(t, i){
+    const c=teamCentroid(t.team.id);
+    if(!c) return;
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', heroC[0]);
+    line.setAttribute('y1', heroC[1]);
+    line.setAttribute('x2', c[0]);
+    line.setAttribute('y2', c[1]);
+    line.setAttribute('stroke', '#fff5a8');
+    line.setAttribute('stroke-width', 34);
+    line.setAttribute('stroke-linecap', 'round');
+    line.setAttribute('opacity', 1);
+    line.setAttribute('class', 'g-ult-strike');
+    line.setAttribute('data-team', String(t.team.id));
+    line.style.filter='drop-shadow(0 0 26px #ff8800)';
+    line.style.animationDelay = (i*22) + 'ms';
+    layer.appendChild(line);
+  });
+}
+function removeUltStrike(teamId){
+  const ln=document.querySelector('.g-ult-strike[data-team="'+teamId+'"]');
+  if(!ln) return;
+  ln.style.transition='opacity 0.22s linear';
+  ln.style.opacity='0';
+  setTimeout(function(){ if(ln.parentNode) ln.parentNode.removeChild(ln); }, 240);
+}
+function removeAllUltStrikes(){
+  document.querySelectorAll('.g-ult-strike').forEach(function(el){
+    if(el.parentNode) el.parentNode.removeChild(el);
+  });
+}
+// Try to play a real lion-roar file from /assets/roar.mp3 (drop one in and
+// it Just Works). Falls back to a synthesised low-rumble roar via Web Audio.
+function playUltRoar(){
+  try{
+    const a=new Audio('/assets/roar.mp3');
+    a.volume=0.7;
+    a.play().catch(function(){ playSynthRoar(); });
+  } catch(e){ playSynthRoar(); }
+}
+function playSynthRoar(){
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return;
+    const ctx=new AC();
+    const now=ctx.currentTime, dur=1.45;
+    // Brown-noise breath body.
+    const bufSize=Math.floor(ctx.sampleRate*dur);
+    const buf=ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data=buf.getChannelData(0);
+    let lastOut=0;
+    for(let i=0;i<bufSize;i++){
+      const white=Math.random()*2-1;
+      data[i]=(lastOut + 0.02*white)/1.02;
+      lastOut=data[i];
+      data[i]*=3.2;
+    }
+    const noise=ctx.createBufferSource();
+    noise.buffer=buf;
+    // Bandpass sweep — opens the "throat" then closes it.
+    const bp=ctx.createBiquadFilter();
+    bp.type='bandpass';
+    bp.frequency.setValueAtTime(220, now);
+    bp.frequency.exponentialRampToValueAtTime(80, now+dur);
+    bp.Q.value=3.5;
+    // Sub-rumble oscillator.
+    const osc=ctx.createOscillator();
+    osc.type='sawtooth';
+    osc.frequency.setValueAtTime(70, now);
+    osc.frequency.exponentialRampToValueAtTime(42, now+0.5);
+    osc.frequency.exponentialRampToValueAtTime(30, now+dur);
+    const oscGain=ctx.createGain();
+    oscGain.gain.setValueAtTime(0.16, now);
+    oscGain.gain.linearRampToValueAtTime(0, now+dur);
+    // Master envelope.
+    const master=ctx.createGain();
+    master.gain.setValueAtTime(0, now);
+    master.gain.linearRampToValueAtTime(0.55, now+0.08);
+    master.gain.linearRampToValueAtTime(0.62, now+0.35);
+    master.gain.linearRampToValueAtTime(0, now+dur);
+    noise.connect(bp); bp.connect(master);
+    osc.connect(oscGain); oscGain.connect(master);
+    master.connect(ctx.destination);
+    noise.start(now); noise.stop(now+dur);
+    osc.start(now); osc.stop(now+dur);
+    setTimeout(function(){ try{ ctx.close(); }catch(e){} }, (dur+0.3)*1000);
+  } catch(e){}
+}
+function unleashUltimate(){
+  if(!GAME||GAME.mode!=='conquest'||GAME.phase!=='picked-att'||!GAME.attacker) return;
+  if(window._fcSpinning) return;
+  const hero=GAME.attacker;
+  const aura=GAME.aura||0;
+  if(aura < instantWinCost(0)) return;
+  const targets=findUltTargets(hero);
+  if(targets.length===0){
+    gLog('🦁 '+FCLang.t('sim.ult.notargets'));
+    return;
+  }
+  // Trim to affordable.
+  let running=0;
+  const afford=[];
+  for(let i=0;i<targets.length;i++){
+    if(running+targets[i].cost > aura) break;
+    afford.push(targets[i]); running+=targets[i].cost;
+  }
+  if(afford.length===0){
+    gLog('🦁 '+FCLang.t('sim.ult.notenough', {cost: targets[0].cost}));
+    return;
+  }
+  // Lock interactions + freeze camera for the cascade.
+  window._fcSpinning=true;
+  GAME._skipPan=true;
+  GAME.aura = aura - running;
+  const ultName=getUltName(hero);
+  gLog('🦁 '+FCLang.t('sim.ult.fire', {name:ultName, count:afford.length, cost:running}));
+  if(typeof refreshConquestHud==='function') refreshConquestHud();
+  // 1. Roar sound + radial shockwave.
+  playUltRoar();
+  drawUltShockwave(hero);
+  // 2. All vibrating strike lines lock onto every target at the same instant.
+  drawAllUltStrikes(hero, afford);
+  // 3. Territorial colour cascade — closest first, one at a time. Each
+  //    target's strike line is removed as its country flashes + falls.
+  const STEP = 720;
+  const FLASH_TO_PAINT_DELAY = 220;
+  const startDelay = 380;
+  afford.forEach(function(t, idx){
+    setTimeout(function(){
+      const team=t.team;
+      const st=GAME.state[team.id];
+      if(!st||!st.alive) return;
+      removeUltStrike(team.id);
+      flashUltTargetCountry(team);
+      setTimeout(function(){
+        GAME.defender=team;
+        const heroC=teamCentroid(hero.id);
+        let bestIso=null, bestD=Infinity;
+        Array.from(GAME.state[team.id].ownedIsos).forEach(function(iso){
+          const ic=isoCentroid(iso, heroC);
+          if(ic){
+            const d=Math.hypot(ic[0]-(heroC?heroC[0]:0),ic[1]-(heroC?heroC[1]:0));
+            if(d<bestD){bestD=d; bestIso=iso;}
+          }
+        });
+        GAME.defenderIso=bestIso;
+        let hg=2, og=0;
+        const mm=computeMatchModel();
+        if(mm){
+          hg=Math.max(2, Math.round(mm.heroLambda));
+          og=Math.max(0, Math.min(Math.round(mm.oppLambda), hg-1));
+        }
+        GAME._skipAuraReward=true;
+        try{ handleConquestWin(hero, team, hg, og, ''); }
+        finally{ GAME._skipAuraReward=false; }
+        if(idx===afford.length-1){
+          GAME._skipPan=false;
+          window._fcSpinning=false;
+          removeAllUltStrikes();
+          const heroAfter=teamCentroid(hero.id);
+          if(heroAfter) panTo(heroAfter, Math.max(5, currentK()));
+        }
+        if(typeof refreshConquestHud==='function') refreshConquestHud();
+      }, FLASH_TO_PAINT_DELAY);
+    }, startDelay + idx*STEP);
+  });
+}
+// Per-conquest visual: the country's polygons flash gold then crimson, and a
+// scaled-up 🦁 pops at the team's centroid and fades out. Brief, because
+// handleConquestWin repaints the polygons in hero colour right after.
+function flashUltTargetCountry(team){
+  const isos=Array.from(GAME.state[team.id].ownedIsos);
+  isos.forEach(function(iso){
+    const el=document.querySelector('.cp[data-iso="'+iso+'"]');
+    if(!el) return;
+    const orig=el.getAttribute('fill');
+    el.setAttribute('fill','#ffd54a');
+    setTimeout(function(){
+      if(el.getAttribute('fill')==='#ffd54a') el.setAttribute('fill','#c8102e');
+    }, 140);
+    setTimeout(function(){
+      const cur=el.getAttribute('fill');
+      if(cur==='#ffd54a' || cur==='#c8102e') el.setAttribute('fill', orig);
+    }, 500);
+  });
+  const c=teamCentroid(team.id);
+  const layer=document.getElementById('game-layer');
+  if(!c||!layer) return;
+  const invK=1/currentK();
+  const wrap=document.createElementNS('http://www.w3.org/2000/svg','g');
+  wrap.setAttribute('transform','translate('+c[0]+','+c[1]+') scale('+invK+')');
+  wrap.setAttribute('pointer-events','none');
+  wrap.style.opacity='1';
+  const text=document.createElementNS('http://www.w3.org/2000/svg','text');
+  text.setAttribute('text-anchor','middle');
+  text.setAttribute('dominant-baseline','central');
+  text.setAttribute('font-size','170');
+  text.style.filter='drop-shadow(0 0 18px #ffd54a)';
+  text.textContent='🦁';
+  wrap.appendChild(text);
+  layer.appendChild(wrap);
+  let op=1;
+  const fade=setInterval(function(){
+    op-=0.06;
+    wrap.style.opacity=op.toFixed(2);
+    if(op<=0){ clearInterval(fade); if(wrap.parentNode) wrap.parentNode.removeChild(wrap); }
+  }, 45);
+}
+
 function executeInstantWin(){
   const team=teams.find(function(t){return t.id===(GAME&&GAME._instantTargetId);});
   if(!team||!instantWinEligible(team)){ closeInstantConfirm(); return; }

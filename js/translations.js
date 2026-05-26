@@ -369,6 +369,11 @@ window.FC_TRANSLATIONS = {
     "sim.metric.territory": "Territory",
     "sim.metric.momentum": "Momentum",
     "sim.metric.aura": "Aura",
+    "sim.ult.default": "Conquest Strike",
+    "sim.ult.tip": "Spend Aura to roar up to 5 nearby weak teams off the map",
+    "sim.ult.notargets": "No weak teams within your roar's reach right now.",
+    "sim.ult.notenough": "Need at least {cost} ⭐ Aura to unleash this.",
+    "sim.ult.fire": "🦁 {name} unleashed — {count} territories swept for {cost} ⭐",
     /* D — mode picker */
     "sim.mode.title": "Choose Game Mode",
     "sim.mode.wc.name": "World Conquest",
@@ -945,6 +950,11 @@ window.FC_TRANSLATIONS = {
     "sim.metric.territory": "Toprak",
     "sim.metric.momentum": "Momentum",
     "sim.metric.aura": "Aura",
+    "sim.ult.default": "Fetih Vuruşu",
+    "sim.ult.tip": "Yakındaki 5 zayıf takımı haritadan silmek için Aura harca",
+    "sim.ult.notargets": "Şu an kükremenin menzilinde zayıf takım yok.",
+    "sim.ult.notenough": "Bunu salıvermek için en az {cost} ⭐ Aura gerekli.",
+    "sim.ult.fire": "🦁 {name} salındı — {count} bölge {cost} ⭐ karşılığında silindi",
     /* D — mode picker */
     "sim.mode.title": "Oyun Modu Seçin",
     "sim.mode.wc.name": "Dünya Fethi",
