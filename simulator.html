@@ -5928,6 +5928,27 @@ function fcSetUsername(name){
   }catch(e){}
   return clean;
 }
+// Lightweight profanity guard for usernames. Normalises Turkish diacritics +
+// common leetspeak (0->o, 1->i, @->a, etc.) and strips non-letters, then does
+// a substring check against a curated list of unambiguous slurs / vulgarities
+// in EN and TR. The Scunthorpe-style false-positive trade-off is accepted —
+// usernames are short and the player is told plainly to pick another name.
+function fcContainsProfanity(name){
+  const norm=String(name||'').toLowerCase()
+    .replace(/[\u00e7]/g,'c').replace(/[\u015f]/g,'s').replace(/[\u011f]/g,'g')
+    .replace(/[\u0131\u00ee]/g,'i').replace(/[\u00f6]/g,'o').replace(/[\u00fc]/g,'u')
+    .replace(/0/g,'o').replace(/[1!|]/g,'i').replace(/3/g,'e')
+    .replace(/[4@]/g,'a').replace(/[5$]/g,'s').replace(/7/g,'t')
+    .replace(/[^a-z]/g,'');
+  if(!norm) return false;
+  const BAD=['fuck','shit','bitch','cunt','asshole','dick','pussy','cock',
+    'nigger','nigga','retard','whore','slut','rape','rapist','kike','spic',
+    'chink','tranny','wank','bastard','fagot','jerkoff','motherfucker',
+    'amk','amina','amcik','sikim','sikis','siktir','sikme','sikti','sokum',
+    'orospu','yarrak','pich','kahpe','goturen','ibne'];
+  for(let i=0;i<BAD.length;i++){ if(norm.indexOf(BAD[i])!==-1) return true; }
+  return false;
+}
 function loadLeaderboard(){
   try{
     const raw=localStorage.getItem(FC_LEADERBOARD_KEY);
@@ -8203,14 +8224,15 @@ function startNewGameFlow(){
 // silently. Escape / backdrop click cancels back to the splash (no game
 // started) so the player is never trapped.
 function openUsernameGate(onDone){
-  if(typeof fcUsername==='function' && fcUsername()){ onDone(); return; }
   const modal=document.getElementById('g-username-modal');
   const input=document.getElementById('g-username-input');
   const errEl=document.getElementById('g-username-error');
   const contBtn=document.getElementById('g-username-continue');
   if(!modal||!input||!contBtn){ onDone(); return; }   // fail-open
-  if(errEl) errEl.classList.remove('show');
-  input.value='';
+  if(errEl){ errEl.classList.remove('show'); errEl.textContent=FCLang.t('sim.user.error'); }
+  // Prefill with whatever name is already saved — returning players can keep
+  // it by just hitting Continue, or type a new one to change it for this run.
+  input.value=(typeof fcUsername==='function')?fcUsername():'';
   modal.classList.add('open');
   setTimeout(()=>{ try{ input.focus(); }catch(e){} },50);
   function cleanup(){
@@ -8221,8 +8243,13 @@ function openUsernameGate(onDone){
   function submit(){
     const name=input.value.trim();
     if(!name){
-      if(errEl) errEl.classList.add('show');
+      if(errEl){ errEl.textContent=FCLang.t('sim.user.error'); errEl.classList.add('show'); }
       try{ input.focus(); }catch(e){}
+      return;
+    }
+    if(fcContainsProfanity(name)){
+      if(errEl){ errEl.textContent=FCLang.t('sim.user.profanity'); errEl.classList.add('show'); }
+      try{ input.focus(); input.select(); }catch(e){}
       return;
     }
     if(typeof fcSetUsername==='function') fcSetUsername(name);

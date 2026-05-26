@@ -336,6 +336,7 @@ window.FC_TRANSLATIONS = {
     "sim.user.placeholder": "Your name",
     "sim.user.continue": "Continue",
     "sim.user.error": "Please enter a name to continue.",
+    "sim.user.profanity": "Please choose a different name.",
     /* D — mode picker */
     "sim.mode.title": "Choose Game Mode",
     "sim.mode.wc.name": "World Conquest",
@@ -879,6 +880,7 @@ window.FC_TRANSLATIONS = {
     "sim.user.placeholder": "Adın",
     "sim.user.continue": "Devam Et",
     "sim.user.error": "Devam etmek için bir ad gir.",
+    "sim.user.profanity": "Lütfen başka bir ad seç.",
     /* D — mode picker */
     "sim.mode.title": "Oyun Modu Seçin",
     "sim.mode.wc.name": "Dünya Fethi",
