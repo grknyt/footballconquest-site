@@ -338,6 +338,26 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
 .iw-confirm{background:#1d5a8c;color:#fff;border-color:#1d5a8c;}
 .iw-confirm:hover{background:#2470ad;border-color:#2470ad;}
 .iw-confirm:disabled{opacity:.4;cursor:not-allowed;}
+/* Metrics strip — floating panel above the game-panel showing the hero's
+   Territory + Momentum bonuses and the Aura bank as labelled progress bars.
+   Visibility piggy-backs on the game-panel via the CSS sibling selector,
+   the same pattern the events + campaign panels use. */
+#g-metrics-panel{position:absolute;bottom:240px;left:50%;transform:translateX(-50%);
+  width:320px;padding:10px 14px;background:rgba(7,14,23,.94);
+  border:1px solid #2a3f55;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.45);
+  display:none;flex-direction:column;gap:7px;z-index:23;pointer-events:none;}
+#game-panel.open.conquest-mode ~ #g-metrics-panel{display:flex;}
+.g-metric-row{display:flex;align-items:center;gap:10px;font-size:10px;}
+.g-metric-label{flex:0 0 70px;color:#7ab8e8;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;font-family:Menlo,Consolas,monospace;}
+.g-metric-track{flex:1;height:10px;background:#0e1a2a;border-radius:5px;overflow:hidden;
+  border:1px solid #1a2f40;}
+.g-metric-fill{height:100%;width:0;border-radius:4px;transition:width .35s ease;}
+.g-metric-fill.terr{background:linear-gradient(90deg,#2e7d3a,#6dd86d);}
+.g-metric-fill.mom{background:linear-gradient(90deg,#b85a1c,#ffa64a);}
+.g-metric-fill.aura{background:linear-gradient(90deg,#c89a26,#f4d77a);}
+.g-metric-val{flex:0 0 40px;text-align:right;color:#fff;font-weight:700;
+  font-size:11px;font-variant-numeric:tabular-nums;}
 #g-events-panel.collapsed #g-events-toggle{transform:rotate(-90deg);}
 #g-events-panel.collapsed #g-events-header{border-bottom:none;}
 
@@ -1476,6 +1496,25 @@ body.web-build .g-result-card.revealed .g-sim-btn{
         <span id="g-campaign-toggle">▼</span>
       </div>
       <div id="g-campaign-body"></div>
+    </div>
+    <!-- Metrics panel: floating Territory / Momentum / Aura bars above the
+         game-panel. Updated by renderMetricsPanel() from refreshConquestHud. -->
+    <div id="g-metrics-panel">
+      <div class="g-metric-row">
+        <span class="g-metric-label" data-i18n="sim.metric.territory">Territory</span>
+        <div class="g-metric-track"><div class="g-metric-fill terr" id="g-metric-terr-fill"></div></div>
+        <span class="g-metric-val" id="g-metric-terr-val">+0</span>
+      </div>
+      <div class="g-metric-row">
+        <span class="g-metric-label" data-i18n="sim.metric.momentum">Momentum</span>
+        <div class="g-metric-track"><div class="g-metric-fill mom" id="g-metric-mom-fill"></div></div>
+        <span class="g-metric-val" id="g-metric-mom-val">+0</span>
+      </div>
+      <div class="g-metric-row">
+        <span class="g-metric-label" data-i18n="sim.metric.aura">Aura</span>
+        <div class="g-metric-track"><div class="g-metric-fill aura" id="g-metric-aura-fill"></div></div>
+        <span class="g-metric-val" id="g-metric-aura-val">0</span>
+      </div>
     </div>
     <!-- Continent-cleared milestone toast -->
     <div id="g-milestone-toast">
@@ -7760,8 +7799,35 @@ function updateConquestHud(state){
 }
 
 // Convenience: refresh HUD with current GAME state
+// Refresh the three-bar metrics panel (Territory / Momentum / Aura). The bars
+// fill against meaningful maxes — the hero's ceiling-derived caps for the two
+// bonus bars, and a soft growing cap for Aura so the bar always has headroom.
+function renderMetricsPanel(){
+  const panel=document.getElementById('g-metrics-panel');
+  if(!panel) return;
+  if(!GAME||GAME.mode!=='conquest'||!GAME.active||!GAME.attacker) return;
+  const hero=GAME.attacker;
+  const ceiling=getHeroBonusCeiling(fifaRating(hero.name));
+  const terrMax=Math.max(1, Math.round(ceiling*0.65));
+  const momMax =Math.max(1, Math.round(ceiling*0.45)+24);
+  const terr=getHeroTerritorialBonus(hero);
+  const mom =getHeroMomentumBonus(hero);
+  const aura=GAME.aura||0;
+  const auraMax=Math.max(15, aura);   // soft growing cap keeps the bar meaningful
+  function setBar(id, val, max, label){
+    const fill=document.getElementById(id+'-fill');
+    const valEl=document.getElementById(id+'-val');
+    if(fill){ const pct=Math.max(0, Math.min(100, Math.round(val/max*100)));
+      fill.style.width=pct+'%'; }
+    if(valEl) valEl.textContent=label;
+  }
+  setBar('g-metric-terr', terr, terrMax, '+'+terr);
+  setBar('g-metric-mom',  mom,  momMax,  '+'+mom);
+  setBar('g-metric-aura', aura, auraMax, String(aura));
+}
 function refreshConquestHud(extra){
   if(GAME.mode!=='conquest')return;
+  if(typeof renderMetricsPanel==='function') renderMetricsPanel();
   let lossOpponent=null, lossCount=0;
   // Primary: show losses against the CURRENT defender (the team about to be
   // attacked). This is the active threat while spinning is resolved.

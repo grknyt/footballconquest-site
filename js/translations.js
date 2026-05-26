@@ -337,6 +337,9 @@ window.FC_TRANSLATIONS = {
     "sim.user.continue": "Continue",
     "sim.user.error": "Please enter a name to continue.",
     "sim.user.profanity": "Please choose a different name.",
+    "sim.metric.territory": "Territory",
+    "sim.metric.momentum": "Momentum",
+    "sim.metric.aura": "Aura",
     /* D — mode picker */
     "sim.mode.title": "Choose Game Mode",
     "sim.mode.wc.name": "World Conquest",
@@ -881,6 +884,9 @@ window.FC_TRANSLATIONS = {
     "sim.user.continue": "Devam Et",
     "sim.user.error": "Devam etmek için bir ad gir.",
     "sim.user.profanity": "Lütfen başka bir ad seç.",
+    "sim.metric.territory": "Toprak",
+    "sim.metric.momentum": "Momentum",
+    "sim.metric.aura": "Aura",
     /* D — mode picker */
     "sim.mode.title": "Oyun Modu Seçin",
     "sim.mode.wc.name": "Dünya Fethi",
