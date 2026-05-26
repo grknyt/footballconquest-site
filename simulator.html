@@ -342,10 +342,33 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
    Territory + Momentum bonuses and the Aura bank as labelled progress bars.
    Visibility piggy-backs on the game-panel via the CSS sibling selector,
    the same pattern the events + campaign panels use. */
-#g-metrics-panel{position:absolute;bottom:30px;right:calc(50% + 230px);
-  width:260px;padding:10px 14px;background:rgba(7,14,23,.94);
-  border:1px solid #2a3f55;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.45);
-  display:none;flex-direction:column;gap:7px;z-index:23;pointer-events:none;}
+/* Old free-floating metrics strip — superseded by the in-panel layout below.
+   Kept in DOM (so any code paths that touch it don't crash) but hidden. */
+#g-metrics-panel{display:none!important;}
+/* Territory + Momentum sit ABOVE the flags, full-width of the game-panel body. */
+.g-hero-bars{display:none;flex-direction:column;gap:5px;padding:8px 16px 4px;}
+#game-panel.open.conquest-mode .g-hero-bars{display:flex;}
+.g-hero-bar-row{display:flex;align-items:center;gap:10px;font-size:10px;}
+.g-hero-bar-label{flex:0 0 64px;color:#7ab8e8;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;font-family:Menlo,Consolas,monospace;}
+.g-hero-bar-track{flex:1;height:8px;background:#0e1a2a;border-radius:5px;
+  overflow:hidden;border:1px solid #1a2f40;}
+.g-hero-bar-fill{height:100%;width:0;border-radius:4px;transition:width .35s ease;}
+.g-hero-bar-fill.terr{background:linear-gradient(90deg,#2e7d3a,#6dd86d);}
+.g-hero-bar-fill.mom{background:linear-gradient(90deg,#b85a1c,#ffa64a);}
+.g-hero-bar-val{flex:0 0 32px;text-align:right;color:#fff;font-weight:700;
+  font-size:10px;font-variant-numeric:tabular-nums;}
+/* Aura is a vertical bar inside the attacker slot, hugging the left edge. */
+.g-slot-attacker{position:relative;}
+.g-aura-vbar{position:absolute;left:6px;top:14px;bottom:14px;width:8px;
+  background:#0e1a2a;border:1px solid #1a2f40;border-radius:5px;
+  overflow:hidden;display:none;flex-direction:column-reverse;
+  pointer-events:none;}
+#game-panel.open.conquest-mode .g-slot-attacker .g-aura-vbar{display:flex;}
+.g-aura-vbar-fill{width:100%;height:0;border-radius:0 0 4px 4px;
+  background:linear-gradient(0deg,#c89a26 0%,#f4d77a 100%);
+  transition:height .35s ease;
+  box-shadow:0 0 10px rgba(244,215,122,.45);}
 #game-panel.open.conquest-mode ~ #g-metrics-panel{display:flex;}
 .g-metric-row{display:flex;align-items:center;gap:10px;font-size:10px;}
 .g-metric-label{flex:0 0 70px;color:#7ab8e8;font-weight:700;letter-spacing:1.5px;
@@ -1512,8 +1535,21 @@ body.web-build .g-result-card.revealed .g-sim-btn{
              in conquest mode (per Gürkan's visual mockup). Populated by
              updateConquestHud(). Hidden in imperialism mode. -->
         <div class="g-conquest-stats" id="g-conquest-stats" style="display:none;"></div>
+        <div class="g-hero-bars">
+          <div class="g-hero-bar-row">
+            <span class="g-hero-bar-label" data-i18n="sim.metric.territory">Territory</span>
+            <div class="g-hero-bar-track"><div class="g-hero-bar-fill terr" id="g-hero-terr-fill"></div></div>
+            <span class="g-hero-bar-val" id="g-hero-terr-val">+0</span>
+          </div>
+          <div class="g-hero-bar-row">
+            <span class="g-hero-bar-label" data-i18n="sim.metric.momentum">Momentum</span>
+            <div class="g-hero-bar-track"><div class="g-hero-bar-fill mom" id="g-hero-mom-fill"></div></div>
+            <span class="g-hero-bar-val" id="g-hero-mom-val">+0</span>
+          </div>
+        </div>
         <div class="g-slots">
-          <div class="g-slot">
+          <div class="g-slot g-slot-attacker">
+            <div class="g-aura-vbar"><div class="g-aura-vbar-fill" id="g-aura-vbar-fill"></div></div>
             <div class="g-slot-label">Attacker</div>
             <div class="g-slot-flag" id="g-attacker-flag"></div>
             <div class="g-slot-val" id="g-attacker">—</div>
@@ -7862,9 +7898,9 @@ function updateConquestHud(state){
 // Refresh the three-bar metrics panel (Territory / Momentum / Aura). The bars
 // fill against meaningful maxes — the hero's ceiling-derived caps for the two
 // bonus bars, and a soft growing cap for Aura so the bar always has headroom.
+// Drives the in-panel hero metrics: Territory + Momentum horizontal bars
+// above the flags row, plus a vertical Aura bar inside the attacker slot.
 function renderMetricsPanel(){
-  const panel=document.getElementById('g-metrics-panel');
-  if(!panel) return;
   if(!GAME||GAME.mode!=='conquest'||!GAME.active||!GAME.attacker) return;
   const hero=GAME.attacker;
   const ceiling=getHeroBonusCeiling(fifaRating(hero.name));
@@ -7873,17 +7909,24 @@ function renderMetricsPanel(){
   const terr=getHeroTerritorialBonus(hero);
   const mom =getHeroMomentumBonus(hero);
   const aura=GAME.aura||0;
-  const auraMax=Math.max(15, aura);   // soft growing cap keeps the bar meaningful
-  function setBar(id, val, max, label){
+  const auraMax=Math.max(15, aura);   // soft growing cap so the bar always has headroom
+  function setHbar(id, val, max, label){
     const fill=document.getElementById(id+'-fill');
     const valEl=document.getElementById(id+'-val');
-    if(fill){ const pct=Math.max(0, Math.min(100, Math.round(val/max*100)));
-      fill.style.width=pct+'%'; }
+    if(fill){
+      const pct=Math.max(0, Math.min(100, Math.round(val/max*100)));
+      fill.style.width=pct+'%';
+    }
     if(valEl) valEl.textContent=label;
   }
-  setBar('g-metric-terr', terr, terrMax, '+'+terr);
-  setBar('g-metric-mom',  mom,  momMax,  '+'+mom);
-  setBar('g-metric-aura', aura, auraMax, String(aura));
+  setHbar('g-hero-terr', terr, terrMax, '+'+terr);
+  setHbar('g-hero-mom',  mom,  momMax,  '+'+mom);
+  // Vertical Aura bar — fills from the bottom up.
+  const aFill=document.getElementById('g-aura-vbar-fill');
+  if(aFill){
+    const pct=Math.max(0, Math.min(100, Math.round(aura/auraMax*100)));
+    aFill.style.height=pct+'%';
+  }
 }
 function refreshConquestHud(extra){
   if(GAME.mode!=='conquest')return;
