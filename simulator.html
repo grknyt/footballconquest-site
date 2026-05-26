@@ -342,8 +342,8 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
    Territory + Momentum bonuses and the Aura bank as labelled progress bars.
    Visibility piggy-backs on the game-panel via the CSS sibling selector,
    the same pattern the events + campaign panels use. */
-#g-metrics-panel{position:absolute;bottom:240px;left:50%;transform:translateX(-50%);
-  width:320px;padding:10px 14px;background:rgba(7,14,23,.94);
+#g-metrics-panel{position:absolute;bottom:30px;right:calc(50% + 230px);
+  width:260px;padding:10px 14px;background:rgba(7,14,23,.94);
   border:1px solid #2a3f55;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.45);
   display:none;flex-direction:column;gap:7px;z-index:23;pointer-events:none;}
 #game-panel.open.conquest-mode ~ #g-metrics-panel{display:flex;}
