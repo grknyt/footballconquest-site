@@ -349,6 +349,8 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.theme": "Toggle light/dark map",
     "sim.tb.tip.reset": "Clear all changes (can undo)",
     "sim.tb.menu.save": "Save game",
+    "sim.tb.menu.hideui": "Hide UI",
+    "sim.tb.menu.showui": "Show UI",
     "sim.tb.menu.newgame": "New game",
     "sim.tb.menu.reset": "Reset map",
     /* B — map */
@@ -930,6 +932,8 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.theme": "Açık/koyu haritayı değiştir",
     "sim.tb.tip.reset": "Tüm değişiklikleri temizle (geri alınabilir)",
     "sim.tb.menu.save": "Oyunu kaydet",
+    "sim.tb.menu.hideui": "Arayüzü gizle",
+    "sim.tb.menu.showui": "Arayüzü göster",
     "sim.tb.menu.newgame": "Yeni oyun",
     "sim.tb.menu.reset": "Haritayı sıfırla",
     /* B — map */

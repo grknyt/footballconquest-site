@@ -369,6 +369,33 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
   background:linear-gradient(0deg,#c89a26 0%,#f4d77a 100%);
   transition:height .35s ease;
   box-shadow:0 0 10px rgba(244,215,122,.45);}
+/* "Hide UI" storytelling mode — clean map, no chrome. Toggled by the H key
+   or the hamburger menu item (offline build only). */
+body.fc-ui-hidden #hdr,
+body.fc-ui-hidden #hint,
+body.fc-ui-hidden #paint-swatch-wrap,
+body.fc-ui-hidden #flag-hide-wrap,
+body.fc-ui-hidden #game-panel,
+body.fc-ui-hidden #g-events-panel,
+body.fc-ui-hidden #g-campaign-panel,
+body.fc-ui-hidden #g-hud,
+body.fc-ui-hidden #fc-menu,
+body.fc-ui-hidden #g-milestone-toast,
+body.fc-ui-hidden .fc-creator-banner,
+body.fc-ui-hidden .fc-creator-banner-toggle,
+body.fc-ui-hidden .zc,
+body.fc-ui-hidden #zr,
+body.fc-ui-hidden #zi,
+body.fc-ui-hidden #zo{display:none!important;}
+/* The public web build never sees the menu item. */
+body.web-build #fc-menu-hide-ui{display:none!important;}
+/* Toast confirming the UI was toggled. */
+#fc-ui-toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);
+  background:rgba(7,14,23,.96);color:#fff;border:1px solid #2a3f55;
+  font:600 12px/1.4 Menlo,Consolas,monospace;letter-spacing:1.5px;
+  padding:9px 16px;border-radius:8px;z-index:10001;pointer-events:none;
+  opacity:0;transition:opacity .25s ease;box-shadow:0 6px 18px rgba(0,0,0,.45);}
+#fc-ui-toast.show{opacity:1;}
 #game-panel.open.conquest-mode ~ #g-metrics-panel{display:flex;}
 .g-metric-row{display:flex;align-items:center;gap:10px;font-size:10px;}
 .g-metric-label{flex:0 0 70px;color:#7ab8e8;font-weight:700;letter-spacing:1.5px;
@@ -1174,6 +1201,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
           <div class="fc-menu-item" id="fc-menu-save" role="menuitem"><span class="fc-menu-icon">💾</span><span data-i18n="sim.tb.menu.save">Save game</span></div>
           <div class="fc-menu-item" id="fc-menu-undo" role="menuitem"><span class="fc-menu-icon">↩</span><span data-i18n="sim.tb.undo">Undo</span></div>
           <div class="fc-menu-item fc-menu-game-only" id="fc-menu-end" role="menuitem"><span class="fc-menu-icon">🎲</span><span data-i18n="sim.tb.menu.newgame">New game</span></div>
+          <div class="fc-menu-item" id="fc-menu-hide-ui" role="menuitem"><span class="fc-menu-icon">👁</span><span id="fc-menu-hide-ui-label" data-i18n="sim.tb.menu.hideui">Hide UI</span><span class="kbadge" style="margin-left:auto;opacity:.6;font-size:9px;">H</span></div>
           <div class="fc-menu-sep"></div>
           <div class="fc-menu-item danger fc-menu-hide-in-conquest" id="fc-menu-reset" role="menuitem"><span class="fc-menu-icon">⟳</span><span data-i18n="sim.tb.menu.reset">Reset map</span></div>
         </div>
@@ -8360,8 +8388,19 @@ function unleashUltimate(){
   }
   // Lock interactions + freeze camera for the cascade.
   window._fcSpinning=true;
-  GAME._skipPan=true;
+  // Camera FOLLOWS the action now (was frozen). panToFitPoints below frames
+  // the strike area first so the viewer sees where the roar lands, then
+  // handleConquestWin's own pan moves the camera to each country in turn.
+  GAME._skipPan=false;
   GAME.aura = aura - running;
+  // Frame the strike: bounding box of hero + every target. Camera zooms out
+  // to fit so the viewer sees the full Area of Effect.
+  try{
+    const _framePts=[teamCentroid(hero.id)].concat(afford.map(function(t){
+      return teamCentroid(t.team.id);
+    })).filter(Boolean);
+    if(_framePts.length>1 && typeof panToFitPoints==='function') panToFitPoints(_framePts);
+  }catch(e){}
   const ultName=getUltName(hero);
   gLog('🦁 '+FCLang.t('sim.ult.fire', {name:ultName, count:afford.length, cost:running}));
   if(typeof refreshConquestHud==='function') refreshConquestHud();
@@ -8874,6 +8913,57 @@ function openUsernameGate(onDone){
   // entry needed. Old wiring removed.
 })();
 
+</script>
+<script>
+/* "Hide UI" — creator-build storytelling mode. Press H to toggle (or use the
+   hamburger menu). Disabled on the public web build via the body class. */
+(function(){
+  function toggleHideUI(){
+    if(document.body.classList.contains('web-build')) return;
+    const hidden=document.body.classList.toggle('fc-ui-hidden');
+    showUiToast(hidden);
+    const lbl=document.getElementById('fc-menu-hide-ui-label');
+    if(lbl) lbl.textContent = hidden
+      ? (typeof FCLang!=='undefined' ? FCLang.t('sim.tb.menu.showui') : 'Show UI')
+      : (typeof FCLang!=='undefined' ? FCLang.t('sim.tb.menu.hideui') : 'Hide UI');
+  }
+  function showUiToast(hidden){
+    let t=document.getElementById('fc-ui-toast');
+    if(!t){
+      t=document.createElement('div');
+      t.id='fc-ui-toast';
+      document.body.appendChild(t);
+    }
+    t.textContent = hidden
+      ? '◐ UI HIDDEN — PRESS H TO SHOW'
+      : '◑ UI SHOWN';
+    t.classList.add('show');
+    clearTimeout(window._fcUiToastTimer);
+    window._fcUiToastTimer=setTimeout(function(){ t.classList.remove('show'); }, 2400);
+  }
+  // Keyboard shortcut — H, no modifiers, not while typing in a field.
+  document.addEventListener('keydown', function(e){
+    if(document.body.classList.contains('web-build')) return;
+    if(e.ctrlKey||e.metaKey||e.altKey) return;
+    const tg=e.target;
+    if(tg && (tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'||tg.isContentEditable)) return;
+    if((e.key||'').toLowerCase()==='h'){
+      e.preventDefault();
+      toggleHideUI();
+    }
+  });
+  // Hamburger menu item.
+  document.addEventListener('DOMContentLoaded', function(){
+    const item=document.getElementById('fc-menu-hide-ui');
+    if(item) item.addEventListener('click', function(){
+      toggleHideUI();
+      const menu=document.getElementById('fc-menu');
+      if(menu) menu.classList.remove('open');
+    });
+  });
+  // Expose for any other code path that wants to trigger it.
+  window.fcToggleHideUI=toggleHideUI;
+})();
 </script>
 </body>
 </html>
