@@ -345,30 +345,44 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
 /* Old free-floating metrics strip — superseded by the in-panel layout below.
    Kept in DOM (so any code paths that touch it don't crash) but hidden. */
 #g-metrics-panel{display:none!important;}
-/* Territory + Momentum sit ABOVE the flags, full-width of the game-panel body. */
-.g-hero-bars{display:none;flex-direction:column;gap:5px;padding:8px 16px 4px;}
-#game-panel.open.conquest-mode .g-hero-bars{display:flex;}
-.g-hero-bar-row{display:flex;align-items:center;gap:10px;font-size:10px;}
-.g-hero-bar-label{flex:0 0 64px;color:#7ab8e8;font-weight:700;letter-spacing:1.5px;
-  text-transform:uppercase;font-family:Menlo,Consolas,monospace;}
-.g-hero-bar-track{flex:1;height:8px;background:#0e1a2a;border-radius:5px;
-  overflow:hidden;border:1px solid #1a2f40;}
-.g-hero-bar-fill{height:100%;width:0;border-radius:4px;transition:width .35s ease;}
-.g-hero-bar-fill.terr{background:linear-gradient(90deg,#2e7d3a,#6dd86d);}
-.g-hero-bar-fill.mom{background:linear-gradient(90deg,#b85a1c,#ffa64a);}
-.g-hero-bar-val{flex:0 0 32px;text-align:right;color:#fff;font-weight:700;
-  font-size:10px;font-variant-numeric:tabular-nums;}
-/* Aura is a vertical bar inside the attacker slot, hugging the left edge. */
+/* AURA — big horizontal bar above the flags, full-width of the panel body.
+   The brand-red AURA label sits left of a gold gradient fill so the bank is
+   the most prominent thing in the bottom UI. */
+.g-aura-hbar{display:none;align-items:center;gap:10px;padding:10px 14px 8px;}
+#game-panel.open.conquest-mode .g-aura-hbar{display:flex;}
+.g-aura-hbar-label{font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+  font-size:22px;letter-spacing:3px;color:#c8102e;text-transform:uppercase;
+  text-shadow:0 0 8px rgba(200,16,46,.35);flex:0 0 auto;}
+.g-aura-hbar-star{color:#c8102e;font-size:16px;flex:0 0 auto;}
+.g-aura-hbar-track{flex:1;height:18px;background:#0e1a2a;
+  border:1px solid #d4a936;border-radius:10px;overflow:hidden;
+  box-shadow:inset 0 1px 4px rgba(0,0,0,.5);}
+.g-aura-hbar-fill{height:100%;width:0;
+  background:linear-gradient(90deg,#c89a26 0%,#f4d77a 50%,#ffd54a 100%);
+  border-radius:8px;transition:width .4s ease;
+  box-shadow:inset 0 0 10px rgba(255,213,74,.6);}
+/* Territory + Momentum — thin vertical bars to the LEFT of the attacker slot,
+   inside the .g-slots flex row. */
+.g-tm-bars{display:none;flex-direction:row;align-items:stretch;gap:8px;
+  padding:6px 6px 6px 0;}
+#game-panel.open.conquest-mode .g-tm-bars{display:flex;}
+.g-tm-bar{display:flex;flex-direction:column;align-items:center;gap:4px;
+  min-width:28px;}
+.g-tm-bar-track{width:9px;flex:1;background:#0e1a2a;border:1px solid #1a2f40;
+  border-radius:5px;overflow:hidden;display:flex;flex-direction:column-reverse;
+  min-height:80px;}
+.g-tm-bar-fill{width:100%;height:0;border-radius:0 0 4px 4px;
+  transition:height .35s ease;}
+.g-tm-bar-fill.terr{background:linear-gradient(0deg,#2e7d3a,#6dd86d);
+  box-shadow:0 0 6px rgba(109,216,109,.4);}
+.g-tm-bar-fill.mom{background:linear-gradient(0deg,#b85a1c,#ffa64a);
+  box-shadow:0 0 6px rgba(255,166,74,.4);}
+.g-tm-bar-label{font-size:9px;font-weight:700;color:#cfdaea;letter-spacing:.5px;
+  text-align:center;white-space:nowrap;}
+/* The previous in-slot Aura vbar is gone (Aura is now the big horizontal
+   bar). Keep .g-slot-attacker as a positioning anchor in case anything else
+   wants it. */
 .g-slot-attacker{position:relative;}
-.g-aura-vbar{position:absolute;left:6px;top:14px;bottom:14px;width:8px;
-  background:#0e1a2a;border:1px solid #1a2f40;border-radius:5px;
-  overflow:hidden;display:none;flex-direction:column-reverse;
-  pointer-events:none;}
-#game-panel.open.conquest-mode .g-slot-attacker .g-aura-vbar{display:flex;}
-.g-aura-vbar-fill{width:100%;height:0;border-radius:0 0 4px 4px;
-  background:linear-gradient(0deg,#c89a26 0%,#f4d77a 100%);
-  transition:height .35s ease;
-  box-shadow:0 0 10px rgba(244,215,122,.45);}
 /* "Hide UI" storytelling mode — clean map, no chrome. Toggled by the H key
    or the hamburger menu item (offline build only). */
 body.fc-ui-hidden #hdr,
@@ -386,7 +400,11 @@ body.fc-ui-hidden .fc-creator-banner-toggle,
 body.fc-ui-hidden .zc,
 body.fc-ui-hidden #zr,
 body.fc-ui-hidden #zi,
-body.fc-ui-hidden #zo{display:none!important;}
+body.fc-ui-hidden #zo,
+body.fc-ui-hidden #instant-layer,
+body.fc-ui-hidden .iw-pill,
+body.fc-ui-hidden #hero-glow-layer,
+body.fc-ui-hidden #label-layer{display:none!important;}
 /* The public web build never sees the menu item. */
 body.web-build #fc-menu-hide-ui{display:none!important;}
 /* Toast confirming the UI was toggled. */
@@ -1563,21 +1581,23 @@ body.web-build .g-result-card.revealed .g-sim-btn{
              in conquest mode (per Gürkan's visual mockup). Populated by
              updateConquestHud(). Hidden in imperialism mode. -->
         <div class="g-conquest-stats" id="g-conquest-stats" style="display:none;"></div>
-        <div class="g-hero-bars">
-          <div class="g-hero-bar-row">
-            <span class="g-hero-bar-label" data-i18n="sim.metric.territory">Territory</span>
-            <div class="g-hero-bar-track"><div class="g-hero-bar-fill terr" id="g-hero-terr-fill"></div></div>
-            <span class="g-hero-bar-val" id="g-hero-terr-val">+0</span>
-          </div>
-          <div class="g-hero-bar-row">
-            <span class="g-hero-bar-label" data-i18n="sim.metric.momentum">Momentum</span>
-            <div class="g-hero-bar-track"><div class="g-hero-bar-fill mom" id="g-hero-mom-fill"></div></div>
-            <span class="g-hero-bar-val" id="g-hero-mom-val">+0</span>
-          </div>
+        <div class="g-aura-hbar">
+          <span class="g-aura-hbar-label" data-i18n="sim.metric.aura">AURA</span>
+          <span class="g-aura-hbar-star">⭐</span>
+          <div class="g-aura-hbar-track"><div class="g-aura-hbar-fill" id="g-aura-hbar-fill"></div></div>
         </div>
         <div class="g-slots">
+          <div class="g-tm-bars">
+            <div class="g-tm-bar">
+              <div class="g-tm-bar-track"><div class="g-tm-bar-fill terr" id="g-tm-terr-fill"></div></div>
+              <div class="g-tm-bar-label" data-i18n="sim.metric.territory">Territory</div>
+            </div>
+            <div class="g-tm-bar">
+              <div class="g-tm-bar-track"><div class="g-tm-bar-fill mom" id="g-tm-mom-fill"></div></div>
+              <div class="g-tm-bar-label" data-i18n="sim.metric.momentum">Momentum</div>
+            </div>
+          </div>
           <div class="g-slot g-slot-attacker">
-            <div class="g-aura-vbar"><div class="g-aura-vbar-fill" id="g-aura-vbar-fill"></div></div>
             <div class="g-slot-label">Attacker</div>
             <div class="g-slot-flag" id="g-attacker-flag"></div>
             <div class="g-slot-val" id="g-attacker">—</div>
@@ -7926,8 +7946,9 @@ function updateConquestHud(state){
 // Refresh the three-bar metrics panel (Territory / Momentum / Aura). The bars
 // fill against meaningful maxes — the hero's ceiling-derived caps for the two
 // bonus bars, and a soft growing cap for Aura so the bar always has headroom.
-// Drives the in-panel hero metrics: Territory + Momentum horizontal bars
-// above the flags row, plus a vertical Aura bar inside the attacker slot.
+// Drives the in-panel hero metrics: big AURA horizontal bar above the flags,
+// and small Territory + Momentum vertical bars to the LEFT of the attacker
+// slot. Aura is the most prominent visual now.
 function renderMetricsPanel(){
   if(!GAME||GAME.mode!=='conquest'||!GAME.active||!GAME.attacker) return;
   const hero=GAME.attacker;
@@ -7937,24 +7958,23 @@ function renderMetricsPanel(){
   const terr=getHeroTerritorialBonus(hero);
   const mom =getHeroMomentumBonus(hero);
   const aura=GAME.aura||0;
-  const auraMax=Math.max(15, aura);   // soft growing cap so the bar always has headroom
-  function setHbar(id, val, max, label){
-    const fill=document.getElementById(id+'-fill');
-    const valEl=document.getElementById(id+'-val');
-    if(fill){
-      const pct=Math.max(0, Math.min(100, Math.round(val/max*100)));
-      fill.style.width=pct+'%';
-    }
-    if(valEl) valEl.textContent=label;
-  }
-  setHbar('g-hero-terr', terr, terrMax, '+'+terr);
-  setHbar('g-hero-mom',  mom,  momMax,  '+'+mom);
-  // Vertical Aura bar — fills from the bottom up.
-  const aFill=document.getElementById('g-aura-vbar-fill');
+  const auraMax=Math.max(20, aura);   // soft growing cap so the bar has headroom
+  // AURA horizontal bar
+  const aFill=document.getElementById('g-aura-hbar-fill');
   if(aFill){
     const pct=Math.max(0, Math.min(100, Math.round(aura/auraMax*100)));
-    aFill.style.height=pct+'%';
+    aFill.style.width=pct+'%';
   }
+  // Territory + Momentum vertical bars (fill from the bottom up)
+  function setVbar(id, val, max){
+    const fill=document.getElementById(id+'-fill');
+    if(fill){
+      const pct=Math.max(0, Math.min(100, Math.round(val/max*100)));
+      fill.style.height=pct+'%';
+    }
+  }
+  setVbar('g-tm-terr', terr, terrMax);
+  setVbar('g-tm-mom',  mom,  momMax);
 }
 function refreshConquestHud(extra){
   if(GAME.mode!=='conquest')return;
