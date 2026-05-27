@@ -463,6 +463,24 @@ body.web-build #g-squad-panel{display:none!important;}
   -webkit-tap-highlight-color:transparent;}
 .g-events-filter:hover{color:#7ab8e8;border-color:#7ab8e8;}
 .g-events-filter.active{color:#fff;background:#1d5a8c;border-color:#378add;}
+/* Search row — appears below the header when the 🔍 button is toggled on.
+   Wraps an input + clear button. Stays inside the panel so the events list
+   shrinks accordingly. */
+#g-events-search-row{display:none;align-items:center;gap:6px;
+  padding:7px 11px 8px;border-bottom:1px solid #1a2f40;background:#0a1624;}
+#g-events-search-row.open{display:flex;}
+#g-events-search-input{flex:1;background:#0e1a2a;border:1px solid #2a3f55;
+  color:#cfdaea;font-size:12px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  padding:5px 8px;border-radius:5px;outline:none;letter-spacing:.3px;
+  min-width:0;}
+#g-events-search-input:focus{border-color:#7ab8e8;background:#11243a;}
+#g-events-search-input::placeholder{color:#4a6a80;}
+#g-events-search-clear{background:transparent;border:0;color:#5a7a95;cursor:pointer;
+  font-size:14px;line-height:1;padding:3px 5px;flex-shrink:0;}
+#g-events-search-clear:hover{color:#ff8a8a;}
+/* Hide non-matching log entries when the search filter is active. The class
+   is toggled per-entry inside renderGameLog. */
+#g-log .g-log-entry.g-log-hidden{display:none;}
 #g-log.results-only .g-log-entry:not(.g-log-result){display:none;}
 .g-log-num{display:none;color:#7ab8e8;font-weight:700;margin-right:6px;font-variant-numeric:tabular-nums;font-size:13px;}
 #g-log.results-only .g-log-num{display:inline;}
@@ -559,6 +577,7 @@ body.fc-ui-hidden #flag-hide-wrap,
 body.fc-ui-hidden #game-panel,
 body.fc-ui-hidden #g-events-panel,
 body.fc-ui-hidden #g-campaign-panel,
+body.fc-ui-hidden #g-squad-panel,
 body.fc-ui-hidden #g-hud,
 body.fc-ui-hidden #fc-menu,
 body.fc-ui-hidden #g-milestone-toast,
@@ -1872,8 +1891,13 @@ body.web-build .g-result-card.revealed .g-sim-btn{
              is collapsed, so the player can keep tabs on Turn N / remaining
              without expanding the log. Populated by updateConquestHud(). -->
         <span class="g-events-turn-summary" id="g-events-turn-summary"></span>
+        <button type="button" id="g-events-search-btn" class="g-events-filter" data-i18n-attr="title:sim.ev.search" title="Search events">🔍</button>
         <button type="button" id="g-events-filter" class="g-events-filter" data-i18n-attr="title:sim.ev.filter" title="Match results only">⚽</button>
         <span id="g-events-toggle">▼</span>
+      </div>
+      <div id="g-events-search-row">
+        <input type="text" id="g-events-search-input" placeholder="Search events..." data-i18n-attr="placeholder:sim.ev.search.placeholder" autocomplete="off" spellcheck="false">
+        <button type="button" id="g-events-search-clear" title="Clear">✕</button>
       </div>
       <div id="g-log"><div class="g-log-empty" data-i18n="sim.ev.empty">Click Pick attacker to begin.</div></div>
     </div>
@@ -4551,19 +4575,41 @@ function gLog(msg,isResult){
 }
 // Render the Events log. Each entry is {h:html, r:isMatchResult}; the r flag
 // drives the "match results only" filter (CSS hides non-result entries).
+// Live keyword filter for the Events panel. Set by the 🔍 search input,
+// consumed by renderGameLog. Empty string means "no filter".
+let _gLogSearch='';
+// Strip HTML tags + decode common entities so the search matches the human-
+// readable text the user sees, not the raw markup.
+function _gLogPlainText(html){
+  const tmp=document.createElement('div');
+  tmp.innerHTML=String(html||'');
+  return (tmp.textContent||tmp.innerText||'').toLowerCase();
+}
 function renderGameLog(){
   const box=document.getElementById('g-log');
   if(!box)return;
   if(GAME.log.length===0){box.innerHTML='<div class="g-log-empty">'+FCLang.t('sim.ev.noevents')+'</div>';return;}
+  const q=(_gLogSearch||'').toLowerCase().trim();
   let resultIdx=0;
   for(const e of GAME.log){ if(e&&e.r) resultIdx++; }
-  box.innerHTML=GAME.log.map(e=>{
+  // Build rendered entries; track visible count so we can show a no-match
+  // message when the search query filters everything out.
+  let visible=0;
+  const rendered=GAME.log.map(e=>{
     const html=(e&&e.h!=null)?e.h:e;
     const isResult=!!(e&&e.r);
     let num='';
     if(isResult){ num='<span class="g-log-num">'+resultIdx+'.</span>'; resultIdx--; }
-    return '<div class="g-log-entry'+(isResult?' g-log-result':'')+'">'+num+html+'</div>';
+    const matchesSearch = !q || _gLogPlainText(html).indexOf(q)!==-1;
+    if(matchesSearch) visible++;
+    const cls='g-log-entry'+(isResult?' g-log-result':'')+(matchesSearch?'':' g-log-hidden');
+    return '<div class="'+cls+'">'+num+html+'</div>';
   }).join('');
+  if(q && visible===0){
+    box.innerHTML='<div class="g-log-empty">'+FCLang.t('sim.ev.nomatch',{q:escapeHtml(_gLogSearch)})+'</div>';
+  } else {
+    box.innerHTML=rendered;
+  }
 }
 function gLogPop(){
   // Remove the most recent log entry (used by undo to clean up "Arrow points at X" etc.)
@@ -7895,7 +7941,7 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
     if(goalDiff >= 1){
       // Dramatic roulette — visually draws each fallen player. Handles
       // removal, logging, and the per-player FALLEN stamp internally.
-      drawSquadLossRoulette(goalDiff);
+      drawSquadLossRoulette(goalDiff, opp.name);
     }
   }
   // Increment loss count against this opponent
@@ -8576,7 +8622,7 @@ function spinRouletteToVictim(targetPlayer, allPlayers, onDone){
   }
   tick();
 }
-function drawSquadLossRoulette(numToLose){
+function drawSquadLossRoulette(numToLose, oppName){
   ensureSquadInit();
   if(!Array.isArray(GAME.squad) || GAME.squad.length===0) return;
   const n=Math.min(numToLose, GAME.squad.length);
@@ -8636,7 +8682,16 @@ function drawSquadLossRoulette(numToLose){
           if(idx!==-1) GAME.squad.splice(idx,1);
           saveStoredSquad();
           renderSquadPanel();
-          gLog('💔 '+FCLang.t('sim.squad.fell', {name:'<b>'+escapeHtml(victim.n)+'</b>'}));
+          // When we know who beat us, log "fell vs {opp}" so the player can
+          // search the events log for either the player or the opponent later.
+          if(oppName){
+            gLog('💔 '+FCLang.t('sim.squad.fell.to', {
+              name:'<b>'+escapeHtml(victim.n)+'</b>',
+              opp:'<b>'+escapeHtml(teamDisplayName(oppName))+'</b>'
+            }));
+          } else {
+            gLog('💔 '+FCLang.t('sim.squad.fell', {name:'<b>'+escapeHtml(victim.n)+'</b>'}));
+          }
           i++;
           setupButton();
         }, 800);
@@ -9593,6 +9648,50 @@ function startNewGameFlow(){
     const on=filterBtn.classList.toggle('active');
     if(log) log.classList.toggle('results-only',on);
   });
+  // 🔍 keyword search — toggles a hidden input row under the header. Typing
+  // re-renders the log with the query as a case-insensitive substring filter.
+  const searchBtn=document.getElementById('g-events-search-btn');
+  const searchRow=document.getElementById('g-events-search-row');
+  const searchInput=document.getElementById('g-events-search-input');
+  const searchClear=document.getElementById('g-events-search-clear');
+  if(searchBtn && searchRow && searchInput){
+    searchBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      const open=searchRow.classList.toggle('open');
+      searchBtn.classList.toggle('active', open);
+      // Auto-expand the panel if it was collapsed so the search row is visible.
+      if(open && panel.classList.contains('collapsed')) panel.classList.remove('collapsed');
+      if(open){
+        // Defer focus until after the row layout so the cursor lands in the input.
+        setTimeout(()=>searchInput.focus(),0);
+      } else {
+        // Closing the search clears the query so nothing stays filtered.
+        searchInput.value='';
+        if(typeof _gLogSearch!=='undefined'){ _gLogSearch=''; renderGameLog(); }
+      }
+    });
+    // Stop propagation on the row so clicks inside it don't toggle the
+    // collapse on the parent header.
+    searchRow.addEventListener('click',e=>e.stopPropagation());
+    searchInput.addEventListener('input',()=>{
+      _gLogSearch=searchInput.value||'';
+      renderGameLog();
+    });
+    // Stop the global single-key shortcuts (E for events, P for paint, F for
+    // flags, etc.) from firing while the user is typing in the search box.
+    searchInput.addEventListener('keydown',e=>{
+      e.stopPropagation();
+      if(e.key==='Escape'){
+        searchInput.value=''; _gLogSearch=''; renderGameLog();
+        searchBtn.click(); // close the row
+      }
+    });
+    if(searchClear) searchClear.addEventListener('click',e=>{
+      e.stopPropagation();
+      searchInput.value=''; _gLogSearch=''; renderGameLog();
+      searchInput.focus();
+    });
+  }
 })();
 
 // ── Username gate ──────────────────────────────────────────────
