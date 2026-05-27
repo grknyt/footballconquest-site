@@ -274,6 +274,19 @@ body.web-build #g-squad-panel{display:none!important;}
 .g-squad-row .g-squad-remove{background:transparent;border:0;color:#7a9bb5;cursor:pointer;
   padding:0 2px;font-size:14px;line-height:1;}
 .g-squad-row .g-squad-remove:hover{color:#ff8a8a;}
+.g-squad-avatar{position:relative;flex:0 0 auto;width:34px;height:34px;border-radius:50%;
+  background-size:cover;background-position:center top;
+  background-color:#1a2f40;border:1.5px solid #2a3f55;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:11px;font-weight:800;letter-spacing:.5px;
+  font-family:system-ui,-apple-system,sans-serif;}
+.g-squad-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.g-squad-avatar.loading{opacity:.5;animation:g-squad-pulse 1.2s ease-in-out infinite;}
+@keyframes g-squad-pulse{0%,100%{opacity:.3;}50%{opacity:.7;}}
+#g-squad-fetch-portraits{background:transparent;border:1px solid #2a4f6a;color:#7ab8e8;
+  border-radius:5px;padding:5px 8px;font-size:11px;cursor:pointer;margin-top:4px;}
+#g-squad-fetch-portraits:hover:not(:disabled){background:#1a2f40;color:#fff;}
+#g-squad-fetch-portraits:disabled{opacity:.5;cursor:not-allowed;}
 .g-squad-empty{color:#4a6a80;font-style:italic;text-align:center;padding:6px;font-size:12px;}
 #g-squad-add-form{display:flex;gap:6px;margin-top:4px;}
 #g-squad-add-input{flex:1;background:#0e1a2a;border:1px solid #2a3f55;color:#cfdaea;
@@ -320,38 +333,69 @@ body.web-build #g-squad-panel{display:none!important;}
   font-size:24px;color:#c8102e;letter-spacing:3px;
   text-transform:uppercase;margin-bottom:6px;
   text-shadow:0 0 12px rgba(200,16,46,.6);}
-.g-roulette-sub{font-size:12px;color:#9fb3c4;letter-spacing:1.5px;
+.g-roulette-sub{font-family:system-ui,-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+  font-size:13px;color:#9fb3c4;letter-spacing:1.5px;
   text-transform:uppercase;margin-bottom:18px;font-weight:600;}
 .g-roulette-spinner{background:rgba(7,14,23,.95);
   border:1px solid #2a3f55;border-radius:10px;
-  padding:24px 20px;min-height:80px;
-  display:flex;align-items:center;justify-content:center;
-  margin-bottom:14px;position:relative;overflow:hidden;}
+  padding:22px 20px 20px;min-height:80px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;margin-bottom:18px;position:relative;overflow:visible;}
 .g-roulette-spinner::before,.g-roulette-spinner::after{
-  content:"";position:absolute;top:0;bottom:0;width:36px;pointer-events:none;}
+  content:"";position:absolute;top:0;bottom:0;width:36px;pointer-events:none;z-index:1;}
 .g-roulette-spinner::before{left:0;background:linear-gradient(90deg,rgba(7,14,23,1),transparent);}
 .g-roulette-spinner::after{right:0;background:linear-gradient(270deg,rgba(7,14,23,1),transparent);}
-.g-roulette-name{font-family:Impact,'Arial Black',sans-serif;
-  font-size:36px;color:#fff;letter-spacing:1px;
-  font-weight:900;line-height:1.1;white-space:nowrap;
+/* Large portrait disc — colored initials sit underneath; the real player
+   image (TheSportsDB cutout) overlays it. If the image fails to load,
+   onerror strips the <img> and the initials remain visible. */
+.g-roulette-portrait{position:relative;width:160px;height:160px;
+  border-radius:50%;overflow:hidden;flex-shrink:0;
+  border:3px solid #2a3f55;
+  display:flex;align-items:center;justify-content:center;
+  font-family:Impact,'Arial Black',sans-serif;font-size:56px;
+  font-weight:700;color:#cfdaea;letter-spacing:1px;
+  background-color:#1a2f40;
+  box-shadow:0 6px 24px rgba(0,0,0,.5),inset 0 0 0 2px rgba(0,0,0,.25);
+  transition:border-color .3s ease,box-shadow .3s ease,transform .3s ease;}
+.g-roulette-portrait img{position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;border-radius:50%;}
+.g-roulette-portrait.locked{border-color:#ff8a8a;
+  box-shadow:0 0 32px rgba(255,138,138,.55),inset 0 0 0 2px rgba(0,0,0,.25);
+  animation:g-roulette-lock .7s ease-out;}
+.g-roulette-name{font-family:system-ui,-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+  font-size:28px;color:#fff;letter-spacing:.3px;
+  font-weight:700;line-height:1.2;white-space:nowrap;text-align:center;
   transition:color .3s ease,text-shadow .3s ease;}
 .g-roulette-name.locked{color:#ff8a8a;
-  text-shadow:0 0 24px rgba(255,138,138,.7);
-  animation:g-roulette-lock .7s ease-out;}
+  text-shadow:0 0 24px rgba(255,138,138,.7);}
 @keyframes g-roulette-lock{
   0%{transform:scale(1);}
   30%{transform:scale(1.2);}
   60%{transform:scale(.95);}
   100%{transform:scale(1.05);}
 }
-.g-roulette-stamp{display:inline-block;background:#c8102e;color:#fff;
-  font-family:Impact,'Arial Black',sans-serif;font-size:18px;
-  letter-spacing:4px;padding:7px 16px;border-radius:6px;
-  transform:rotate(-7deg) scale(0);opacity:0;
+.g-roulette-stamp{position:absolute;top:-12px;right:-12px;
+  display:inline-flex;align-items:center;gap:5px;
+  background:#c8102e;color:#fff;
+  font-family:Impact,'Arial Black',sans-serif;font-size:14px;
+  letter-spacing:2px;padding:5px 11px;border-radius:6px;
+  transform:rotate(8deg) scale(0);opacity:0;
   transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .25s;
-  box-shadow:0 4px 16px rgba(200,16,46,.55);
-  border:2px solid #ffd54a;}
-.g-roulette-stamp.show{transform:rotate(-7deg) scale(1);opacity:1;}
+  box-shadow:0 4px 14px rgba(0,0,0,.6);
+  /* Black stroke — distinguishes it from the gold-bordered DRAW button. */
+  border:2px solid #0a0408;z-index:3;pointer-events:none;}
+.g-roulette-stamp.show{transform:rotate(8deg) scale(1);opacity:1;}
+.g-roulette-draw{display:block;margin:18px auto 0;
+  background:linear-gradient(135deg,#c8102e,#7a0a1d);color:#fff;
+  border:1.5px solid #ffd54a;border-radius:8px;padding:11px 32px;
+  font-family:system-ui,-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif;
+  font-size:15px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;
+  cursor:pointer;box-shadow:0 3px 12px rgba(200,16,46,.4);
+  transition:transform .15s ease,box-shadow .15s ease;}
+.g-roulette-draw:hover:not(:disabled){transform:translateY(-2px);
+  box-shadow:0 6px 22px rgba(200,16,46,.7);}
+.g-roulette-draw:active:not(:disabled){transform:translateY(0);}
+.g-roulette-draw:disabled{opacity:.4;cursor:not-allowed;}
 #g-left-stack{position:absolute;bottom:32px;left:58px;display:none;
   flex-direction:column;gap:8px;z-index:24;}
 #game-panel.open ~ #g-left-stack{display:flex;}
@@ -734,6 +778,13 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-start-title, .g-result-title{font-size:18px;font-weight:600;color:#7ab8e8;
   letter-spacing:.5px;margin-bottom:18px;text-align:center;}
 .g-start-modes{display:flex;gap:14px;flex-direction:column;}
+.g-resume-btn{display:block;width:100%;margin:0 0 16px;padding:14px 18px;
+  background:linear-gradient(180deg,#1a4d3a 0%,#0e2f24 100%);
+  border:1px solid #4caf7a;border-radius:8px;color:#a8e6c1;
+  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-size:15px;font-weight:600;letter-spacing:.5px;cursor:pointer;
+  transition:background .15s ease,border-color .15s ease;}
+.g-resume-btn:hover{background:linear-gradient(180deg,#1f5d44 0%,#13402d 100%);border-color:#6dd89a;}
 .g-mode-btn{background:#0e2034;border:1px solid #1a2f40;border-radius:8px;padding:18px;
   cursor:pointer;color:#cfdaea;text-align:left;transition:all .15s;position:relative;}
 .g-mode-btn:hover{border-color:#7ab8e8;background:#13283e;}
@@ -1421,6 +1472,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     
     <div id="g-startup-modal" style="display:none;">
       <div class="g-start-card">
+        <button id="g-resume-conquest" class="g-resume-btn" style="display:none;" data-i18n="sim.mode.resume.btn">↻ Resume Saved Game</button>
         <div class="g-start-title" data-i18n="sim.mode.title">Choose Game Mode</div>
         <div class="g-start-modes">
           <button class="g-mode-btn primary" data-mode="conquest">
@@ -1778,6 +1830,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
           <button type="submit" id="g-squad-add-btn">+</button>
         </form>
         <button type="button" id="g-squad-edit-bulk" data-i18n="sim.squad.edit">📋 Edit roster</button>
+        <button type="button" id="g-squad-fetch-portraits" data-i18n="sim.squad.fetch">📸 Fetch portraits</button>
       </div>
     </div>
     <div id="g-campaign-panel">
@@ -5973,10 +6026,15 @@ function doLoad(){
 document.addEventListener('keydown',ev=>{
   if(ev.target.tagName==='INPUT'||ev.target.tagName==='TEXTAREA')return;
   const k=ev.key.toLowerCase();
+  // E / P / F switch to map-editor modes (Erase, Paint, Flags). During an
+  // active conquest run those modes break the game (paint a country mid-spin,
+  // erase a border, drag a flag) — so the shortcuts are locked while a
+  // conquest is in flight. V (View) and G (Game) stay live because those are
+  // legitimate within a run.
   if(k==='v'){setMode('view');}
-  else if(k==='e'){setMode('erase');}
-  else if(k==='p'){setMode('paint');}
-  else if(k==='f'){setMode('flags');}
+  else if(k==='e' && !(GAME.active && GAME.mode==='conquest')){setMode('erase');}
+  else if(k==='p' && !(GAME.active && GAME.mode==='conquest')){setMode('paint');}
+  else if(k==='f' && !(GAME.active && GAME.mode==='conquest')){setMode('flags');}
   else if(k==='g'){setMode('game');}
   else if(k==='z'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();doUndo();}
   else if(k==='s'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();doSave();}
@@ -6036,6 +6094,8 @@ function openConquestStartup(){
   document.getElementById('g-conquest-team-picker').style.display='none';
   document.getElementById('g-start-conquest').disabled=true;
   _selectedConquestTeamId=null;
+  // Refresh the Resume button — only visible if a saved campaign exists.
+  if(typeof updateResumeButton==='function') updateResumeButton();
   // Build the team list
   renderTeamList('');
 }
@@ -6077,6 +6137,18 @@ function renderTeamList(filter){
 
 // Wire startup modal buttons
 function wireStartupModal(){
+  const resumeBtn=document.getElementById('g-resume-conquest');
+  if(resumeBtn){
+    resumeBtn.addEventListener('click',()=>{
+      if(typeof loadConquestRun==='function' && loadConquestRun()){
+        closeConquestStartup();
+      } else {
+        // Save was corrupt or missing — clear it and let the player pick a mode.
+        if(typeof clearConquestRun==='function') clearConquestRun();
+        updateResumeButton();
+      }
+    });
+  }
   document.querySelectorAll('.g-mode-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
       document.querySelectorAll('.g-mode-btn').forEach(b=>b.classList.remove('selected'));
@@ -6153,6 +6225,14 @@ function startGameInMode(mode,heroId){
   GAME.defenderIso=null;
   // A new game starts on a clean map — clear the previous run's conquests.
   if(typeof resetMapVisuals==='function') resetMapVisuals();
+  // Fresh roster every campaign. Wipes both the in-memory squad and the
+  // persisted localStorage copy so last game's fallen-soldier list doesn't
+  // carry over into this one.
+  GAME.squad=[];
+  if(typeof saveStoredSquad==='function') saveStoredSquad();
+  if(typeof renderSquadPanel==='function') renderSquadPanel();
+  // Drop any previous autosave — the player explicitly started a new run.
+  if(typeof clearConquestRun==='function') clearConquestRun();
   gameInit();
   // Force the floating top HUD to reflect the new mode immediately.
   // In Imperialism mode this hides leftover conquest state (e.g., "Russia
@@ -6230,6 +6310,196 @@ window.gameResolve=function(){
 //                    wins, losses, gf, ga, turns, territoriesOwned, eliminatedBy}
 const FC_LEADERBOARD_KEY='fc-leaderboard';
 const FC_LEADERBOARD_MAX=500; // hard cap so localStorage doesn't bloat forever
+
+// ── Conquest autosave ─────────────────────────────────────────────────────
+// Saved after every match (win, loss-retreat, instant-win) so the player can
+// pick up where they left off if the tab/browser closes. Wiped on New Game
+// click and on game-over (victory / eliminated) inside recordCampaignResult.
+const FC_AUTOSAVE_KEY='fc-conquest-save';
+const FC_AUTOSAVE_VERSION=1;
+function hasConquestSave(){
+  try{ return !!localStorage.getItem(FC_AUTOSAVE_KEY); }catch(e){ return false; }
+}
+function clearConquestRun(){
+  try{ localStorage.removeItem(FC_AUTOSAVE_KEY); }catch(e){}
+  // Update the start-menu Resume button visibility in case the modal is open.
+  if(typeof updateResumeButton==='function') updateResumeButton();
+}
+function saveConquestRun(){
+  if(!GAME || GAME.mode!=='conquest' || !GAME.active) return;
+  try{
+    const state={};
+    Object.entries(GAME.state).forEach(([id,st])=>{
+      state[id]={id:st.id,name:st.name,iso:st.iso,alive:st.alive,ownedIsos:[...st.ownedIsos]};
+    });
+    const payload={
+      v:FC_AUTOSAVE_VERSION,
+      savedAt:Date.now(),
+      // Map visuals
+      fadedPairs:[...fadedPairs],
+      colorOverrides:{...colorOverrides},
+      hiddenFlags:[...hiddenFlags],
+      movedFlags:JSON.parse(JSON.stringify(movedFlags)),
+      flagScales:{...flagScales},
+      // GAME core
+      mode:GAME.mode,
+      heroTeamId:GAME.heroTeamId,
+      turn:GAME.turn||0,
+      phase:GAME.phase||'idle',
+      active:!!GAME.active,
+      attackerId:GAME.attacker?GAME.attacker.id:null,
+      defenderId:GAME.defender?GAME.defender.id:null,
+      state:state,
+      ownerOf:{...GAME.ownerOf},
+      conquestStack:JSON.parse(JSON.stringify(GAME.conquestStack||[])),
+      lossCounts:{...(GAME.lossCounts||{})},
+      stats:{...(GAME.stats||{wins:0,losses:0,gf:0,ga:0})},
+      aura:GAME.aura||0,
+      matchBoost:GAME.matchBoost||null,
+      doubleOrNothing:!!GAME.doubleOrNothing,
+      biggestWin:GAME.biggestWin||null,
+      continentsMilestoned:{...(GAME.continentsMilestoned||{})},
+      matchEvent:GAME.matchEvent||null,
+      _matchEventKey:GAME._matchEventKey||null,
+      defenderIso:GAME.defenderIso||null,
+      heroHomeIsoCount:GAME.heroHomeIsoCount||0,
+      winStreak:GAME.winStreak||0,
+      momentumProgress:GAME.momentumProgress||0,
+      lastLossOppId:GAME.lastLossOppId||null,
+      campaignStartMs:GAME.campaignStartMs||Date.now(),
+      matchTactic:GAME.matchTactic||'balanced',
+      log:(GAME.log||[]).slice(0,200), // cap log entries so the save stays small
+      squad:Array.isArray(GAME.squad)?GAME.squad:[]
+    };
+    localStorage.setItem(FC_AUTOSAVE_KEY, JSON.stringify(payload));
+  }catch(e){ console.warn('saveConquestRun failed:', e); }
+}
+// Resolve a movedFlags entry that might be either [x,y] (drag) or {cx,cy} (conquest).
+function _autosaveResolvePos(pos){
+  if(!pos) return null;
+  if(Array.isArray(pos)){ return (pos.length>=2 && !isNaN(pos[0]))?[pos[0],pos[1]]:null; }
+  if(pos.cx!=null && pos.cy!=null) return [pos.cx, pos.cy];
+  return null;
+}
+function loadConquestRun(){
+  let s=null;
+  try{
+    const raw=localStorage.getItem(FC_AUTOSAVE_KEY);
+    if(!raw) return false;
+    s=JSON.parse(raw);
+    if(!s || s.v!==FC_AUTOSAVE_VERSION) return false;
+  }catch(e){ return false; }
+  try{
+    if(typeof window.fcHideSplash==='function') window.fcHideSplash();
+    // Open the game panel and apply conquest-mode class.
+    const gp=document.getElementById('game-panel');
+    if(gp){ gp.classList.add('open'); gp.classList.toggle('conquest-mode', s.mode==='conquest'); }
+    // Wipe the map back to a clean slate before painting the saved state on top.
+    if(typeof resetMapVisuals==='function') resetMapVisuals();
+    // ── Restore GAME core ──
+    GAME.mode=s.mode||'conquest';
+    GAME.heroTeamId=(s.heroTeamId!=null)?s.heroTeamId:null;
+    GAME.active=!!s.active;
+    GAME.turn=s.turn||0;
+    GAME.phase=s.phase||'idle';
+    GAME.state={};
+    Object.entries(s.state||{}).forEach(([id,st])=>{
+      GAME.state[id]={id:st.id,name:st.name,iso:st.iso,alive:!!st.alive,ownedIsos:new Set(st.ownedIsos||[])};
+    });
+    GAME.ownerOf={...(s.ownerOf||{})};
+    GAME.attacker=(s.attackerId!=null)?teams.find(t=>t.id===s.attackerId):null;
+    GAME.defender=(s.defenderId!=null)?teams.find(t=>t.id===s.defenderId):null;
+    GAME.conquestStack=(s.conquestStack||[]).slice();
+    GAME.lossCounts={...(s.lossCounts||{})};
+    GAME.stats={...(s.stats||{wins:0,losses:0,gf:0,ga:0})};
+    GAME.aura=s.aura||0;
+    GAME.matchBoost=s.matchBoost||null;
+    GAME.doubleOrNothing=!!s.doubleOrNothing;
+    GAME.biggestWin=s.biggestWin||null;
+    GAME.continentsMilestoned={...(s.continentsMilestoned||{})};
+    GAME.matchEvent=s.matchEvent||null;
+    GAME._matchEventKey=s._matchEventKey||null;
+    GAME.defenderIso=s.defenderIso||null;
+    GAME.heroHomeIsoCount=s.heroHomeIsoCount||0;
+    GAME.winStreak=s.winStreak||0;
+    GAME.momentumProgress=s.momentumProgress||0;
+    GAME.lastLossOppId=s.lastLossOppId||null;
+    GAME.campaignStartMs=s.campaignStartMs||Date.now();
+    GAME.matchTactic=s.matchTactic||'balanced';
+    GAME.log=(s.log||[]).slice();
+    GAME.squad=(s.squad||[]).slice();
+    if(typeof saveStoredSquad==='function') saveStoredSquad();
+    // ── Restore map visuals ──
+    (s.fadedPairs||[]).forEach(pair=>{
+      fadedPairs.add(pair);
+      const el=(typeof borderPaths!=='undefined')?borderPaths[pair]:null;
+      if(el) el.setAttribute('opacity','0.04');
+    });
+    Object.entries(s.colorOverrides||{}).forEach(([iso,hex])=>{
+      colorOverrides[iso]=hex;
+      const el=document.querySelector(`.cp[data-iso="${iso}"]`);
+      if(el) el.setAttribute('fill',hex);
+    });
+    hiddenFlags.clear();
+    (s.hiddenFlags||[]).forEach(id=>hiddenFlags.add(id));
+    Object.entries(s.movedFlags||{}).forEach(([id,pos])=>{ movedFlags[id]=pos; });
+    Object.entries(s.flagScales||{}).forEach(([id,v])=>{ flagScales[id]=v; });
+    // ── Re-place flag badges in their saved positions / hide eliminated teams ──
+    const k=(typeof currentK==='function')?currentK():1;
+    const badgeLayer=d3.select('#badge-layer');
+    teams.forEach(t=>{
+      let b=document.querySelector(`.fbadge[data-badge-id="${t.id}"]`);
+      const st=GAME.state[t.id];
+      if(st && !st.alive){
+        if(b) b.remove();
+        return;
+      }
+      if(!b){
+        const homePos=proj([t.cx,t.cy]);
+        if(!homePos||isNaN(homePos[0])) return;
+        drawBadge(badgeLayer,t,homePos[0],homePos[1]);
+        b=document.querySelector(`.fbadge[data-badge-id="${t.id}"]`);
+        if(!b) return;
+      }
+      const stored=movedFlags[t.id];
+      let pos=_autosaveResolvePos(stored);
+      if(!pos) pos=proj([t.cx,t.cy]);
+      if(!pos||isNaN(pos[0])) return;
+      b.setAttribute('data-cx',pos[0]);
+      b.setAttribute('data-cy',pos[1]);
+      const ds=getScale(t.id);
+      b.setAttribute('transform',`translate(${pos[0]},${pos[1]}) scale(${effS(ds,k)})`);
+      b.setAttribute('opacity', hiddenFlags.has(t.id)?0.12:1);
+    });
+    // ── Refresh HUDs + render ──
+    if(typeof updateHeroGlow==='function') updateHeroGlow();
+    if(typeof refreshConquestHud==='function') refreshConquestHud();
+    if(typeof updateConquestHud==='function') updateConquestHud();
+    // Title bar
+    const titleEl=document.getElementById('g-mode-title');
+    if(titleEl && GAME.mode==='conquest' && GAME.heroTeamId!=null){
+      const heroTeam=teams.find(t=>t.id===GAME.heroTeamId);
+      if(heroTeam) titleEl.textContent=FCLang.t('sim.gp.title.wc',{team:teamDisplayName(heroTeam.name)});
+    }
+    gameRender();
+    renderGameLog();
+    // Pan to hero
+    if(GAME.heroTeamId!=null){
+      const c=teamCentroid(GAME.heroTeamId);
+      if(c) panTo([c[0],c[1]],Math.max(6,currentK()));
+    }
+    return true;
+  }catch(e){
+    console.warn('loadConquestRun failed:', e);
+    return false;
+  }
+}
+// Toggle the Resume button in the start menu based on whether a save exists.
+function updateResumeButton(){
+  const btn=document.getElementById('g-resume-conquest');
+  if(!btn) return;
+  btn.style.display = hasConquestSave() ? 'block' : 'none';
+}
 // Global-leaderboard integration. Same-origin POSTs to the Cloudflare Worker
 // route mounted at /api/* (see leaderboard/wrangler.toml).
 const FC_API_BASE='/api';
@@ -6333,6 +6603,12 @@ function recordCampaignResult(result, extras){
   // username (opt-in). Failures are silently logged — local save already
   // happened, so no user-visible regression.
   submitRunToGlobalLeaderboard(entry, extras);
+  // Campaign is done — clear the autosave + roster so the next New Game starts
+  // truly clean. Both victory and eliminated paths land here.
+  if(typeof clearConquestRun==='function') clearConquestRun();
+  GAME.squad=[];
+  if(typeof saveStoredSquad==='function') saveStoredSquad();
+  if(typeof renderSquadPanel==='function') renderSquadPanel();
 }
 function submitRunToGlobalLeaderboard(entry, extras){
   const username=fcUsername();
@@ -7553,6 +7829,10 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
     // Persist this run to the Hall of Fame so the player can revisit it later.
     if(typeof recordCampaignResult==='function') recordCampaignResult('victory');
   }
+  // Snapshot the run AFTER every win so the player can resume mid-campaign.
+  // Victory path is fine to save too — recordCampaignResult above will clear
+  // it on the next tick, but a tab-close in between still loses nothing.
+  if(typeof saveConquestRun==='function') saveConquestRun();
 }
 
 function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
@@ -7752,6 +8032,8 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   gSlots();
   gameRender();
   panTo([lastConquest.heroFromX,lastConquest.heroFromY],Math.max(6,currentK()));
+  // Persist the post-retreat state so a reload picks up here.
+  if(typeof saveConquestRun==='function') saveConquestRun();
   // Refresh the floating HUD AFTER the retreat so the "Losses to X: Y/3"
   // row reflects the just-incremented count. Without this the HUD would
   // continue to show the pre-loss tally until the next spin landed (the
@@ -8163,6 +8445,66 @@ function saveStoredSquad(){
 function ensureSquadInit(){
   if(!Array.isArray(GAME.squad)) GAME.squad = loadStoredSquad();
 }
+// Initials + a deterministic hue colour for the fallback avatar badge.
+function squadInitials(name){
+  const parts=String(name||'').trim().split(/\s+/);
+  if(parts.length===0) return '?';
+  if(parts.length===1) return parts[0].slice(0,2).toUpperCase();
+  return (parts[0][0]+parts[parts.length-1][0]).toUpperCase();
+}
+function squadInitialColor(name){
+  let h=0;
+  for(let i=0;i<name.length;i++) h=((h<<5)-h+name.charCodeAt(i))|0;
+  return 'hsl('+(Math.abs(h)%360)+',38%,28%)';
+}
+// TheSportsDB — free, open, hotlink-friendly. Pulls a head-cutout portrait
+// by name. Filters to Soccer to avoid name collisions with other sports.
+function fetchPortraitFor(playerObj){
+  if(!playerObj || playerObj.img) return Promise.resolve(playerObj);
+  const url='https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p='+
+    encodeURIComponent(playerObj.n);
+  return fetch(url)
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(data){
+      if(!data || !Array.isArray(data.player) || data.player.length===0) return playerObj;
+      const soccer=data.player.filter(function(p){return p.strSport==='Soccer';});
+      const chosen=(soccer[0] || data.player[0]);
+      const img=chosen.strCutout || chosen.strThumb || null;
+      if(img){ playerObj.img=img; }
+      return playerObj;
+    })
+    .catch(function(){ return playerObj; });
+}
+// Batch-fetch every player without an image. Renders progressively.
+function fetchAllPortraits(){
+  ensureSquadInit();
+  const pending=(GAME.squad||[]).filter(function(p){return !p.img;});
+  if(pending.length===0){ renderSquadPanel(); return Promise.resolve(); }
+  const btn=document.getElementById('g-squad-fetch-portraits');
+  if(btn){ btn.disabled=true; }
+  // Mark pending so the avatar pulses while we wait.
+  pending.forEach(function(p){ p._loading=true; });
+  renderSquadPanel();
+  let i=0;
+  function next(){
+    if(i>=pending.length){
+      pending.forEach(function(p){ delete p._loading; });
+      saveStoredSquad();
+      renderSquadPanel();
+      if(btn) btn.disabled=false;
+      return;
+    }
+    fetchPortraitFor(pending[i]).then(function(){
+      delete pending[i]._loading;
+      saveStoredSquad();
+      renderSquadPanel();
+      i++;
+      setTimeout(next, 120); // gentle throttle
+    });
+  }
+  next();
+  return Promise.resolve();
+}
 // Dramatic roulette draw — animates a spinning name banner, slows to a stop
 // on each pre-picked victim, stamps FALLEN, then removes them from the squad.
 function ensureRouletteModal(){
@@ -8176,16 +8518,37 @@ function ensureRouletteModal(){
       '<div class="g-roulette-title" data-i18n="sim.squad.fallen.title">Fallen in Battle</div>'+
       '<div class="g-roulette-sub" id="g-roulette-sub"></div>'+
       '<div class="g-roulette-spinner">'+
+        '<div class="g-roulette-portrait" id="g-roulette-portrait">?</div>'+
         '<div class="g-roulette-name" id="g-roulette-name">—</div>'+
+        '<div class="g-roulette-stamp" id="g-roulette-stamp" data-i18n="sim.squad.fallen.stamp">💀 FALLEN</div>'+
       '</div>'+
-      '<div class="g-roulette-stamp" id="g-roulette-stamp" data-i18n="sim.squad.fallen.stamp">FALLEN</div>'+
       '<button type="button" class="g-roulette-draw" id="g-roulette-draw">DRAW</button>'+
     '</div>';
   document.body.appendChild(m);
   return m;
 }
-function spinRouletteToVictim(targetName, allNames, onDone){
+// Paint the spinner portrait + name for one player. Renders the colored
+// initial fallback underneath and overlays the portrait image when available;
+// onerror=this.remove() drops the <img> if it fails to load so the initials
+// stay visible (same robust pattern as the roster avatars).
+function paintRoulettePlayer(player){
+  const portraitEl=document.getElementById('g-roulette-portrait');
   const nameEl=document.getElementById('g-roulette-name');
+  if(nameEl) nameEl.textContent=player.n;
+  if(!portraitEl) return;
+  const init=squadInitials(player.n);
+  const color=squadInitialColor(player.n);
+  portraitEl.style.backgroundColor=color;
+  if(player.img){
+    portraitEl.innerHTML=init+
+      '<img src="'+escapeHtml(player.img)+'" alt="" loading="lazy" onerror="this.remove();">';
+  } else {
+    portraitEl.textContent=init;
+  }
+}
+function spinRouletteToVictim(targetPlayer, allPlayers, onDone){
+  const nameEl=document.getElementById('g-roulette-name');
+  const portraitEl=document.getElementById('g-roulette-portrait');
   if(!nameEl){ if(onDone) onDone(); return; }
   const FAST_DUR=1500, SLOW_DUR=1300;
   const FAST_STEP=55, SLOW_END_STEP=300;
@@ -8194,13 +8557,14 @@ function spinRouletteToVictim(targetName, allNames, onDone){
     const elapsed=performance.now()-startTime;
     const total=FAST_DUR+SLOW_DUR;
     if(elapsed>=total){
-      nameEl.textContent=targetName;
+      paintRoulettePlayer(targetPlayer);
       nameEl.classList.add('locked');
+      if(portraitEl) portraitEl.classList.add('locked');
       if(onDone) onDone();
       return;
     }
-    const pick=allNames[Math.floor(Math.random()*allNames.length)];
-    nameEl.textContent=pick;
+    const pick=allPlayers[Math.floor(Math.random()*allPlayers.length)];
+    paintRoulettePlayer(pick);
     let delay;
     if(elapsed<FAST_DUR){
       delay=FAST_STEP;
@@ -8217,7 +8581,7 @@ function drawSquadLossRoulette(numToLose){
   if(!Array.isArray(GAME.squad) || GAME.squad.length===0) return;
   const n=Math.min(numToLose, GAME.squad.length);
   if(n<=0) return;
-  // Pre-pick victims so the spin can land on them deterministically.
+  // Pre-pick victims so the spin lands deterministically when the user clicks DRAW.
   const pool=GAME.squad.slice();
   const victims=[];
   for(let i=0;i<n;i++){
@@ -8227,49 +8591,76 @@ function drawSquadLossRoulette(numToLose){
   }
   const modal=ensureRouletteModal();
   const nameEl=document.getElementById('g-roulette-name');
+  const portraitEl=document.getElementById('g-roulette-portrait');
   const subEl=document.getElementById('g-roulette-sub');
   const stampEl=document.getElementById('g-roulette-stamp');
+  const drawBtn=document.getElementById('g-roulette-draw');
+  if(nameEl){ nameEl.classList.remove('locked'); nameEl.textContent=FCLang.t('sim.squad.ready'); }
+  if(portraitEl){
+    portraitEl.classList.remove('locked');
+    portraitEl.style.backgroundColor='#1a2f40';
+    portraitEl.textContent='?';
+  }
+  if(stampEl) stampEl.classList.remove('show');
   modal.classList.add('open');
   let i=0;
-  function nextSpin(){
+  function setupButton(){
+    if(!drawBtn) return;
     if(i>=victims.length){
-      setTimeout(function(){
+      drawBtn.textContent = FCLang.t('sim.squad.close');
+      drawBtn.disabled=false;
+      drawBtn.onclick=function(){
         modal.classList.remove('open');
         if(nameEl) nameEl.classList.remove('locked');
         if(stampEl) stampEl.classList.remove('show');
-      }, 700);
+      };
+      if(subEl) subEl.textContent=FCLang.t('sim.squad.done', {n:victims.length});
       return;
     }
-    const victim=victims[i];
-    if(subEl) subEl.textContent = FCLang.t('sim.squad.drawing', {n:i+1, total:victims.length});
-    if(stampEl) stampEl.classList.remove('show');
-    if(nameEl) nameEl.classList.remove('locked');
-    // Use a snapshot of the current squad names for the cycling animation —
-    // includes the to-be-removed players so the spin feels comprehensive.
-    const allNames = GAME.squad.map(function(p){return p.n;});
-    spinRouletteToVictim(victim.n, allNames, function(){
-      // Stamp FALLEN, then remove from squad + log + advance.
-      if(stampEl) stampEl.classList.add('show');
-      setTimeout(function(){
-        const idx=GAME.squad.findIndex(function(p){return p.n===victim.n;});
-        if(idx!==-1) GAME.squad.splice(idx,1);
-        saveStoredSquad();
-        renderSquadPanel();
-        gLog('💔 '+FCLang.t('sim.squad.fell', {name:'<b>'+escapeHtml(victim.n)+'</b>'}));
-        i++;
-        setTimeout(nextSpin, 800);
-      }, 700);
-    });
+    drawBtn.textContent = (i===0) ? FCLang.t('sim.squad.draw') : FCLang.t('sim.squad.drawnext');
+    drawBtn.disabled=false;
+    if(subEl) subEl.textContent=FCLang.t('sim.squad.drawing', {n:i+1, total:victims.length});
+    drawBtn.onclick=function(){
+      drawBtn.disabled=true;
+      if(stampEl) stampEl.classList.remove('show');
+      if(nameEl) nameEl.classList.remove('locked');
+      if(portraitEl) portraitEl.classList.remove('locked');
+      const victim=victims[i];
+      // Pool of players to cycle through during the spin — use the full
+      // current squad so the visual feels like every man's on the line.
+      const allPlayers=GAME.squad.slice();
+      spinRouletteToVictim(victim, allPlayers, function(){
+        if(stampEl) stampEl.classList.add('show');
+        setTimeout(function(){
+          const idx=GAME.squad.findIndex(function(p){return p.n===victim.n;});
+          if(idx!==-1) GAME.squad.splice(idx,1);
+          saveStoredSquad();
+          renderSquadPanel();
+          gLog('💔 '+FCLang.t('sim.squad.fell', {name:'<b>'+escapeHtml(victim.n)+'</b>'}));
+          i++;
+          setupButton();
+        }, 800);
+      });
+    };
   }
-  nextSpin();
+  setupButton();
 }
 function addSquadPlayer(name, from){
   ensureSquadInit();
   const clean=String(name||'').trim().slice(0,40);
   if(!clean) return false;
-  GAME.squad.push({n:clean, f:from||null});
+  const player={n:clean, f:from||null};
+  GAME.squad.push(player);
   saveStoredSquad();
   renderSquadPanel();
+  // Background portrait fetch — don't block the add.
+  player._loading=true;
+  renderSquadPanel();
+  fetchPortraitFor(player).then(function(){
+    delete player._loading;
+    saveStoredSquad();
+    renderSquadPanel();
+  });
   return true;
 }
 function removeSquadPlayer(idx){
@@ -8307,7 +8698,19 @@ function renderSquadPanel(){
   }
   listEl.innerHTML=sq.map(function(p,i){
     const from = p.f ? '<span class="g-squad-from">'+escapeHtml(p.f)+'</span>' : '';
+    const init = squadInitials(p.n);
+    const color = squadInitialColor(p.n);
+    // Initials are ALWAYS rendered as the base layer. The portrait <img> is
+    // overlaid on top — if it loads, it covers; if it fails (CORS/404/etc),
+    // onerror removes the img and the initials remain visible. This way the
+    // badge is never empty.
+    const imgTag = p.img
+      ? '<img src="'+escapeHtml(p.img)+'" alt="" loading="lazy" onerror="this.remove();">'
+      : '';
+    const avatar='<div class="g-squad-avatar'+(p._loading?' loading':'')+'" '+
+      'style="background-color:'+color+'">'+init+imgTag+'</div>';
     return '<div class="g-squad-row" data-idx="'+i+'">'+
+      avatar+
       '<span class="g-squad-name">'+escapeHtml(p.n)+'</span>'+
       from+
       '<button type="button" class="g-squad-remove" data-idx="'+i+'" title="Remove">✕</button>'+
@@ -8358,10 +8761,19 @@ function saveSquadFromEditor(){
   const ta=document.getElementById('g-squad-textarea');
   if(!ta) return;
   const lines=ta.value.split('\n').map(function(l){return l.trim();}).filter(Boolean);
-  GAME.squad=lines.map(function(n){return {n:n.slice(0,40),f:null};});
+  // Preserve any portraits we already have for matching names — avoids
+  // re-fetching when the user just tweaked the roster.
+  const existing={};
+  (GAME.squad||[]).forEach(function(p){ if(p.img) existing[p.n]=p.img; });
+  GAME.squad=lines.map(function(n){
+    const clean=n.slice(0,40);
+    return {n:clean, f:null, img:existing[clean]||null};
+  });
   saveStoredSquad();
   renderSquadPanel();
   closeSquadEditor();
+  // Kick off background portrait fetch for the new roster.
+  setTimeout(fetchAllPortraits, 100);
 }
 // Wire up the inline add-form + edit button on first DOM ready.
 function wireSquadPanel(){
@@ -8390,6 +8802,11 @@ function wireSquadPanel(){
   if(editBtn && !editBtn._wired){
     editBtn._wired=true;
     editBtn.addEventListener('click', openSquadEditor);
+  }
+  const fetchBtn=document.getElementById('g-squad-fetch-portraits');
+  if(fetchBtn && !fetchBtn._wired){
+    fetchBtn._wired=true;
+    fetchBtn.addEventListener('click', fetchAllPortraits);
   }
   if(hdr && panel && !hdr._wired){
     hdr._wired=true;
