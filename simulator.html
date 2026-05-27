@@ -446,9 +446,23 @@ body.web-build #g-squad-panel{display:none!important;}
 #g-events-panel.collapsed{max-height:38px;}
 #g-events-header{padding:9px 13px;font-size:12px;color:#7ab8e8;font-weight:700;
   letter-spacing:.5px;cursor:pointer;display:flex;justify-content:space-between;
-  align-items:center;gap:10px;border-bottom:1px solid #1a2f40;user-select:none;background:#0a1624;}
+  align-items:center;gap:10px;border-bottom:1px solid #1a2f40;user-select:none;
+  background:#0a1624;text-transform:uppercase;}
 #g-events-header:hover{background:#0d1c2e;}
 .g-events-title{flex-shrink:0;}
+/* Floating Turn / Remaining badge — sits top-left below the toolbar so the
+   info that used to live in the events header (and was getting elbowed by
+   the search + filter buttons) has room to breathe. Visible only in conquest
+   mode while a game is active. */
+#g-turn-badge{position:absolute;top:14px;left:14px;display:none;
+  background:rgba(7,14,23,.92);border:1px solid #2a3f55;border-radius:8px;
+  padding:7px 13px;color:#cfdaea;font-size:12px;font-weight:700;
+  letter-spacing:.6px;text-transform:uppercase;white-space:nowrap;
+  box-shadow:0 4px 14px rgba(0,0,0,.45);z-index:22;pointer-events:none;
+  user-select:none;}
+#g-turn-badge.visible{display:inline-block;}
+#g-turn-badge b{color:#fff;}
+#g-turn-badge .sep{color:#4a6a80;margin:0 6px;}
 /* Turn summary chip — small pill sitting between the "Events" label and the
    toggle chevron. Stays visible even when the panel is collapsed so the
    player can read "Turn 9 · 203 LEFT" at a glance from anywhere. */
@@ -461,6 +475,10 @@ body.web-build #g-squad-panel{display:none!important;}
 .g-events-filter{background:transparent;border:1px solid #2a3f55;color:#5a7a95;font-size:13px;
   line-height:1;padding:3px 6px;border-radius:5px;cursor:pointer;flex-shrink:0;
   -webkit-tap-highlight-color:transparent;}
+/* Group the search + filter buttons on the far right of the header — first
+   button gets margin-left:auto so they sit together next to the toggle. */
+#g-events-search-btn{margin-left:auto;}
+#g-events-header > #g-events-search-btn + .g-events-filter{margin-left:4px;}
 .g-events-filter:hover{color:#7ab8e8;border-color:#7ab8e8;}
 .g-events-filter.active{color:#fff;background:#1d5a8c;border-color:#378add;}
 /* Search row — appears below the header when the 🔍 button is toggled on.
@@ -578,6 +596,7 @@ body.fc-ui-hidden #game-panel,
 body.fc-ui-hidden #g-events-panel,
 body.fc-ui-hidden #g-campaign-panel,
 body.fc-ui-hidden #g-squad-panel,
+body.fc-ui-hidden #g-turn-badge,
 body.fc-ui-hidden #g-hud,
 body.fc-ui-hidden #fc-menu,
 body.fc-ui-hidden #g-milestone-toast,
@@ -1444,6 +1463,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     <canvas id="erase-canvas"></canvas>
     <div id="flag-handles" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;"></div>
     <div id="hint" data-i18n="sim.map.hint">Scroll/pinch to zoom · Drag to pan</div>
+    <div id="g-turn-badge"></div>
     <div class="tip" id="tip"></div>
 
     <!-- ── Splash launcher: front door when no game is active ─────────────── -->
@@ -1887,10 +1907,10 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     <div id="g-events-panel">
       <div id="g-events-header">
         <span class="g-events-title" data-i18n="sim.ev.title">🕘 Events</span>
-        <!-- Turn summary chip — always visible, even when the events panel
-             is collapsed, so the player can keep tabs on Turn N / remaining
-             without expanding the log. Populated by updateConquestHud(). -->
-        <span class="g-events-turn-summary" id="g-events-turn-summary"></span>
+        <!-- Legacy turn-summary slot kept hidden so any older code referencing
+             the ID won't NPE. The visible turn/remaining now lives in the
+             top-left floating #g-turn-badge. -->
+        <span class="g-events-turn-summary" id="g-events-turn-summary" style="display:none;"></span>
         <button type="button" id="g-events-search-btn" class="g-events-filter" data-i18n-attr="title:sim.ev.search" title="Search events">🔍</button>
         <button type="button" id="g-events-filter" class="g-events-filter" data-i18n-attr="title:sim.ev.filter" title="Match results only">⚽</button>
         <span id="g-events-toggle">▼</span>
@@ -8368,6 +8388,8 @@ function updateConquestHud(state){
     // stale text from a prior run doesn't bleed into imperialism mode.
     const ts=document.getElementById('g-events-turn-summary');
     if(ts) ts.textContent='';
+    const tb=document.getElementById('g-turn-badge');
+    if(tb){ tb.classList.remove('visible'); tb.innerHTML=''; }
     const cs=document.getElementById('g-conquest-stats');
     if(cs){cs.style.display='none';cs.innerHTML='';}
     const cl=document.getElementById('g-conquest-loss');
@@ -8385,9 +8407,13 @@ function updateConquestHud(state){
   // floating HUD itself now only carries the loss-warning + last-result
   // toasts. See refreshConquestHud / DOM elements for the new homes.
   const remaining=Object.values(GAME.state).filter(t=>t.alive&&t.id!==GAME.heroTeamId).length;
+  const summaryHtml=FCLang.t('sim.ev.turnsummary',{turn:GAME.turn,remaining:remaining}).replace(' · ','<span class="sep">·</span>');
   const turnSummaryEl=document.getElementById('g-events-turn-summary');
-  if(turnSummaryEl){
-    turnSummaryEl.innerHTML=FCLang.t('sim.ev.turnsummary',{turn:GAME.turn,remaining:remaining}).replace(' · ','<span class="sep">·</span>');
+  if(turnSummaryEl){ turnSummaryEl.innerHTML=summaryHtml; }
+  const turnBadgeEl=document.getElementById('g-turn-badge');
+  if(turnBadgeEl){
+    turnBadgeEl.innerHTML=summaryHtml;
+    turnBadgeEl.classList.toggle('visible', !!GAME.active);
   }
   if(turnEl) turnEl.style.display='none';
   // Campaign stats strip above the flags — RECORD W–L · GOALS GF–GA (±GD).
