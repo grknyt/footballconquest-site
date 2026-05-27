@@ -245,6 +245,113 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
    mirroring the events panel. Shown only while a conquest game is open. */
 /* Bottom-left stack — campaign (continents) on top, events log below. Both
    collapse independently; the wrapper just anchors them to the corner. */
+/* Squad list (offline / creator build only). Sits at the top of the
+   bottom-left stack, above the continents panel. Each player has an X to
+   remove. Random removal on a loss is auto, but the manual X is here too
+   for cases where the creator wants to retire someone narratively. */
+#g-squad-panel{width:300px;background:rgba(7,14,23,.97);border:1px solid #2a3f55;
+  border-radius:10px;display:none;flex-direction:column;overflow:hidden;
+  box-shadow:0 6px 18px rgba(0,0,0,.4);max-height:280px;transition:max-height .25s ease;}
+body.web-build #g-squad-panel{display:none!important;}
+#game-panel.open.conquest-mode ~ #g-left-stack #g-squad-panel{display:flex;}
+#g-squad-panel.collapsed{max-height:38px;}
+#g-squad-header{padding:9px 13px;font-size:12px;color:#7ab8e8;font-weight:700;
+  letter-spacing:.5px;cursor:pointer;display:flex;justify-content:space-between;
+  align-items:center;gap:8px;border-bottom:1px solid #1a2f40;user-select:none;
+  background:#0a1624;text-transform:uppercase;}
+#g-squad-header:hover{background:#0d1c2e;}
+#g-squad-count{color:#f4d77a;font-weight:800;font-variant-numeric:tabular-nums;
+  margin-left:auto;}
+#g-squad-toggle{color:#7ab8e8;transition:transform .25s;font-size:11px;}
+#g-squad-panel.collapsed #g-squad-toggle{transform:rotate(-90deg);}
+#g-squad-panel.collapsed #g-squad-header{border-bottom:none;}
+#g-squad-body{display:flex;flex-direction:column;gap:6px;padding:10px 12px;overflow-y:auto;}
+#g-squad-list{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#cfdaea;}
+.g-squad-row{display:flex;align-items:center;gap:8px;padding:4px 8px;
+  background:#0e1a2a;border:1px solid #1a2f40;border-radius:5px;}
+.g-squad-row .g-squad-name{flex:1;color:#cfdaea;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.g-squad-row .g-squad-from{font-size:10px;color:#7a9bb5;font-style:italic;}
+.g-squad-row .g-squad-remove{background:transparent;border:0;color:#7a9bb5;cursor:pointer;
+  padding:0 2px;font-size:14px;line-height:1;}
+.g-squad-row .g-squad-remove:hover{color:#ff8a8a;}
+.g-squad-empty{color:#4a6a80;font-style:italic;text-align:center;padding:6px;font-size:12px;}
+#g-squad-add-form{display:flex;gap:6px;margin-top:4px;}
+#g-squad-add-input{flex:1;background:#0e1a2a;border:1px solid #2a3f55;color:#cfdaea;
+  border-radius:5px;padding:6px 10px;font-size:12px;outline:none;}
+#g-squad-add-input:focus{border-color:#7ab8e8;}
+#g-squad-add-form button{background:#1d5a8c;border:0;color:#fff;border-radius:5px;
+  padding:0 12px;cursor:pointer;font-weight:700;}
+#g-squad-edit-bulk{background:transparent;border:1px solid #2a4f6a;color:#7ab8e8;
+  border-radius:5px;padding:5px 8px;font-size:11px;cursor:pointer;margin-top:4px;}
+#g-squad-edit-bulk:hover{background:#1a2f40;color:#fff;}
+/* Squad editor modal */
+.g-squad-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+  z-index:300;display:none;align-items:center;justify-content:center;}
+.g-squad-modal.open{display:flex;}
+.g-squad-box{background:#0a1624;border:1px solid #2a3f55;border-radius:12px;
+  padding:24px;width:420px;max-width:92vw;text-align:left;
+  box-shadow:0 12px 40px rgba(0,0,0,.7);}
+.g-squad-box-title{font-size:18px;font-weight:700;color:#7ab8e8;
+  margin-bottom:8px;text-align:center;letter-spacing:.5px;}
+.g-squad-box-desc{font-size:12px;color:#9fb3c4;margin-bottom:14px;text-align:center;line-height:1.5;}
+.g-squad-box textarea{width:100%;height:260px;background:#0e1a2a;border:1px solid #2a3f55;
+  color:#cfdaea;border-radius:8px;padding:12px;font-family:Menlo,Consolas,monospace;
+  font-size:13px;line-height:1.55;resize:vertical;box-sizing:border-box;outline:none;}
+.g-squad-box textarea:focus{border-color:#7ab8e8;}
+.g-squad-box-btns{display:flex;gap:10px;margin-top:14px;}
+.g-squad-box-btns button{flex:1;padding:11px 0;border-radius:8px;font-size:14px;
+  font-weight:600;cursor:pointer;border:1px solid #2a4f6a;}
+.g-squad-cancel{background:transparent;color:#7ab8e8;}
+.g-squad-cancel:hover{background:#1a2f40;color:#fff;}
+.g-squad-save{background:#1d5a8c;color:#fff;border-color:#1d5a8c;}
+.g-squad-save:hover{background:#2470ad;border-color:#2470ad;}
+/* "Fallen in Battle" roulette — visual drum-roll on a match loss that draws
+   N random players from the squad, slows to a stop on each one, and stamps
+   FALLEN before removing them. Pure spectacle layered on top of the loss
+   flow. */
+.g-roulette-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);
+  z-index:350;display:none;align-items:center;justify-content:center;}
+.g-roulette-modal.open{display:flex;}
+.g-roulette-box{background:linear-gradient(135deg,#1a0a0e 0%,#0a1624 100%);
+  border:2px solid #c8102e;border-radius:14px;padding:30px 40px;
+  text-align:center;box-shadow:0 18px 60px rgba(200,16,46,.4);
+  min-width:380px;max-width:90vw;}
+.g-roulette-title{font-family:Impact,'Arial Black',sans-serif;
+  font-size:24px;color:#c8102e;letter-spacing:3px;
+  text-transform:uppercase;margin-bottom:6px;
+  text-shadow:0 0 12px rgba(200,16,46,.6);}
+.g-roulette-sub{font-size:12px;color:#9fb3c4;letter-spacing:1.5px;
+  text-transform:uppercase;margin-bottom:18px;font-weight:600;}
+.g-roulette-spinner{background:rgba(7,14,23,.95);
+  border:1px solid #2a3f55;border-radius:10px;
+  padding:24px 20px;min-height:80px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:14px;position:relative;overflow:hidden;}
+.g-roulette-spinner::before,.g-roulette-spinner::after{
+  content:"";position:absolute;top:0;bottom:0;width:36px;pointer-events:none;}
+.g-roulette-spinner::before{left:0;background:linear-gradient(90deg,rgba(7,14,23,1),transparent);}
+.g-roulette-spinner::after{right:0;background:linear-gradient(270deg,rgba(7,14,23,1),transparent);}
+.g-roulette-name{font-family:Impact,'Arial Black',sans-serif;
+  font-size:36px;color:#fff;letter-spacing:1px;
+  font-weight:900;line-height:1.1;white-space:nowrap;
+  transition:color .3s ease,text-shadow .3s ease;}
+.g-roulette-name.locked{color:#ff8a8a;
+  text-shadow:0 0 24px rgba(255,138,138,.7);
+  animation:g-roulette-lock .7s ease-out;}
+@keyframes g-roulette-lock{
+  0%{transform:scale(1);}
+  30%{transform:scale(1.2);}
+  60%{transform:scale(.95);}
+  100%{transform:scale(1.05);}
+}
+.g-roulette-stamp{display:inline-block;background:#c8102e;color:#fff;
+  font-family:Impact,'Arial Black',sans-serif;font-size:18px;
+  letter-spacing:4px;padding:7px 16px;border-radius:6px;
+  transform:rotate(-7deg) scale(0);opacity:0;
+  transition:transform .45s cubic-bezier(.34,1.56,.64,1),opacity .25s;
+  box-shadow:0 4px 16px rgba(200,16,46,.55);
+  border:2px solid #ffd54a;}
+.g-roulette-stamp.show{transform:rotate(-7deg) scale(1);opacity:1;}
 #g-left-stack{position:absolute;bottom:32px;left:58px;display:none;
   flex-direction:column;gap:8px;z-index:24;}
 #game-panel.open ~ #g-left-stack{display:flex;}
@@ -371,10 +478,7 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
   pointer-events:none;}
 .g-aura-hbar-text{font-family:Impact,'Arial Black','Helvetica Neue Black',sans-serif;
   font-size:23px;font-weight:900;letter-spacing:.5px;color:#c8102e;text-transform:uppercase;
-  /* Sharp 1px dark outline via 4-direction text-shadow trick — no soft glow, no
-     halo, so the red letters stay crisp on both the dark empty bar AND the
-     gold fill once Aura accumulates. */
-  text-shadow:-1px -1px 0 #0a0408,1px -1px 0 #0a0408,-1px 1px 0 #0a0408,1px 1px 0 #0a0408;}
+  text-shadow:none;}
 .g-aura-hbar-star{color:#c8102e;font-size:19px;font-weight:900;
   line-height:1;filter:none;}
 .g-aura-hbar-val{margin-left:auto;font-family:Menlo,Consolas,monospace;
@@ -396,7 +500,7 @@ font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transitio
   box-shadow:0 0 6px rgba(109,216,109,.4);}
 .g-tm-bar-fill.mom{background:linear-gradient(0deg,#b85a1c,#ffa64a);
   box-shadow:0 0 6px rgba(255,166,74,.4);}
-.g-tm-bar-label{font-size:9px;font-weight:700;color:#cfdaea;letter-spacing:.5px;
+.g-tm-bar-label{font-size:11px;font-weight:700;color:#cfdaea;letter-spacing:.5px;
   text-align:center;white-space:nowrap;}
 /* The previous in-slot Aura vbar is gone (Aura is now the big horizontal
    bar). Keep .g-slot-attacker as a positioning anchor in case anything else
@@ -490,7 +594,8 @@ body.web-build #fc-menu-hide-ui{display:none!important;}
 /* Campaign stats strip inside the conquest game panel — sits above the
    flags row. Format mirrors the old HUD stats line: "RECORD W–L · GOALS
    GF–GA (±GD)". Hidden until the player has played their first match. */
-.g-conquest-stats{font-size:13px;font-weight:700;letter-spacing:1px;
+.g-conquest-stats{font-size:15px;font-weight:700;letter-spacing:1px;
+  line-height:30px;
   color:#7a9bb5;text-transform:uppercase;text-align:center;
   padding:6px 14px 0;line-height:1.4;}
 .g-conquest-stats b{color:#fff;font-weight:800;}
@@ -675,11 +780,11 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-result-flag{width:80px;height:54px;background-size:cover;background-position:center;
   border:1px solid rgba(255,255,255,0.2);border-radius:4px;}
 .g-result-flag.empty{background:#1a2f40;border-style:dashed;}
-.g-result-team-name{font-size:14px;font-weight:600;color:#fff;line-height:1.15;margin:0;}
-.g-result-team-label{font-size:9px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;margin:0;}
+.g-result-team-name{font-size:16px;font-weight:600;color:#fff;line-height:1.15;margin:0;}
+.g-result-team-label{font-size:11px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;margin:0;}
 /* Country playstyle chip — colour-coded so the player can read the matchup
    at a glance. Populated by updateResultPreview from teamPlaystyle(). */
-.g-result-style{font-size:10px;font-weight:700;letter-spacing:.3px;
+.g-result-style{font-size:12px;font-weight:700;letter-spacing:.3px;
   padding:2px 7px;border-radius:10px;text-transform:uppercase;margin-top:2px;
   border:1px solid transparent;}
 .g-result-style[data-style="defensive"]{background:rgba(122,184,232,.15);color:#7ab8e8;border-color:rgba(122,184,232,.4);}
@@ -697,9 +802,9 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
   border:1px solid #d4a936;border-radius:8px;padding:11px 14px;margin-bottom:14px;}
 .g-result-event-icon{font-size:30px;line-height:1;flex-shrink:0;}
 .g-result-event-text{display:flex;flex-direction:column;gap:1px;text-align:left;}
-.g-result-event-eyebrow{font-size:9px;font-weight:700;letter-spacing:1.5px;color:#d4a936;}
-.g-result-event-name{font-size:15px;font-weight:700;color:#f4d77a;}
-.g-result-event-desc{font-size:11px;color:#cdb88a;line-height:1.4;}
+.g-result-event-eyebrow{font-size:11px;font-weight:700;letter-spacing:1.5px;color:#d4a936;}
+.g-result-event-name{font-size:17px;font-weight:700;color:#f4d77a;}
+.g-result-event-desc{font-size:13px;color:#cdb88a;line-height:1.4;}
 .g-result-event.boss{background:linear-gradient(180deg,#2e0c0c 0%,#1a0606 100%);border-color:#c8102e;}
 .g-result-event.boss .g-result-event-eyebrow{color:#ff6b6b;}
 .g-result-event.boss .g-result-event-name{color:#ff9a9a;}
@@ -737,7 +842,7 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-result-boosts{background:#0a1624;border:1px solid #1a2f40;border-radius:8px;padding:12px 14px;margin-bottom:14px;}
 .g-boost-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;
   font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#7a9bb5;}
-.g-boost-bal{color:#f4d77a;font-size:13px;font-weight:800;letter-spacing:0;}
+.g-boost-bal{color:#f4d77a;font-size:14px;font-weight:800;letter-spacing:0;}
 .g-boost-btns{display:flex;gap:8px;}
 .g-boost-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
   background:#0e2034;border:1px solid #2a3f55;border-radius:7px;padding:9px 6px;cursor:pointer;
@@ -746,8 +851,8 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-boost-btn.active{border-color:#f4d77a;background:#1d2438;box-shadow:inset 0 0 0 1px #f4d77a;}
 .g-boost-btn:disabled{opacity:.4;cursor:not-allowed;}
 .g-boost-ic{font-size:20px;line-height:1;}
-.g-boost-nm{font-size:10px;font-weight:600;text-align:center;line-height:1.2;}
-.g-boost-cost{font-size:10px;font-weight:800;color:#f4d77a;}
+.g-boost-nm{font-size:12px;font-weight:600;text-align:center;line-height:1.2;}
+.g-boost-cost{font-size:12px;font-weight:800;color:#f4d77a;}
 .g-boost-don{display:flex;align-items:center;gap:8px;margin-top:11px;cursor:pointer;
   font-size:11px;color:#9fb4c8;-webkit-tap-highlight-color:transparent;}
 .g-boost-don input{width:15px;height:15px;accent-color:#c8102e;cursor:pointer;flex-shrink:0;}
@@ -758,8 +863,8 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-result-preview{background:#0a1624;border:1px solid #1a2f40;border-radius:8px;
   padding:14px 16px;margin-bottom:14px;}
 .g-result-prob-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
-.g-result-prob-label{font-size:10px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
-.g-result-prob-value{font-size:20px;font-weight:700;color:#6dd86d;font-variant-numeric:tabular-nums;
+.g-result-prob-label{font-size:12px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
+.g-result-prob-value{font-size:22px;font-weight:700;color:#6dd86d;font-variant-numeric:tabular-nums;
   transition:color .2s ease;}
 .g-result-prob-value.warn{color:#ffd54a;}
 .g-result-prob-value.danger{color:#ff8a8a;}
@@ -768,7 +873,7 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
   transition:width .3s ease, background .3s ease;}
 .g-result-prob-fill.warn{background:linear-gradient(90deg,#8a6a1a,#ffd54a);}
 .g-result-prob-fill.danger{background:linear-gradient(90deg,#702828,#ff8a8a);}
-.g-result-xg-row{font-size:12px;color:#7a9bb5;text-align:center;margin-bottom:12px;letter-spacing:.3px;}
+.g-result-xg-row{font-size:14px;color:#7a9bb5;text-align:center;margin-bottom:12px;letter-spacing:.3px;}
 .g-result-xg-row b{color:#fff;font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;}
 .g-result-xg-dash{margin:0 6px;color:#4a6580;}
 /* Strength row. Sits below xG, above the tactic selector. Two boost chips:
@@ -783,32 +888,32 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-result-boost-chip{display:inline-flex;align-items:center;gap:6px;
   padding:3px 10px;border-radius:11px;background:rgba(122,184,232,.08);
   border:1px solid rgba(122,184,232,.22);}
-.g-result-boost-label{font-size:10px;color:#7a9bb5;letter-spacing:.5px;}
-.g-result-boost-value{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;
+.g-result-boost-label{font-size:12px;color:#7a9bb5;letter-spacing:.5px;}
+.g-result-boost-value{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;
   letter-spacing:0;text-transform:none;}
 #g-result-territory-chip .g-result-boost-value{color:#5fd6c8;}
 #g-result-momentum-chip  .g-result-boost-value{color:#d4a936;}
-.g-result-streak{color:#ff8a8a;font-weight:700;font-size:11px;
+.g-result-streak{color:#ff8a8a;font-weight:700;font-size:13px;
   letter-spacing:.4px;text-transform:none;
   padding:2px 8px;background:rgba(255,138,138,.12);border-radius:10px;
   border:1px solid rgba(255,138,138,.3);}
 .g-result-streak b{color:#fff;}
 .g-result-tactics{display:flex;align-items:center;gap:10px;}
-.g-result-tactics-label{font-size:10px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;
+.g-result-tactics-label{font-size:12px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;
   font-weight:600;flex-shrink:0;}
 .g-result-tactic-btns{display:flex;gap:5px;flex:1;}
 .g-tactic-btn{flex:1;padding:8px 10px;background:#162a3e;border:1px solid #2a3f55;color:#cfdaea;
-  font-size:11px;font-weight:600;cursor:pointer;border-radius:6px;transition:all .15s ease;
+  font-size:13px;font-weight:600;cursor:pointer;border-radius:6px;transition:all .15s ease;
   white-space:nowrap;}
 .g-tactic-btn:hover{background:#1d3550;border-color:#3a5570;}
 .g-tactic-btn.active{background:#1e3a5c;border-color:#7ab8e8;color:#fff;
   box-shadow:0 0 0 1px rgba(122,184,232,.3);}
-.g-result-finish{display:flex;justify-content:center;gap:14px;margin-bottom:14px;color:#cfdaea;font-size:12px;}
+.g-result-finish{display:flex;justify-content:center;gap:14px;margin-bottom:14px;color:#cfdaea;font-size:14px;}
 .g-result-finish label{cursor:pointer;display:flex;align-items:center;gap:5px;}
-#g-result-pens-row{text-align:center;color:#cfdaea;font-size:12px;margin-bottom:14px;}
+#g-result-pens-row{text-align:center;color:#cfdaea;font-size:14px;margin-bottom:14px;}
 #g-result-pens-row .g-result-score{width:50px;height:36px;font-size:18px;}
 .g-result-actions{display:flex;gap:8px;justify-content:flex-end;}
-.g-result-actions .g-btn{min-width:100px;padding:10px 16px;font-size:13px;}
+.g-result-actions .g-btn{min-width:110px;padding:11px 18px;font-size:14px;}
 /* Simulate match — prominent CTA above the manual score-entry block.
    Same red as the splash Play button so the "instant resolve" semantic carries through. */
 .g-sim-btn{width:100%;padding:12px 16px;border-radius:8px;border:1px solid #c8102e;
@@ -818,8 +923,8 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
   margin-bottom:10px;}
 .g-sim-btn:hover{background:#d92133;}
 .g-sim-btn:active{transform:translateY(1px);}
-.g-sim-btn .g-sim-icon{font-size:15px;}
-.g-result-or{display:flex;align-items:center;gap:10px;color:#7a9bb5;font-size:9px;
+.g-sim-btn .g-sim-icon{font-size:17px;}
+.g-result-or{display:flex;align-items:center;gap:10px;color:#7a9bb5;font-size:11px;
   letter-spacing:2px;text-transform:uppercase;margin:0 0 14px;}
 .g-result-or::before,.g-result-or::after{content:"";flex:1;height:1px;background:#1a2f40;}
 
@@ -1659,6 +1764,22 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     <!-- Campaign progress: six-continent conquest tracker. Mirrors the events
          panel on the opposite side; visible only while a conquest game is open. -->
     <div id="g-left-stack">
+    <!-- Squad list (offline / creator build only — hidden on public site). -->
+    <div id="g-squad-panel">
+      <div id="g-squad-header">
+        <span data-i18n="sim.squad.title">⚽ Squad</span>
+        <span id="g-squad-count">0</span>
+        <span id="g-squad-toggle">▼</span>
+      </div>
+      <div id="g-squad-body">
+        <div id="g-squad-list"></div>
+        <form id="g-squad-add-form" onsubmit="return false;">
+          <input type="text" id="g-squad-add-input" data-i18n-attr="placeholder:sim.squad.placeholder" placeholder="Add player...">
+          <button type="submit" id="g-squad-add-btn">+</button>
+        </form>
+        <button type="button" id="g-squad-edit-bulk" data-i18n="sim.squad.edit">📋 Edit roster</button>
+      </div>
+    </div>
     <div id="g-campaign-panel">
       <div id="g-campaign-header">
         <span data-i18n="sim.cont.title">🌍 Continents</span>
@@ -7476,6 +7597,27 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   const fromY=heroBadgeNow?parseFloat(heroBadgeNow.getAttribute('data-cy')):0;
   gLog(FCLang.t('sim.log.loss',{hero:teamDisplayName(hero.name), score:heroScore+'–'+oppScore+suffix, opp:teamDisplayName(opp.name),
     winner:'<b style="color:#ff8a8a">'+teamDisplayName(opp.name)+'</b>'}),true);
+  // ── Squad rule (offline / creator build only — fires only when the player
+  // has a non-empty squad). Lose-by-N: remove N random players; lose by 3+
+  // ends the conquest immediately on top of the existing 3-losses rule.
+  if(Array.isArray(GAME.squad) && GAME.squad.length>0){
+    const goalDiff = oppScore - heroScore;
+    if(goalDiff >= 3){
+      gLog('💀 '+FCLang.t('sim.squad.crushed', {n:goalDiff}));
+      refreshConquestHud({lastResult:{type:'loss',hero:hero.name,opp:opp.name,score:heroScore+'–'+oppScore,gameOver:true}});
+      showGameOverOverlay({victory:false,hero:hero.name,opp:opp.name,score:heroScore+'–'+oppScore});
+      if(typeof recordCampaignResult==='function') recordCampaignResult('eliminated',{eliminatedBy:opp.name});
+      GAME.phase='idle';
+      GAME.active=false;
+      gameRender();
+      return;
+    }
+    if(goalDiff >= 1){
+      // Dramatic roulette — visually draws each fallen player. Handles
+      // removal, logging, and the per-player FALLEN stamp internally.
+      drawSquadLossRoulette(goalDiff);
+    }
+  }
   // Increment loss count against this opponent
   GAME.lossCounts[opp.id]=(GAME.lossCounts[opp.id]||0)+1;
   const losses=GAME.lossCounts[opp.id];
@@ -8004,10 +8146,267 @@ function renderMetricsPanel(){
   setVbar('g-tm-terr', terr, terrMax);
   setVbar('g-tm-mom',  mom,  momMax);
 }
+// ============================================================
+// Squad list (offline / creator build only). The player keeps a roster of
+// real EA Sports FC players (preloaded before the campaign + added mid-run
+// when they earn one from a beaten country). On a match LOSS the goal diff
+// removes N random players, and a 3-goal-or-worse loss ends the conquest.
+// ============================================================
+const SQUAD_KEY='fc-squad';
+function loadStoredSquad(){
+  try{ const v=localStorage.getItem(SQUAD_KEY); if(v) return JSON.parse(v); }catch(e){}
+  return [];
+}
+function saveStoredSquad(){
+  try{ localStorage.setItem(SQUAD_KEY, JSON.stringify(GAME.squad||[])); }catch(e){}
+}
+function ensureSquadInit(){
+  if(!Array.isArray(GAME.squad)) GAME.squad = loadStoredSquad();
+}
+// Dramatic roulette draw — animates a spinning name banner, slows to a stop
+// on each pre-picked victim, stamps FALLEN, then removes them from the squad.
+function ensureRouletteModal(){
+  let m=document.getElementById('g-roulette-modal');
+  if(m) return m;
+  m=document.createElement('div');
+  m.id='g-roulette-modal';
+  m.className='g-roulette-modal';
+  m.innerHTML=''+
+    '<div class="g-roulette-box">'+
+      '<div class="g-roulette-title" data-i18n="sim.squad.fallen.title">Fallen in Battle</div>'+
+      '<div class="g-roulette-sub" id="g-roulette-sub"></div>'+
+      '<div class="g-roulette-spinner">'+
+        '<div class="g-roulette-name" id="g-roulette-name">—</div>'+
+      '</div>'+
+      '<div class="g-roulette-stamp" id="g-roulette-stamp" data-i18n="sim.squad.fallen.stamp">FALLEN</div>'+
+      '<button type="button" class="g-roulette-draw" id="g-roulette-draw">DRAW</button>'+
+    '</div>';
+  document.body.appendChild(m);
+  return m;
+}
+function spinRouletteToVictim(targetName, allNames, onDone){
+  const nameEl=document.getElementById('g-roulette-name');
+  if(!nameEl){ if(onDone) onDone(); return; }
+  const FAST_DUR=1500, SLOW_DUR=1300;
+  const FAST_STEP=55, SLOW_END_STEP=300;
+  const startTime=performance.now();
+  function tick(){
+    const elapsed=performance.now()-startTime;
+    const total=FAST_DUR+SLOW_DUR;
+    if(elapsed>=total){
+      nameEl.textContent=targetName;
+      nameEl.classList.add('locked');
+      if(onDone) onDone();
+      return;
+    }
+    const pick=allNames[Math.floor(Math.random()*allNames.length)];
+    nameEl.textContent=pick;
+    let delay;
+    if(elapsed<FAST_DUR){
+      delay=FAST_STEP;
+    } else {
+      const t=(elapsed-FAST_DUR)/SLOW_DUR;
+      delay=FAST_STEP + t*t*(SLOW_END_STEP-FAST_STEP);
+    }
+    setTimeout(tick, delay);
+  }
+  tick();
+}
+function drawSquadLossRoulette(numToLose){
+  ensureSquadInit();
+  if(!Array.isArray(GAME.squad) || GAME.squad.length===0) return;
+  const n=Math.min(numToLose, GAME.squad.length);
+  if(n<=0) return;
+  // Pre-pick victims so the spin can land on them deterministically.
+  const pool=GAME.squad.slice();
+  const victims=[];
+  for(let i=0;i<n;i++){
+    if(pool.length===0) break;
+    const idx=Math.floor(Math.random()*pool.length);
+    victims.push(pool.splice(idx,1)[0]);
+  }
+  const modal=ensureRouletteModal();
+  const nameEl=document.getElementById('g-roulette-name');
+  const subEl=document.getElementById('g-roulette-sub');
+  const stampEl=document.getElementById('g-roulette-stamp');
+  modal.classList.add('open');
+  let i=0;
+  function nextSpin(){
+    if(i>=victims.length){
+      setTimeout(function(){
+        modal.classList.remove('open');
+        if(nameEl) nameEl.classList.remove('locked');
+        if(stampEl) stampEl.classList.remove('show');
+      }, 700);
+      return;
+    }
+    const victim=victims[i];
+    if(subEl) subEl.textContent = FCLang.t('sim.squad.drawing', {n:i+1, total:victims.length});
+    if(stampEl) stampEl.classList.remove('show');
+    if(nameEl) nameEl.classList.remove('locked');
+    // Use a snapshot of the current squad names for the cycling animation —
+    // includes the to-be-removed players so the spin feels comprehensive.
+    const allNames = GAME.squad.map(function(p){return p.n;});
+    spinRouletteToVictim(victim.n, allNames, function(){
+      // Stamp FALLEN, then remove from squad + log + advance.
+      if(stampEl) stampEl.classList.add('show');
+      setTimeout(function(){
+        const idx=GAME.squad.findIndex(function(p){return p.n===victim.n;});
+        if(idx!==-1) GAME.squad.splice(idx,1);
+        saveStoredSquad();
+        renderSquadPanel();
+        gLog('💔 '+FCLang.t('sim.squad.fell', {name:'<b>'+escapeHtml(victim.n)+'</b>'}));
+        i++;
+        setTimeout(nextSpin, 800);
+      }, 700);
+    });
+  }
+  nextSpin();
+}
+function addSquadPlayer(name, from){
+  ensureSquadInit();
+  const clean=String(name||'').trim().slice(0,40);
+  if(!clean) return false;
+  GAME.squad.push({n:clean, f:from||null});
+  saveStoredSquad();
+  renderSquadPanel();
+  return true;
+}
+function removeSquadPlayer(idx){
+  ensureSquadInit();
+  if(idx<0||idx>=GAME.squad.length) return null;
+  const out=GAME.squad.splice(idx,1)[0];
+  saveStoredSquad();
+  renderSquadPanel();
+  return out;
+}
+// Random removal — called from handleConquestLoss when goal diff is 1 or 2.
+function loseRandomSquadPlayers(n){
+  ensureSquadInit();
+  const removed=[];
+  for(let i=0;i<n;i++){
+    if(GAME.squad.length===0) break;
+    const idx=Math.floor(Math.random()*GAME.squad.length);
+    removed.push(GAME.squad[idx]);
+    GAME.squad.splice(idx,1);
+  }
+  saveStoredSquad();
+  renderSquadPanel();
+  return removed;
+}
+function renderSquadPanel(){
+  ensureSquadInit();
+  const listEl=document.getElementById('g-squad-list');
+  const countEl=document.getElementById('g-squad-count');
+  if(!listEl) return;
+  const sq=GAME.squad||[];
+  if(countEl) countEl.textContent=String(sq.length);
+  if(sq.length===0){
+    listEl.innerHTML='<div class="g-squad-empty">'+(FCLang?FCLang.t('sim.squad.empty'):'No players yet.')+'</div>';
+    return;
+  }
+  listEl.innerHTML=sq.map(function(p,i){
+    const from = p.f ? '<span class="g-squad-from">'+escapeHtml(p.f)+'</span>' : '';
+    return '<div class="g-squad-row" data-idx="'+i+'">'+
+      '<span class="g-squad-name">'+escapeHtml(p.n)+'</span>'+
+      from+
+      '<button type="button" class="g-squad-remove" data-idx="'+i+'" title="Remove">✕</button>'+
+    '</div>';
+  }).join('');
+  // Wire X buttons
+  listEl.querySelectorAll('.g-squad-remove').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const idx=parseInt(btn.getAttribute('data-idx'),10);
+      removeSquadPlayer(idx);
+    });
+  });
+}
+// Lazily-built editor modal — textarea, one player per line.
+function ensureSquadEditor(){
+  let m=document.getElementById('g-squad-modal');
+  if(m) return m;
+  m=document.createElement('div');
+  m.id='g-squad-modal';
+  m.className='g-squad-modal';
+  m.innerHTML='<div class="g-squad-box">'+
+    '<div class="g-squad-box-title" data-i18n="sim.squad.edit.title">Edit Squad</div>'+
+    '<div class="g-squad-box-desc" data-i18n="sim.squad.edit.desc">One player per line. These will be your starting roster for the conquest.</div>'+
+    '<textarea id="g-squad-textarea" placeholder="e.g. Harry Kane (one per line)"></textarea>'+
+    '<div class="g-squad-box-btns">'+
+      '<button type="button" class="g-squad-cancel" id="g-squad-cancel-btn" data-i18n="sim.squad.cancel">Cancel</button>'+
+      '<button type="button" class="g-squad-save"   id="g-squad-save-btn"   data-i18n="sim.squad.save">Save</button>'+
+    '</div></div>';
+  document.body.appendChild(m);
+  m.querySelector('#g-squad-cancel-btn').addEventListener('click', closeSquadEditor);
+  m.querySelector('#g-squad-save-btn').addEventListener('click', saveSquadFromEditor);
+  m.addEventListener('click', function(e){ if(e.target===m) closeSquadEditor(); });
+  return m;
+}
+function openSquadEditor(){
+  ensureSquadInit();
+  const m=ensureSquadEditor();
+  const ta=m.querySelector('#g-squad-textarea');
+  if(ta) ta.value=(GAME.squad||[]).map(function(p){return p.n;}).join('\n');
+  m.classList.add('open');
+  setTimeout(function(){ try{ if(ta){ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length);} }catch(e){} }, 50);
+}
+function closeSquadEditor(){
+  const m=document.getElementById('g-squad-modal');
+  if(m) m.classList.remove('open');
+}
+function saveSquadFromEditor(){
+  const ta=document.getElementById('g-squad-textarea');
+  if(!ta) return;
+  const lines=ta.value.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  GAME.squad=lines.map(function(n){return {n:n.slice(0,40),f:null};});
+  saveStoredSquad();
+  renderSquadPanel();
+  closeSquadEditor();
+}
+// Wire up the inline add-form + edit button on first DOM ready.
+function wireSquadPanel(){
+  const addBtn=document.getElementById('g-squad-add-btn');
+  const addInp=document.getElementById('g-squad-add-input');
+  const editBtn=document.getElementById('g-squad-edit-bulk');
+  const hdr=document.getElementById('g-squad-header');
+  const panel=document.getElementById('g-squad-panel');
+  if(addBtn && addInp && !addBtn._wired){
+    addBtn._wired=true;
+    function submit(){
+      const v=addInp.value.trim();
+      if(!v) return;
+      // Comma-separated input lets the creator add several players in one go
+      // (e.g. paste "Kane, Bellingham, Foden" + Enter).
+      v.split(',').forEach(function(p){
+        const name=p.trim();
+        if(name) addSquadPlayer(name, null);
+      });
+      addInp.value='';
+      addInp.focus();
+    }
+    addBtn.addEventListener('click', submit);
+    addInp.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); submit(); } });
+  }
+  if(editBtn && !editBtn._wired){
+    editBtn._wired=true;
+    editBtn.addEventListener('click', openSquadEditor);
+  }
+  if(hdr && panel && !hdr._wired){
+    hdr._wired=true;
+    hdr.addEventListener('click', function(){ panel.classList.toggle('collapsed'); });
+  }
+}
+document.addEventListener('DOMContentLoaded', function(){
+  wireSquadPanel();
+  ensureSquadInit();
+  renderSquadPanel();
+});
+
 function refreshConquestHud(extra){
   if(GAME.mode!=='conquest')return;
   if(typeof renderMetricsPanel==='function') renderMetricsPanel();
   if(typeof updateUltBtn==='function') updateUltBtn();
+  if(typeof renderSquadPanel==='function') renderSquadPanel();
   let lossOpponent=null, lossCount=0;
   // Primary: show losses against the CURRENT defender (the team about to be
   // attacked). This is the active threat while spinning is resolved.
@@ -8303,7 +8702,7 @@ function drawUltShockwave(hero){
         ring.style.filter='drop-shadow(0 0 40px #ffd54a)';
         layer.appendChild(ring);
         const startTime=performance.now();
-        const duration=1700;
+        const duration=2600;
         function animate(now){
           const t=(now-startTime)/duration;
           if(t>=1){ if(ring.parentNode) ring.parentNode.removeChild(ring); return; }
@@ -8313,7 +8712,7 @@ function drawUltShockwave(hero){
           requestAnimationFrame(animate);
         }
         requestAnimationFrame(animate);
-      }, idx*170);
+      }, idx*260);
     })(i);
   }
 }
@@ -8346,9 +8745,9 @@ function drawAllUltStrikes(hero, targets){
 function removeUltStrike(teamId){
   const ln=document.querySelector('.g-ult-strike[data-team="'+teamId+'"]');
   if(!ln) return;
-  ln.style.transition='opacity 0.22s linear';
+  ln.style.transition='opacity 0.45s ease-out';
   ln.style.opacity='0';
-  setTimeout(function(){ if(ln.parentNode) ln.parentNode.removeChild(ln); }, 240);
+  setTimeout(function(){ if(ln.parentNode) ln.parentNode.removeChild(ln); }, 480);
 }
 function removeAllUltStrikes(){
   document.querySelectorAll('.g-ult-strike').forEach(function(el){
@@ -8459,9 +8858,9 @@ function unleashUltimate(){
   drawAllUltStrikes(hero, afford);
   // 3. Territorial colour cascade — closest first, one at a time. Each
   //    target's strike line is removed as its country flashes + falls.
-  const STEP = 720;
-  const FLASH_TO_PAINT_DELAY = 220;
-  const startDelay = 380;
+  const STEP = 1100;
+  const FLASH_TO_PAINT_DELAY = 350;
+  const startDelay = 700;
   afford.forEach(function(t, idx){
     setTimeout(function(){
       const team=t.team;
@@ -8538,10 +8937,10 @@ function flashUltTargetCountry(team){
   layer.appendChild(wrap);
   let op=1;
   const fade=setInterval(function(){
-    op-=0.06;
+    op-=0.04;
     wrap.style.opacity=op.toFixed(2);
     if(op<=0){ clearInterval(fade); if(wrap.parentNode) wrap.parentNode.removeChild(wrap); }
-  }, 45);
+  }, 55);
 }
 
 function executeInstantWin(){
