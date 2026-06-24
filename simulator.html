@@ -4,7 +4,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>FC Map Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%230a1929'/%3E%3Crect x='1' y='1' width='30' height='30' rx='4.5' fill='none' stroke='%23d4a936' stroke-opacity='0.6' stroke-width='1'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='Impact,Haettenschweiler,Arial Narrow Bold,sans-serif' font-size='20' font-weight='900' fill='%23c8102e'%3EFC%3C/text%3E%3C/svg%3E">
+<title>Football Conquest</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;background:#070e17;-webkit-user-select:none;user-select:none;}
@@ -29,6 +33,15 @@ html,body{height:100%;background:#070e17;-webkit-user-select:none;user-select:no
 .sim-lang-btn:hover{color:#7ab8e8;}
 .sim-lang-btn.active{color:#fff;background:#1d5a8c;}
 .sim-lang-sep{color:#2a3f55;font-size:10px;}
+.sim-lang-select{background:#070e17;color:#cfdaea;border:1px solid #2a3f55;
+  border-radius:5px;font-size:11px;font-weight:600;padding:3px 22px 3px 7px;
+  cursor:pointer;letter-spacing:.4px;
+  appearance:none;-webkit-appearance:none;-moz-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'><path d='M0 0l5 6 5-6z' fill='%237ab8e8'/></svg>");
+  background-repeat:no-repeat;background-position:right 6px center;background-size:8px;}
+.sim-lang-select:hover{border-color:#7ab8e8;}
+.sim-lang-select:focus{outline:none;border-color:#7ab8e8;}
+.sim-lang-select option{background:#070e17;color:#cfdaea;}
 #paint-swatch-wrap{display:none;align-items:center;gap:5px;}
 #paint-swatch{width:20px;height:20px;border-radius:4px;border:2px solid #4a6a80;cursor:pointer;flex-shrink:0;transition:border-color .15s;}
 #paint-swatch.loaded{border-color:#378add;}
@@ -42,7 +55,7 @@ html,body{height:100%;background:#070e17;-webkit-user-select:none;user-select:no
 body.map-light #fc-bg-pattern text{fill:#1a3550;opacity:0.13;}
 #erase-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;}
 #hint{position:absolute;top:8px;left:10px;font-size:10px;color:rgba(255,255,255,.28);pointer-events:none;z-index:4;line-height:1.5;}
-.tip{position:absolute;background:rgba(8,16,28,.95);border:1px solid #2a3f55;border-radius:6px;padding:4px 9px;font-size:11px;color:#fff;pointer-events:none;display:none;white-space:nowrap;z-index:20;}
+.tip{position:absolute;background:rgba(8,16,28,.95);border:1px solid #2a3f55;border-radius:6px;padding:4px 9px;font-size:11px;color:#fff;pointer-events:none;display:none;white-space:nowrap;z-index:30;}
 .zc{position:absolute;bottom:12px;right:12px;display:flex;flex-direction:column;gap:5px;z-index:10;}
 .zb{width:32px;height:32px;background:rgba(7,14,23,.92);border:1px solid #2a3f55;color:#7ab8e8;border-radius:6px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
 .zb:hover{background:#1a2f40;}
@@ -327,7 +340,7 @@ body.web-build #g-squad-panel{display:none!important;}
 .g-roulette-modal.open{display:flex;}
 .g-roulette-box{background:linear-gradient(135deg,#1a0a0e 0%,#0a1624 100%);
   border:2px solid #c8102e;border-radius:14px;padding:30px 40px;
-  text-align:center;box-shadow:0 18px 60px rgba(200,16,46,.4);
+  text-align:center;box-shadow:0 22px 60px rgba(0,0,0,.75),0 4px 14px rgba(0,0,0,.6);
   min-width:380px;max-width:90vw;}
 .g-roulette-title{font-family:Impact,'Arial Black',sans-serif;
   font-size:24px;color:#c8102e;letter-spacing:3px;
@@ -341,10 +354,9 @@ body.web-build #g-squad-panel{display:none!important;}
   padding:22px 20px 20px;min-height:80px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:14px;margin-bottom:18px;position:relative;overflow:visible;}
-.g-roulette-spinner::before,.g-roulette-spinner::after{
-  content:"";position:absolute;top:0;bottom:0;width:36px;pointer-events:none;z-index:1;}
-.g-roulette-spinner::before{left:0;background:linear-gradient(90deg,rgba(7,14,23,1),transparent);}
-.g-roulette-spinner::after{right:0;background:linear-gradient(270deg,rgba(7,14,23,1),transparent);}
+/* Side fade gradients removed — they were a leftover from the horizontal
+   name-only spinner and bled past the rounded corners on the new vertical
+   portrait layout. */
 /* Large portrait disc — colored initials sit underneath; the real player
    image (TheSportsDB cutout) overlays it. If the image fails to load,
    onerror strips the <img> and the initials remain visible. */
@@ -355,19 +367,18 @@ body.web-build #g-squad-panel{display:none!important;}
   font-family:Impact,'Arial Black',sans-serif;font-size:56px;
   font-weight:700;color:#cfdaea;letter-spacing:1px;
   background-color:#1a2f40;
-  box-shadow:0 6px 24px rgba(0,0,0,.5),inset 0 0 0 2px rgba(0,0,0,.25);
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.25);
   transition:border-color .3s ease,box-shadow .3s ease,transform .3s ease;}
 .g-roulette-portrait img{position:absolute;inset:0;width:100%;height:100%;
   object-fit:cover;border-radius:50%;}
 .g-roulette-portrait.locked{border-color:#ff8a8a;
-  box-shadow:0 0 32px rgba(255,138,138,.55),inset 0 0 0 2px rgba(0,0,0,.25);
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.25);
   animation:g-roulette-lock .7s ease-out;}
 .g-roulette-name{font-family:system-ui,-apple-system,'Segoe UI','Helvetica Neue',Arial,sans-serif;
   font-size:28px;color:#fff;letter-spacing:.3px;
   font-weight:700;line-height:1.2;white-space:nowrap;text-align:center;
   transition:color .3s ease,text-shadow .3s ease;}
-.g-roulette-name.locked{color:#ff8a8a;
-  text-shadow:0 0 24px rgba(255,138,138,.7);}
+.g-roulette-name.locked{color:#ff8a8a;}
 @keyframes g-roulette-lock{
   0%{transform:scale(1);}
   30%{transform:scale(1.2);}
@@ -396,6 +407,47 @@ body.web-build #g-squad-panel{display:none!important;}
   box-shadow:0 6px 22px rgba(200,16,46,.7);}
 .g-roulette-draw:active:not(:disabled){transform:translateY(0);}
 .g-roulette-draw:disabled{opacity:.4;cursor:not-allowed;}
+/* Recruit modal — opens after every conquest win in offline mode. Two cards:
+   add a player from the defeated team or take +1 Aura. Layered on top of
+   the existing passive Aura grant. Hidden on web-build. */
+.g-recruit-modal{position:fixed;inset:0;background:rgba(0,0,0,.78);
+  backdrop-filter:blur(5px);z-index:340;display:none;
+  align-items:center;justify-content:center;
+  font-family:system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;}
+body.web-build .g-recruit-modal{display:none!important;}
+.g-recruit-modal.open{display:flex;}
+.g-recruit-card{background:linear-gradient(135deg,#0a1624 0%,#0e2034 100%);
+  border:2px solid #d4a936;border-radius:14px;padding:30px 36px;
+  width:520px;max-width:92vw;text-align:center;
+  box-shadow:0 22px 60px rgba(0,0,0,.7);}
+.g-recruit-title{font-size:24px;color:#ffd54a;font-weight:800;letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:4px;}
+.g-recruit-sub{font-size:14px;color:#9fb3c4;letter-spacing:.6px;margin-bottom:22px;}
+.g-recruit-sub b{color:#cfdaea;}
+.g-recruit-choices{display:flex;gap:14px;margin-bottom:14px;}
+.g-recruit-btn{flex:1;background:#0a1624;border:1px solid #2a3f55;
+  border-radius:10px;padding:18px 14px;cursor:pointer;color:#cfdaea;
+  transition:transform .12s ease,border-color .15s ease,background .15s ease;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  font-family:inherit;}
+.g-recruit-btn:hover{border-color:#ffd54a;background:#11243a;transform:translateY(-2px);}
+.g-recruit-ic{font-size:30px;line-height:1;}
+.g-recruit-lbl{font-size:16px;font-weight:700;letter-spacing:.5px;color:#fff;}
+.g-recruit-desc{font-size:11px;color:#7a9bb5;line-height:1.4;}
+.g-recruit-input-wrap{display:flex;gap:8px;margin-top:4px;margin-bottom:14px;}
+.g-recruit-input-wrap input{flex:1;background:#0a1624;border:1px solid #2a3f55;
+  color:#fff;font-size:14px;padding:9px 12px;border-radius:6px;outline:none;
+  font-family:inherit;}
+.g-recruit-input-wrap input:focus{border-color:#ffd54a;}
+.g-recruit-input-wrap button{background:linear-gradient(135deg,#d4a936,#a87f1f);
+  color:#0a1624;border:0;border-radius:6px;padding:9px 18px;cursor:pointer;
+  font-weight:700;font-size:13px;letter-spacing:.5px;text-transform:uppercase;
+  font-family:inherit;}
+.g-recruit-input-wrap button:hover{background:linear-gradient(135deg,#e8bd44,#c89224);}
+.g-recruit-skip{background:transparent;border:0;color:#5a7a95;cursor:pointer;
+  font-size:12px;letter-spacing:.5px;text-transform:uppercase;padding:6px 12px;
+  font-family:inherit;}
+.g-recruit-skip:hover{color:#cfdaea;}
 #g-left-stack{position:absolute;bottom:32px;left:58px;display:none;
   flex-direction:column;gap:8px;z-index:24;}
 #game-panel.open ~ #g-left-stack{display:flex;}
@@ -511,7 +563,8 @@ body.web-build #g-squad-panel{display:none!important;}
   z-index:300;display:flex;align-items:center;justify-content:center;}
 .iw-box{background:#0a1624;border:1px solid #2a3f55;border-radius:12px;
   padding:32px;width:420px;max-width:90vw;text-align:center;
-  box-shadow:0 12px 40px rgba(0,0,0,.7);}
+  box-shadow:0 12px 40px rgba(0,0,0,.7);
+  font-family:system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;}
 .iw-box-flag{width:108px;height:70px;margin:0 auto 16px;border-radius:4px;
   border:1px solid rgba(255,255,255,.18);background-size:cover;background-position:center;
   background-color:#1a2f40;box-shadow:0 4px 14px rgba(0,0,0,.45);}
@@ -556,14 +609,14 @@ body.web-build #g-squad-panel{display:none!important;}
 .g-aura-hbar-label{position:relative;z-index:2;height:100%;
   display:flex;align-items:center;padding:0 14px;gap:9px;
   pointer-events:none;}
-.g-aura-hbar-text{font-family:Impact,'Arial Black','Helvetica Neue Black',sans-serif;
+.g-aura-hbar-text{font-family:'Montserrat',Impact,'Arial Black','Helvetica Neue Black',sans-serif;
   font-size:23px;font-weight:900;letter-spacing:.5px;color:#c8102e;text-transform:uppercase;
   text-shadow:none;}
 .g-aura-hbar-star{color:#c8102e;font-size:19px;font-weight:900;
   line-height:1;filter:none;}
-.g-aura-hbar-val{margin-left:auto;font-family:Menlo,Consolas,monospace;
+.g-aura-hbar-val{margin-left:auto;font-family:'Montserrat',Impact,'Arial Black','Helvetica Neue Black',sans-serif;
   font-size:14px;font-weight:900;color:#c8102e;letter-spacing:.5px;
-  text-shadow:none;}
+  text-shadow:none;font-variant-numeric:tabular-nums;}
 /* Territory + Momentum — thin vertical bars to the LEFT of the attacker slot,
    inside the .g-slots flex row. */
 .g-tm-bars{display:none;flex-direction:row;align-items:stretch;gap:8px;
@@ -648,18 +701,20 @@ body.web-build #fc-menu-hide-ui{display:none!important;}
 @keyframes g-action-glow-gold{
   0%,100%{box-shadow:0 0 0 0 rgba(212,169,54,0);}
   50%   {box-shadow:0 0 16px 2px rgba(212,169,54,.55);}}
-/* Lion's Roar — vibrating strike lines + radial shockwave ring. */
+/* Lion's Roar — calm sonic waves emanating from the hero flag, plus thin
+   steady conduits to each target. No high-frequency strobing — the previous
+   .14s opacity/stroke-width pulse triggered an epilepsy concern, so the
+   strikes now read as quiet beams while the WAVES carry the energy. */
 .g-ult-strike{
-  stroke-dasharray:14 8;
-  animation: g-ult-strike-shimmer .35s linear infinite,
-             g-ult-strike-pulse   .14s ease-in-out infinite;
+  stroke-dasharray:18 14;
+  /* Slow shimmer only (one cycle every 1.6s) — the dash crawls along the
+     line so it still feels active, but there's no opacity blink. */
+  animation:g-ult-strike-shimmer 1.6s linear infinite;
+  opacity:.85;
 }
-@keyframes g-ult-strike-shimmer{ to{stroke-dashoffset:-44;} }
-@keyframes g-ult-strike-pulse{
-  0%,100%{opacity:1;stroke-width:34;}
-  50%   {opacity:.55;stroke-width:24;}
-}
+@keyframes g-ult-strike-shimmer{ to{stroke-dashoffset:-64;} }
 .g-ult-shockwave{pointer-events:none;}
+.g-ult-wave{pointer-events:none;}
 #g-events-panel.collapsed #g-events-toggle{transform:rotate(-90deg);}
 #g-events-panel.collapsed #g-events-header{border-bottom:none;}
 
@@ -882,8 +937,12 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-result-scores{display:flex;align-items:center;gap:10px;flex:1;justify-content:center;}
 .g-result-score{width:62px;height:56px;font-size:28px;font-weight:700;text-align:center;
   background:#0a1624;border:1px solid #2a3f55;color:#fff;border-radius:6px;
-  font-variant-numeric:tabular-nums;}
+  font-variant-numeric:tabular-nums;-moz-appearance:textfield;appearance:textfield;
+  padding:0;}
 .g-result-score:focus{outline:none;border-color:#7ab8e8;}
+/* Hide WebKit number-input stepper arrows so the digit stays dead-center. */
+.g-result-score::-webkit-outer-spin-button,
+.g-result-score::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 .g-result-vs{font-size:22px;color:#7a9bb5;font-weight:700;}
 /* ── Pre-match twist card ── gold-accented banner above the preview. */
 .g-result-event{display:flex;align-items:center;gap:12px;
@@ -1018,12 +1077,28 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-result-or::before,.g-result-or::after{content:"";flex:1;height:1px;background:#1a2f40;}
 
 
-@keyframes g-hero-tri-pulse{
-  0%,100%{transform:scale(1);opacity:1;}
-  50%{transform:scale(1.45);opacity:0.75;}
+/* Hero indicator — a quiet gold frame around the flag with a single bright
+   light segment that travels around the perimeter. No flicker, no scale
+   pulse, just steady circulation. The whole group fades out while the
+   spin-arrow dial is overlaid (body.fc-spinning) so the two don't fight
+   for space. */
+#g-hero-glow{transition:opacity .35s ease;opacity:1;}
+body.fc-spinning #g-hero-glow{opacity:0;}
+.g-hero-frame{ fill:none; stroke:#ffd54a; stroke-width:12;
+  stroke-linejoin:round; opacity:.92;
+  filter:drop-shadow(0 0 4px rgba(212,169,54,.55)); }
+.g-hero-runner{
+  fill:none; stroke:#fff4c4; stroke-width:15; stroke-linecap:round;
+  /* The dasharray + animation are sized to the box in JS so the visible
+     segment is always ~90 SVG units long no matter the box dimensions. */
+  filter:drop-shadow(0 0 6px #ffd54a) drop-shadow(0 0 14px rgba(255,213,74,.55));
+  animation:g-hero-runner-spin 2.6s linear infinite;
 }
-.g-hero-tri{animation:g-hero-tri-pulse 1.4s ease-in-out infinite;
-  filter:drop-shadow(0 0 10px rgba(255,213,74,0.95));}
+@keyframes g-hero-runner-spin{
+  /* Offset is set via CSS custom property --perim from JS so the same
+     keyframe works for any box perimeter. */
+  to{ stroke-dashoffset:var(--perim, -1240); }
+}
 
 
 /* Floating Conquest HUD — anchored bottom-left to mirror the Events panel
@@ -1176,6 +1251,10 @@ body.fc-demo-mode #mg{filter:none!important;}
 /* Blur the live map (group #mg holds all countries + flag badges) while splash is up */
 body.fc-splash-active #mg{filter:blur(6px);transition:filter .25s ease;}
 body.fc-splash-active #hint{display:none;}
+/* Hide the static scroll/zoom hint whenever the game panel is open — by
+   then the user knows how to pan and the hint just gets visually trapped
+   behind the turn badge. */
+body:has(#game-panel.open) #hint{display:none;}
 body.fc-splash-active .zc{display:none;}
 /* Hide toolbar buttons that don't apply when on the splash. Modes (View/Erase/Paint/Flags)
    and the legacy Game button are hidden globally — they're tabled for a future manual-edit mode.
@@ -1283,7 +1362,21 @@ body.web-build .g-result-scores,
 body.web-build .g-result-finish,
 body.web-build #g-result-pens-row,
 body.web-build #g-result-confirm{display:none!important;}
-body.web-build #fc-menu-undo{display:none!important;}
+body.web-build #fc-menu-undo,
+body.web-build #fc-menu-redo{display:none!important;}
+/* Offline build: the same inputs are present by default, but once the player
+   clicks Simulate Match we hide them so the score-reveal animation has the
+   stage to itself — matching the live build's experience. */
+.g-result-card.simulated .g-result-or,
+.g-result-card.simulated .g-result-scores,
+.g-result-card.simulated .g-result-finish,
+.g-result-card.simulated #g-result-pens-row,
+.g-result-card.simulated #g-result-confirm,
+.g-result-card.simulated .g-sim-btn,
+.g-result-card.simulated .g-result-boosts,
+.g-result-card.simulated .g-result-preview{display:none!important;}
+/* Recenter the Cancel button now that Confirm is hidden. */
+.g-result-card.simulated .g-result-actions{justify-content:center;}
 /* With Confirm gone, Cancel sits alone — recenter it and dim it as a
    secondary "back out" rather than a primary action. */
 body.web-build .g-result-actions{justify-content:center;}
@@ -1313,7 +1406,7 @@ body.web-build .g-result-actions .g-btn.ghost:hover{opacity:1;}
 .g-result-score-reveal{display:none;flex:0 0 auto;align-items:center;justify-content:center;
   gap:12px;font-variant-numeric:tabular-nums;color:#fff;font-weight:800;
   font-size:48px;line-height:1;letter-spacing:1px;padding:0 14px;}
-body.web-build .g-result-score-reveal.shown{display:flex;
+.g-result-score-reveal.shown{display:flex;
   animation:g-reveal-pop .42s cubic-bezier(.34,1.56,.64,1) both;}
 .g-reveal-num{display:inline-block;min-width:48px;text-align:center;
   text-shadow:0 0 14px rgba(212,169,54,.45);}
@@ -1332,7 +1425,7 @@ body.web-build .g-result-score-reveal.shown{display:flex;
   font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
   color:#ffd54a;margin-top:6px;}
 .g-result-finish-tag.pens{color:#ff8855;}
-body.web-build .g-result-finish-tag.shown{display:block;
+.g-result-finish-tag.shown{display:block;
   animation:g-reveal-pop-soft .4s ease-out both;}
 @keyframes g-reveal-pop-soft{
   0%   {opacity:0;transform:translateY(4px);}
@@ -1347,13 +1440,13 @@ body.web-build .g-result-finish-tag.shown{display:block;
   margin-top:6px;}
 .g-result-momentum-impact.up  {color:#9dffa3;}
 .g-result-momentum-impact.down{color:#ff8a8a;}
-body.web-build .g-result-momentum-impact.shown{display:block;
+.g-result-momentum-impact.shown{display:block;
   animation:g-reveal-pop-soft .42s ease-out .18s both;}
 /* Staggered entry — territory, then momentum, then OVR — so the player
    reads the consequence chain cause → cause → net effect. */
-body.web-build #g-result-territory-delta.shown{animation-delay:.18s;}
-body.web-build #g-result-momentum-delta.shown {animation-delay:.40s;}
-body.web-build #g-result-ovr-delta.shown      {animation-delay:.62s;}
+#g-result-territory-delta.shown{animation-delay:.18s;}
+#g-result-momentum-delta.shown {animation-delay:.40s;}
+#g-result-ovr-delta.shown      {animation-delay:.62s;}
 /* OVR line is the net-effect summary — smaller, slightly dimmer. */
 .g-result-ovr-impact{font-size:12px;font-weight:600;opacity:.88;margin-top:3px;}
 @keyframes g-reveal-pop{
@@ -1394,6 +1487,10 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     if(k==='f12'){ e.preventDefault(); return false; }
     if(mod && e.shiftKey && (k==='i'||k==='j'||k==='c')){ e.preventDefault(); return false; }
     if(mod && !e.shiftKey && (k==='u'||k==='s')){ e.preventDefault(); return false; }
+    // Block accidental page reload during a game — Ctrl/Cmd+R, Cmd+Shift+R,
+    // and F5 all unload the simulator. Autosave restores state via the
+    // Resume button on next load, but blocking the reload is less jarring.
+    if((mod && k==='r') || e.key==='F5'){ e.preventDefault(); return false; }
   });
 })();
 </script>
@@ -1423,15 +1520,26 @@ body.web-build .g-result-card.revealed .g-sim-btn{
       <button class="abtn" id="btn-theme" data-i18n-attr="title:sim.tb.tip.theme" title="Toggle light/dark map">☀️ <span id="btn-theme-label">Light</span></button>
       <button class="abtn" id="btn-reset" data-i18n-attr="title:sim.tb.tip.reset" title="Clear all changes (can undo)">⟳ <span data-i18n="sim.tb.reset">Reset</span></button>
       <span class="sim-lang">
-        <button type="button" class="sim-lang-btn" data-lang-btn="en" onclick="FCLang.set('en',true)">EN</button>
-        <span class="sim-lang-sep">/</span>
-        <button type="button" class="sim-lang-btn" data-lang-btn="tr" onclick="FCLang.set('tr',true)">TR</button>
+        <select class="sim-lang-select" id="sim-lang-select"
+                onchange="FCLang.set(this.value, true)">
+          <option value="de">DE — Deutsch</option>
+          <option value="en">EN — English</option>
+          <option value="es">ES — Español</option>
+          <option value="fr">FR — Français</option>
+          <option value="it">IT — Italiano</option>
+          <option value="nl">NL — Nederlands</option>
+          <option value="no">NO — Norsk</option>
+          <option value="pt">PT — Português</option>
+          <option value="sv">SV — Svenska</option>
+          <option value="tr">TR — Türkçe</option>
+        </select>
       </span>
       <div class="fc-menu-wrap">
         <button class="abtn fc-menu-btn" id="fc-menu-btn" type="button" aria-label="Menu" aria-haspopup="true" aria-expanded="false">☰</button>
         <div class="fc-menu-popover" id="fc-menu" role="menu">
           <div class="fc-menu-item" id="fc-menu-save" role="menuitem"><span class="fc-menu-icon">💾</span><span data-i18n="sim.tb.menu.save">Save game</span></div>
-          <div class="fc-menu-item" id="fc-menu-undo" role="menuitem"><span class="fc-menu-icon">↩</span><span data-i18n="sim.tb.undo">Undo</span></div>
+          <div class="fc-menu-item" id="fc-menu-undo" role="menuitem"><span class="fc-menu-icon">↩</span><span data-i18n="sim.tb.undo">Undo</span><span class="kbadge" style="margin-left:auto;opacity:.6;font-size:9px;">Ctrl+Z</span></div>
+          <div class="fc-menu-item" id="fc-menu-redo" role="menuitem"><span class="fc-menu-icon">↪</span><span data-i18n="sim.tb.redo">Redo</span><span class="kbadge" style="margin-left:auto;opacity:.6;font-size:9px;">Ctrl+Shift+Z</span></div>
           <div class="fc-menu-item fc-menu-game-only" id="fc-menu-end" role="menuitem"><span class="fc-menu-icon">🎲</span><span data-i18n="sim.tb.menu.newgame">New game</span></div>
           <div class="fc-menu-item" id="fc-menu-hide-ui" role="menuitem"><span class="fc-menu-icon">👁</span><span id="fc-menu-hide-ui-label" data-i18n="sim.tb.menu.hideui">Hide UI</span><span class="kbadge" style="margin-left:auto;opacity:.6;font-size:9px;">H</span></div>
           <div class="fc-menu-sep"></div>
@@ -2173,7 +2281,7 @@ const NATIONS=[
 {name:'Cyprus',iso:196,cx:33.2,cy:35.1,f:[['#FFFFFF'],['#D47600']]},
 {name:'Czech Rep.',iso:203,cx:15.5,cy:49.8,f:[['#D7141A'],['#FFFFFF'],['#11457E']]},
 {name:'Denmark',iso:208,cx:10.0,cy:56.0,f:[['#C60C30'],['#FFFFFF'],['#C60C30']]},
-{name:'England',iso:826,cx:-1.5,cy:52.5,f:[['#CF142B','#FFFFFF','#CF142B']]},
+{name:'England',iso:826,cx:-0.1,cy:51.5,f:[['#CF142B','#FFFFFF','#CF142B']]},
 {name:'Estonia',iso:233,cx:25.0,cy:58.7,f:[['#0072CE'],['#000000'],['#FFFFFF']]},
 {name:'Faroe Is.',iso:234,cx:-6.9,cy:62.0,f:[['#FFFFFF'],['#003F87'],['#FFFFFF']]},
 {name:'Finland',iso:246,cx:26.0,cy:64.0,f:[['#FFFFFF'],['#003580']]},
@@ -2466,11 +2574,23 @@ const COUNTRY_TR={
 'Papua New Guinea':'Papua Yeni Gine','Samoa':'Samoa','Solomon Is.':'Solomon Ad.',
 'Tahiti':'Tahiti','Tonga':'Tonga','Vanuatu':'Vanuatu'
 };
+const COUNTRY_ES={'Albania':'Albania','Armenia':'Armenia','Austria':'Austria','Azerbaijan':'Azerbaiyán','Belarus':'Bielorrusia','Belgium':'Bélgica','Bosnia':'Bosnia y Herzegovina','Bulgaria':'Bulgaria','Croatia':'Croacia','Cyprus':'Chipre','Czech Rep.':'R. Checa','Denmark':'Dinamarca','England':'Inglaterra','Estonia':'Estonia','Faroe Is.':'Is. Feroe','Finland':'Finlandia','France':'Francia','Georgia':'Georgia','Germany':'Alemania','Gibraltar':'Gibraltar','Greece':'Grecia','Hungary':'Hungría','Iceland':'Islandia','Ireland':'Irlanda','Israel':'Israel','Italy':'Italia','Kazakhstan':'Kazajistán','Kosovo':'Kosovo','Latvia':'Letonia','Liechtenstein':'Liechtenstein','Lithuania':'Lituania','Luxembourg':'Luxemburgo','Malta':'Malta','Moldova':'Moldavia','Montenegro':'Montenegro','N. Macedonia':'Macedonia del Norte','Netherlands':'Países Bajos','N. Ireland':'Irlanda del Norte','Norway':'Noruega','Poland':'Polonia','Portugal':'Portugal','Romania':'Rumanía','Russia':'Rusia','San Marino':'San Marino','Scotland':'Escocia','Serbia':'Serbia','Slovakia':'Eslovaquia','Slovenia':'Eslovenia','Spain':'España','Sweden':'Suecia','Switzerland':'Suiza','Türkiye':'Turquía','Ukraine':'Ucrania','Wales':'Gales','Argentina':'Argentina','Bolivia':'Bolivia','Brazil':'Brasil','Chile':'Chile','Colombia':'Colombia','Ecuador':'Ecuador','Paraguay':'Paraguay','Peru':'Perú','Uruguay':'Uruguay','Venezuela':'Venezuela','Anguilla':'Anguila','Antigua & Barbuda':'Antigua y Barbuda','Aruba':'Aruba','Bahamas':'Bahamas','Barbados':'Barbados','Belize':'Belice','Bermuda':'Bermudas','Br. Virgin Is.':'Is. Vírgenes Brit.','Canada':'Canadá','Cayman Is.':'Is. Caimán','Costa Rica':'Costa Rica','Cuba':'Cuba','Curaçao':'Curazao','Dominica':'Dominica','Dominican Rep.':'Rep. Dominicana','El Salvador':'El Salvador','Grenada':'Granada','Guadeloupe':'Guadalupe','Guatemala':'Guatemala','Guyana':'Guyana','Haiti':'Haití','Honduras':'Honduras','Jamaica':'Jamaica','Martinique':'Martinica','Mexico':'México','Montserrat':'Montserrat','Nicaragua':'Nicaragua','Panama':'Panamá','Puerto Rico':'Puerto Rico','St. Kitts & Nevis':'S. Cristóbal y Nieves','St. Lucia':'Sta. Lucía','Sint Maarten':'San Martín','St. Vincent':'S. Vicente','Suriname':'Surinam','Trinidad & Tobago':'Trinidad y Tobago','Turks & Caicos':'Turcas y Caicos','USA':'EE.UU.','US Virgin Is.':'Is. Vírgenes EE.UU.','Algeria':'Argelia','Angola':'Angola','Benin':'Benín','Botswana':'Botsuana','Burkina Faso':'Burkina Faso','Burundi':'Burundi','Cameroon':'Camerún','Cape Verde':'Cabo Verde','Central Afr. Rep.':'Rep. Centroafricana','Chad':'Chad','Comoros':'Comoras','Congo':'Congo','Côte d\'Ivoire':'Costa de Marfil','DR Congo':'RD Congo','Djibouti':'Yibuti','Egypt':'Egipto','Eq. Guinea':'Guinea Ecuatorial','Eritrea':'Eritrea','Eswatini':'Esuatini','Ethiopia':'Etiopía','Gabon':'Gabón','Gambia':'Gambia','Ghana':'Ghana','Guinea':'Guinea','Guinea-Bissau':'Guinea-Bisáu','Kenya':'Kenia','Lesotho':'Lesoto','Liberia':'Liberia','Libya':'Libia','Madagascar':'Madagascar','Malawi':'Malaui','Mali':'Mali','Mauritania':'Mauritania','Mauritius':'Mauricio','Morocco':'Marruecos','Mozambique':'Mozambique','Namibia':'Namibia','Niger':'Níger','Nigeria':'Nigeria','Réunion':'Reunión','Rwanda':'Ruanda','São Tomé':'Sto. Tomé','Senegal':'Senegal','Seychelles':'Seychelles','Sierra Leone':'Sierra Leona','Somalia':'Somalia','South Africa':'Sudáfrica','South Sudan':'Sudán del Sur','Sudan':'Sudán','Tanzania':'Tanzania','Togo':'Togo','Tunisia':'Túnez','Uganda':'Uganda','Zambia':'Zambia','Zanzibar':'Zanzíbar','Zimbabwe':'Zimbabue','Afghanistan':'Afganistán','Bahrain':'Baréin','Bangladesh':'Bangladés','Bhutan':'Bután','Brunei':'Brunéi','Cambodia':'Camboya','China':'China','Chinese Taipei':'Taipei Chino','Guam':'Guam','Hong Kong':'Hong Kong','India':'India','Indonesia':'Indonesia','Iran':'Irán','Iraq':'Irak','Japan':'Japón','Jordan':'Jordania','Korea DPR':'Corea del Norte','Korea Rep.':'Corea del Sur','Kuwait':'Kuwait','Kyrgyzstan':'Kirguistán','Laos':'Laos','Lebanon':'Líbano','Macau':'Macao','Malaysia':'Malasia','Maldives':'Maldivas','Mongolia':'Mongolia','Myanmar':'Birmania','Nepal':'Nepal','Northern Mariana Is.':'Marianas del Norte','Oman':'Omán','Pakistan':'Pakistán','Palestine':'Palestina','Philippines':'Filipinas','Qatar':'Catar','Saudi Arabia':'Arabia Saudí','Singapore':'Singapur','Sri Lanka':'Sri Lanka','Syria':'Siria','Tajikistan':'Tayikistán','Thailand':'Tailandia','Timor-Leste':'Timor Oriental','Turkmenistan':'Turkmenistán','UAE':'EAU','Uzbekistan':'Uzbekistán','Vietnam':'Vietnam','Yemen':'Yemen','American Samoa':'Samoa Americana','Cook Islands':'Is. Cook','Fiji':'Fiyi','New Caledonia':'Nueva Caledonia','New Zealand':'Nueva Zelanda','Papua New Guinea':'Papúa Nueva Guinea','Samoa':'Samoa','Solomon Is.':'Is. Salomón','Tahiti':'Tahití','Tonga':'Tonga','Vanuatu':'Vanuatu'};
+const COUNTRY_PT={'Albania':'Albânia','Armenia':'Armênia','Austria':'Áustria','Azerbaijan':'Azerbaijão','Belarus':'Bielorrússia','Belgium':'Bélgica','Bosnia':'Bósnia e Herzegovina','Bulgaria':'Bulgária','Croatia':'Croácia','Cyprus':'Chipre','Czech Rep.':'Chéquia','Denmark':'Dinamarca','England':'Inglaterra','Estonia':'Estônia','Faroe Is.':'Ilhas Faroé','Finland':'Finlândia','France':'França','Georgia':'Geórgia','Germany':'Alemanha','Gibraltar':'Gibraltar','Greece':'Grécia','Hungary':'Hungria','Iceland':'Islândia','Ireland':'Irlanda','Israel':'Israel','Italy':'Itália','Kazakhstan':'Cazaquistão','Kosovo':'Kosovo','Latvia':'Letônia','Liechtenstein':'Liechtenstein','Lithuania':'Lituânia','Luxembourg':'Luxemburgo','Malta':'Malta','Moldova':'Moldávia','Montenegro':'Montenegro','N. Macedonia':'Macedônia do Norte','Netherlands':'Países Baixos','N. Ireland':'Irlanda do Norte','Norway':'Noruega','Poland':'Polônia','Portugal':'Portugal','Romania':'Romênia','Russia':'Rússia','San Marino':'San Marino','Scotland':'Escócia','Serbia':'Sérvia','Slovakia':'Eslováquia','Slovenia':'Eslovênia','Spain':'Espanha','Sweden':'Suécia','Switzerland':'Suíça','Türkiye':'Turquia','Ukraine':'Ucrânia','Wales':'País de Gales','Argentina':'Argentina','Bolivia':'Bolívia','Brazil':'Brasil','Chile':'Chile','Colombia':'Colômbia','Ecuador':'Equador','Paraguay':'Paraguai','Peru':'Peru','Uruguay':'Uruguai','Venezuela':'Venezuela','Anguilla':'Anguila','Antigua & Barbuda':'Antígua e Barbuda','Aruba':'Aruba','Bahamas':'Bahamas','Barbados':'Barbados','Belize':'Belize','Bermuda':'Bermudas','Br. Virgin Is.':'Ilhas V. Britânicas','Canada':'Canadá','Cayman Is.':'Ilhas Cayman','Costa Rica':'Costa Rica','Cuba':'Cuba','Curaçao':'Curaçau','Dominica':'Dominica','Dominican Rep.':'Rep. Dominicana','El Salvador':'El Salvador','Grenada':'Granada','Guadeloupe':'Guadalupe','Guatemala':'Guatemala','Guyana':'Guiana','Haiti':'Haiti','Honduras':'Honduras','Jamaica':'Jamaica','Martinique':'Martinica','Mexico':'México','Montserrat':'Montserrat','Nicaragua':'Nicarágua','Panama':'Panamá','Puerto Rico':'Porto Rico','St. Kitts & Nevis':'S. Cristóvão e Névis','St. Lucia':'Sta. Lúcia','Sint Maarten':'São Martinho','St. Vincent':'S. Vicente','Suriname':'Suriname','Trinidad & Tobago':'Trinidad e Tobago','Turks & Caicos':'Turcas e Caicos','USA':'EUA','US Virgin Is.':'Ilhas Virgens dos EUA','Algeria':'Argélia','Angola':'Angola','Benin':'Benim','Botswana':'Botsuana','Burkina Faso':'Burquina Faso','Burundi':'Burundi','Cameroon':'Camarões','Cape Verde':'Cabo Verde','Central Afr. Rep.':'Rep. Centro-Africana','Chad':'Chade','Comoros':'Comores','Congo':'Congo','Côte d\'Ivoire':'Costa do Marfim','DR Congo':'RD Congo','Djibouti':'Djibuti','Egypt':'Egito','Eq. Guinea':'Guiné Equatorial','Eritrea':'Eritreia','Eswatini':'Essuatíni','Ethiopia':'Etiópia','Gabon':'Gabão','Gambia':'Gâmbia','Ghana':'Gana','Guinea':'Guiné','Guinea-Bissau':'Guiné-Bissau','Kenya':'Quênia','Lesotho':'Lesoto','Liberia':'Libéria','Libya':'Líbia','Madagascar':'Madagáscar','Malawi':'Maláui','Mali':'Mali','Mauritania':'Mauritânia','Mauritius':'Maurício','Morocco':'Marrocos','Mozambique':'Moçambique','Namibia':'Namíbia','Niger':'Níger','Nigeria':'Nigéria','Réunion':'Reunião','Rwanda':'Ruanda','São Tomé':'São Tomé','Senegal':'Senegal','Seychelles':'Seicheles','Sierra Leone':'Serra Leoa','Somalia':'Somália','South Africa':'África do Sul','South Sudan':'Sudão do Sul','Sudan':'Sudão','Tanzania':'Tanzânia','Togo':'Togo','Tunisia':'Tunísia','Uganda':'Uganda','Zambia':'Zâmbia','Zanzibar':'Zanzibar','Zimbabwe':'Zimbábue','Afghanistan':'Afeganistão','Bahrain':'Bahrein','Bangladesh':'Bangladesh','Bhutan':'Butão','Brunei':'Brunei','Cambodia':'Camboja','China':'China','Chinese Taipei':'Taipé Chinês','Guam':'Guam','Hong Kong':'Hong Kong','India':'Índia','Indonesia':'Indonésia','Iran':'Irã','Iraq':'Iraque','Japan':'Japão','Jordan':'Jordânia','Korea DPR':'Coreia do Norte','Korea Rep.':'Coreia do Sul','Kuwait':'Kuwait','Kyrgyzstan':'Quirguistão','Laos':'Laos','Lebanon':'Líbano','Macau':'Macau','Malaysia':'Malásia','Maldives':'Maldivas','Mongolia':'Mongólia','Myanmar':'Mianmar','Nepal':'Nepal','Northern Mariana Is.':'Marianas do Norte','Oman':'Omã','Pakistan':'Paquistão','Palestine':'Palestina','Philippines':'Filipinas','Qatar':'Catar','Saudi Arabia':'Arábia Saudita','Singapore':'Singapura','Sri Lanka':'Sri Lanka','Syria':'Síria','Tajikistan':'Tajiquistão','Thailand':'Tailândia','Timor-Leste':'Timor-Leste','Turkmenistan':'Turcomenistão','UAE':'EAU','Uzbekistan':'Uzbequistão','Vietnam':'Vietnã','Yemen':'Iêmen','American Samoa':'Samoa Americana','Cook Islands':'Ilhas Cook','Fiji':'Fiji','New Caledonia':'Nova Caledônia','New Zealand':'Nova Zelândia','Papua New Guinea':'Papua-Nova Guiné','Samoa':'Samoa','Solomon Is.':'Ilhas Salomão','Tahiti':'Taiti','Tonga':'Tonga','Vanuatu':'Vanuatu'};
+const COUNTRY_FR={'Albania':'Albanie','Armenia':'Arménie','Austria':'Autriche','Azerbaijan':'Azerbaïdjan','Belarus':'Biélorussie','Belgium':'Belgique','Bosnia':'Bosnie-Herzégovine','Bulgaria':'Bulgarie','Croatia':'Croatie','Cyprus':'Chypre','Czech Rep.':'Tchéquie','Denmark':'Danemark','England':'Angleterre','Estonia':'Estonie','Faroe Is.':'Îles Féroé','Finland':'Finlande','France':'France','Georgia':'Géorgie','Germany':'Allemagne','Gibraltar':'Gibraltar','Greece':'Grèce','Hungary':'Hongrie','Iceland':'Islande','Ireland':'Irlande','Israel':'Israël','Italy':'Italie','Kazakhstan':'Kazakhstan','Kosovo':'Kosovo','Latvia':'Lettonie','Liechtenstein':'Liechtenstein','Lithuania':'Lituanie','Luxembourg':'Luxembourg','Malta':'Malte','Moldova':'Moldavie','Montenegro':'Monténégro','N. Macedonia':'Macédoine du Nord','Netherlands':'Pays-Bas','N. Ireland':'Irlande du Nord','Norway':'Norvège','Poland':'Pologne','Portugal':'Portugal','Romania':'Roumanie','Russia':'Russie','San Marino':'Saint-Marin','Scotland':'Écosse','Serbia':'Serbie','Slovakia':'Slovaquie','Slovenia':'Slovénie','Spain':'Espagne','Sweden':'Suède','Switzerland':'Suisse','Türkiye':'Turquie','Ukraine':'Ukraine','Wales':'Pays de Galles','Argentina':'Argentine','Bolivia':'Bolivie','Brazil':'Brésil','Chile':'Chili','Colombia':'Colombie','Ecuador':'Équateur','Paraguay':'Paraguay','Peru':'Pérou','Uruguay':'Uruguay','Venezuela':'Venezuela','Anguilla':'Anguilla','Antigua & Barbuda':'Antigua-et-Barbuda','Aruba':'Aruba','Bahamas':'Bahamas','Barbados':'Barbade','Belize':'Belize','Bermuda':'Bermudes','Br. Virgin Is.':'Îles V. britanniques','Canada':'Canada','Cayman Is.':'Îles Caïmans','Costa Rica':'Costa Rica','Cuba':'Cuba','Curaçao':'Curaçao','Dominica':'Dominique','Dominican Rep.':'Rép. dominicaine','El Salvador':'Salvador','Grenada':'Grenade','Guadeloupe':'Guadeloupe','Guatemala':'Guatemala','Guyana':'Guyana','Haiti':'Haïti','Honduras':'Honduras','Jamaica':'Jamaïque','Martinique':'Martinique','Mexico':'Mexique','Montserrat':'Montserrat','Nicaragua':'Nicaragua','Panama':'Panama','Puerto Rico':'Porto Rico','St. Kitts & Nevis':'S.-Christophe-et-Niévès','St. Lucia':'Sainte-Lucie','Sint Maarten':'Saint-Martin','St. Vincent':'S.-Vincent','Suriname':'Suriname','Trinidad & Tobago':'Trinité-et-Tobago','Turks & Caicos':'Turques-et-Caïques','USA':'États-Unis','US Virgin Is.':'Îles Vierges am.','Algeria':'Algérie','Angola':'Angola','Benin':'Bénin','Botswana':'Botswana','Burkina Faso':'Burkina Faso','Burundi':'Burundi','Cameroon':'Cameroun','Cape Verde':'Cap-Vert','Central Afr. Rep.':'Rép. centrafricaine','Chad':'Tchad','Comoros':'Comores','Congo':'Congo','Côte d\'Ivoire':'Côte d\'Ivoire','DR Congo':'RD Congo','Djibouti':'Djibouti','Egypt':'Égypte','Eq. Guinea':'Guinée équatoriale','Eritrea':'Érythrée','Eswatini':'Eswatini','Ethiopia':'Éthiopie','Gabon':'Gabon','Gambia':'Gambie','Ghana':'Ghana','Guinea':'Guinée','Guinea-Bissau':'Guinée-Bissau','Kenya':'Kenya','Lesotho':'Lesotho','Liberia':'Libéria','Libya':'Libye','Madagascar':'Madagascar','Malawi':'Malawi','Mali':'Mali','Mauritania':'Mauritanie','Mauritius':'Maurice','Morocco':'Maroc','Mozambique':'Mozambique','Namibia':'Namibie','Niger':'Niger','Nigeria':'Nigéria','Réunion':'La Réunion','Rwanda':'Rwanda','São Tomé':'S. Tomé','Senegal':'Sénégal','Seychelles':'Seychelles','Sierra Leone':'Sierra Leone','Somalia':'Somalie','South Africa':'Afrique du Sud','South Sudan':'Soudan du Sud','Sudan':'Soudan','Tanzania':'Tanzanie','Togo':'Togo','Tunisia':'Tunisie','Uganda':'Ouganda','Zambia':'Zambie','Zanzibar':'Zanzibar','Zimbabwe':'Zimbabwe','Afghanistan':'Afghanistan','Bahrain':'Bahreïn','Bangladesh':'Bangladesh','Bhutan':'Bhoutan','Brunei':'Brunei','Cambodia':'Cambodge','China':'Chine','Chinese Taipei':'Taipei chinois','Guam':'Guam','Hong Kong':'Hong Kong','India':'Inde','Indonesia':'Indonésie','Iran':'Iran','Iraq':'Irak','Japan':'Japon','Jordan':'Jordanie','Korea DPR':'Corée du Nord','Korea Rep.':'Corée du Sud','Kuwait':'Koweït','Kyrgyzstan':'Kirghizistan','Laos':'Laos','Lebanon':'Liban','Macau':'Macao','Malaysia':'Malaisie','Maldives':'Maldives','Mongolia':'Mongolie','Myanmar':'Birmanie','Nepal':'Népal','Northern Mariana Is.':'Mariannes du Nord','Oman':'Oman','Pakistan':'Pakistan','Palestine':'Palestine','Philippines':'Philippines','Qatar':'Qatar','Saudi Arabia':'Arabie saoudite','Singapore':'Singapour','Sri Lanka':'Sri Lanka','Syria':'Syrie','Tajikistan':'Tadjikistan','Thailand':'Thaïlande','Timor-Leste':'Timor oriental','Turkmenistan':'Turkménistan','UAE':'EAU','Uzbekistan':'Ouzbékistan','Vietnam':'Vietnam','Yemen':'Yémen','American Samoa':'Samoa américaines','Cook Islands':'Îles Cook','Fiji':'Fidji','New Caledonia':'Nouvelle-Calédonie','New Zealand':'Nouvelle-Zélande','Papua New Guinea':'Papouasie-N.-G.','Samoa':'Samoa','Solomon Is.':'Îles Salomon','Tahiti':'Tahiti','Tonga':'Tonga','Vanuatu':'Vanuatu'};
+const COUNTRY_DE={'Albania':'Albanien','Armenia':'Armenien','Austria':'Österreich','Azerbaijan':'Aserbaidschan','Belarus':'Belarus','Belgium':'Belgien','Bosnia':'Bosnien-Herzegowina','Bulgaria':'Bulgarien','Croatia':'Kroatien','Cyprus':'Zypern','Czech Rep.':'Tschechien','Denmark':'Dänemark','England':'England','Estonia':'Estland','Faroe Is.':'Färöer','Finland':'Finnland','France':'Frankreich','Georgia':'Georgien','Germany':'Deutschland','Gibraltar':'Gibraltar','Greece':'Griechenland','Hungary':'Ungarn','Iceland':'Island','Ireland':'Irland','Israel':'Israel','Italy':'Italien','Kazakhstan':'Kasachstan','Kosovo':'Kosovo','Latvia':'Lettland','Liechtenstein':'Liechtenstein','Lithuania':'Litauen','Luxembourg':'Luxemburg','Malta':'Malta','Moldova':'Moldau','Montenegro':'Montenegro','N. Macedonia':'Nordmazedonien','Netherlands':'Niederlande','N. Ireland':'Nordirland','Norway':'Norwegen','Poland':'Polen','Portugal':'Portugal','Romania':'Rumänien','Russia':'Russland','San Marino':'San Marino','Scotland':'Schottland','Serbia':'Serbien','Slovakia':'Slowakei','Slovenia':'Slowenien','Spain':'Spanien','Sweden':'Schweden','Switzerland':'Schweiz','Türkiye':'Türkei','Ukraine':'Ukraine','Wales':'Wales','Argentina':'Argentinien','Bolivia':'Bolivien','Brazil':'Brasilien','Chile':'Chile','Colombia':'Kolumbien','Ecuador':'Ecuador','Paraguay':'Paraguay','Peru':'Peru','Uruguay':'Uruguay','Venezuela':'Venezuela','Anguilla':'Anguilla','Antigua & Barbuda':'Antigua und Barbuda','Aruba':'Aruba','Bahamas':'Bahamas','Barbados':'Barbados','Belize':'Belize','Bermuda':'Bermuda','Br. Virgin Is.':'Britische Jungferninseln','Canada':'Kanada','Cayman Is.':'Kaimaninseln','Costa Rica':'Costa Rica','Cuba':'Kuba','Curaçao':'Curaçao','Dominica':'Dominica','Dominican Rep.':'Dom. Republik','El Salvador':'El Salvador','Grenada':'Grenada','Guadeloupe':'Guadeloupe','Guatemala':'Guatemala','Guyana':'Guyana','Haiti':'Haiti','Honduras':'Honduras','Jamaica':'Jamaika','Martinique':'Martinique','Mexico':'Mexiko','Montserrat':'Montserrat','Nicaragua':'Nicaragua','Panama':'Panama','Puerto Rico':'Puerto Rico','St. Kitts & Nevis':'St. Kitts und Nevis','St. Lucia':'St. Lucia','Sint Maarten':'Sint Maarten','St. Vincent':'St. Vincent','Suriname':'Suriname','Trinidad & Tobago':'Trinidad und Tobago','Turks & Caicos':'Turks- und Caicosinseln','USA':'USA','US Virgin Is.':'Amerik. Jungferninseln','Algeria':'Algerien','Angola':'Angola','Benin':'Benin','Botswana':'Botswana','Burkina Faso':'Burkina Faso','Burundi':'Burundi','Cameroon':'Kamerun','Cape Verde':'Kap Verde','Central Afr. Rep.':'Zentralafr. Republik','Chad':'Tschad','Comoros':'Komoren','Congo':'Kongo','Côte d\'Ivoire':'Elfenbeinküste','DR Congo':'DR Kongo','Djibouti':'Dschibuti','Egypt':'Ägypten','Eq. Guinea':'Äquatorialguinea','Eritrea':'Eritrea','Eswatini':'Eswatini','Ethiopia':'Äthiopien','Gabon':'Gabun','Gambia':'Gambia','Ghana':'Ghana','Guinea':'Guinea','Guinea-Bissau':'Guinea-Bissau','Kenya':'Kenia','Lesotho':'Lesotho','Liberia':'Liberia','Libya':'Libyen','Madagascar':'Madagaskar','Malawi':'Malawi','Mali':'Mali','Mauritania':'Mauretanien','Mauritius':'Mauritius','Morocco':'Marokko','Mozambique':'Mosambik','Namibia':'Namibia','Niger':'Niger','Nigeria':'Nigeria','Réunion':'Réunion','Rwanda':'Ruanda','São Tomé':'São Tomé','Senegal':'Senegal','Seychelles':'Seychellen','Sierra Leone':'Sierra Leone','Somalia':'Somalia','South Africa':'Südafrika','South Sudan':'Südsudan','Sudan':'Sudan','Tanzania':'Tansania','Togo':'Togo','Tunisia':'Tunesien','Uganda':'Uganda','Zambia':'Sambia','Zanzibar':'Sansibar','Zimbabwe':'Simbabwe','Afghanistan':'Afghanistan','Bahrain':'Bahrain','Bangladesh':'Bangladesch','Bhutan':'Bhutan','Brunei':'Brunei','Cambodia':'Kambodscha','China':'China','Chinese Taipei':'Chinesisch Taipeh','Guam':'Guam','Hong Kong':'Hongkong','India':'Indien','Indonesia':'Indonesien','Iran':'Iran','Iraq':'Irak','Japan':'Japan','Jordan':'Jordanien','Korea DPR':'Nordkorea','Korea Rep.':'Südkorea','Kuwait':'Kuwait','Kyrgyzstan':'Kirgisistan','Laos':'Laos','Lebanon':'Libanon','Macau':'Macau','Malaysia':'Malaysia','Maldives':'Malediven','Mongolia':'Mongolei','Myanmar':'Myanmar','Nepal':'Nepal','Northern Mariana Is.':'Nördliche Marianen','Oman':'Oman','Pakistan':'Pakistan','Palestine':'Palästina','Philippines':'Philippinen','Qatar':'Katar','Saudi Arabia':'Saudi-Arabien','Singapore':'Singapur','Sri Lanka':'Sri Lanka','Syria':'Syrien','Tajikistan':'Tadschikistan','Thailand':'Thailand','Timor-Leste':'Osttimor','Turkmenistan':'Turkmenistan','UAE':'VAE','Uzbekistan':'Usbekistan','Vietnam':'Vietnam','Yemen':'Jemen','American Samoa':'Amerik. Samoa','Cook Islands':'Cookinseln','Fiji':'Fidschi','New Caledonia':'Neukaledonien','New Zealand':'Neuseeland','Papua New Guinea':'Papua-Neuguinea','Samoa':'Samoa','Solomon Is.':'Salomonen','Tahiti':'Tahiti','Tonga':'Tonga','Vanuatu':'Vanuatu'};
+const COUNTRY_IT={'Albania':'Albania','Armenia':'Armenia','Austria':'Austria','Azerbaijan':'Azerbaigian','Belarus':'Bielorussia','Belgium':'Belgio','Bosnia':'Bosnia-Erzegovina','Bulgaria':'Bulgaria','Croatia':'Croazia','Cyprus':'Cipro','Czech Rep.':'Rep. Ceca','Denmark':'Danimarca','England':'Inghilterra','Estonia':'Estonia','Faroe Is.':'Isole Far Oer','Finland':'Finlandia','France':'Francia','Georgia':'Georgia','Germany':'Germania','Gibraltar':'Gibilterra','Greece':'Grecia','Hungary':'Ungheria','Iceland':'Islanda','Ireland':'Irlanda','Israel':'Israele','Italy':'Italia','Kazakhstan':'Kazakistan','Kosovo':'Kosovo','Latvia':'Lettonia','Liechtenstein':'Liechtenstein','Lithuania':'Lituania','Luxembourg':'Lussemburgo','Malta':'Malta','Moldova':'Moldavia','Montenegro':'Montenegro','N. Macedonia':'Macedonia del Nord','Netherlands':'Paesi Bassi','N. Ireland':'Irlanda del Nord','Norway':'Norvegia','Poland':'Polonia','Portugal':'Portogallo','Romania':'Romania','Russia':'Russia','San Marino':'San Marino','Scotland':'Scozia','Serbia':'Serbia','Slovakia':'Slovacchia','Slovenia':'Slovenia','Spain':'Spagna','Sweden':'Svezia','Switzerland':'Svizzera','Türkiye':'Turchia','Ukraine':'Ucraina','Wales':'Galles','Argentina':'Argentina','Bolivia':'Bolivia','Brazil':'Brasile','Chile':'Cile','Colombia':'Colombia','Ecuador':'Ecuador','Paraguay':'Paraguay','Peru':'Perù','Uruguay':'Uruguay','Venezuela':'Venezuela','Anguilla':'Anguilla','Antigua & Barbuda':'Antigua e Barbuda','Aruba':'Aruba','Bahamas':'Bahamas','Barbados':'Barbados','Belize':'Belize','Bermuda':'Bermuda','Br. Virgin Is.':'Is. V. Britanniche','Canada':'Canada','Cayman Is.':'Isole Cayman','Costa Rica':'Costa Rica','Cuba':'Cuba','Curaçao':'Curaçao','Dominica':'Dominica','Dominican Rep.':'Rep. Dominicana','El Salvador':'El Salvador','Grenada':'Grenada','Guadeloupe':'Guadalupa','Guatemala':'Guatemala','Guyana':'Guyana','Haiti':'Haiti','Honduras':'Honduras','Jamaica':'Giamaica','Martinique':'Martinica','Mexico':'Messico','Montserrat':'Montserrat','Nicaragua':'Nicaragua','Panama':'Panama','Puerto Rico':'Porto Rico','St. Kitts & Nevis':'St. Kitts e Nevis','St. Lucia':'Santa Lucia','Sint Maarten':'Sint Maarten','St. Vincent':'S. Vincenzo','Suriname':'Suriname','Trinidad & Tobago':'Trinidad e Tobago','Turks & Caicos':'Turks e Caicos','USA':'USA','US Virgin Is.':'Isole V. Americane','Algeria':'Algeria','Angola':'Angola','Benin':'Benin','Botswana':'Botswana','Burkina Faso':'Burkina Faso','Burundi':'Burundi','Cameroon':'Camerun','Cape Verde':'Capo Verde','Central Afr. Rep.':'Rep. Centrafricana','Chad':'Ciad','Comoros':'Comore','Congo':'Congo','Côte d\'Ivoire':'Costa d\'Avorio','DR Congo':'RD Congo','Djibouti':'Gibuti','Egypt':'Egitto','Eq. Guinea':'Guinea Equatoriale','Eritrea':'Eritrea','Eswatini':'Eswatini','Ethiopia':'Etiopia','Gabon':'Gabon','Gambia':'Gambia','Ghana':'Ghana','Guinea':'Guinea','Guinea-Bissau':'Guinea-Bissau','Kenya':'Kenya','Lesotho':'Lesotho','Liberia':'Liberia','Libya':'Libia','Madagascar':'Madagascar','Malawi':'Malawi','Mali':'Mali','Mauritania':'Mauritania','Mauritius':'Mauritius','Morocco':'Marocco','Mozambique':'Mozambico','Namibia':'Namibia','Niger':'Niger','Nigeria':'Nigeria','Réunion':'Riunione','Rwanda':'Ruanda','São Tomé':'S. Tomé','Senegal':'Senegal','Seychelles':'Seychelles','Sierra Leone':'Sierra Leone','Somalia':'Somalia','South Africa':'Sudafrica','South Sudan':'Sud Sudan','Sudan':'Sudan','Tanzania':'Tanzania','Togo':'Togo','Tunisia':'Tunisia','Uganda':'Uganda','Zambia':'Zambia','Zanzibar':'Zanzibar','Zimbabwe':'Zimbabwe','Afghanistan':'Afghanistan','Bahrain':'Bahrein','Bangladesh':'Bangladesh','Bhutan':'Bhutan','Brunei':'Brunei','Cambodia':'Cambogia','China':'Cina','Chinese Taipei':'Taipei Cinese','Guam':'Guam','Hong Kong':'Hong Kong','India':'India','Indonesia':'Indonesia','Iran':'Iran','Iraq':'Iraq','Japan':'Giappone','Jordan':'Giordania','Korea DPR':'Corea del Nord','Korea Rep.':'Corea del Sud','Kuwait':'Kuwait','Kyrgyzstan':'Kirghizistan','Laos':'Laos','Lebanon':'Libano','Macau':'Macao','Malaysia':'Malesia','Maldives':'Maldive','Mongolia':'Mongolia','Myanmar':'Myanmar','Nepal':'Nepal','Northern Mariana Is.':'Marianne Sett.','Oman':'Oman','Pakistan':'Pakistan','Palestine':'Palestina','Philippines':'Filippine','Qatar':'Qatar','Saudi Arabia':'Arabia Saudita','Singapore':'Singapore','Sri Lanka':'Sri Lanka','Syria':'Siria','Tajikistan':'Tagikistan','Thailand':'Thailandia','Timor-Leste':'Timor Est','Turkmenistan':'Turkmenistan','UAE':'EAU','Uzbekistan':'Uzbekistan','Vietnam':'Vietnam','Yemen':'Yemen','American Samoa':'Samoa Americane','Cook Islands':'Isole Cook','Fiji':'Figi','New Caledonia':'Nuova Caledonia','New Zealand':'Nuova Zelanda','Papua New Guinea':'Papua N. Guinea','Samoa':'Samoa','Solomon Is.':'Isole Salomone','Tahiti':'Tahiti','Tonga':'Tonga','Vanuatu':'Vanuatu'};
+const COUNTRY_NL={'Albania':'Albanië','Armenia':'Armenië','Austria':'Oostenrijk','Azerbaijan':'Azerbeidzjan','Belarus':'Belarus','Belgium':'België','Bosnia':'Bosnië-Herzegovina','Bulgaria':'Bulgarije','Croatia':'Kroatië','Cyprus':'Cyprus','Czech Rep.':'Tsjechië','Denmark':'Denemarken','England':'Engeland','Estonia':'Estland','Faroe Is.':'Faeröer','Finland':'Finland','France':'Frankrijk','Georgia':'Georgië','Germany':'Duitsland','Gibraltar':'Gibraltar','Greece':'Griekenland','Hungary':'Hongarije','Iceland':'IJsland','Ireland':'Ierland','Israel':'Israël','Italy':'Italië','Kazakhstan':'Kazachstan','Kosovo':'Kosovo','Latvia':'Letland','Liechtenstein':'Liechtenstein','Lithuania':'Litouwen','Luxembourg':'Luxemburg','Malta':'Malta','Moldova':'Moldavië','Montenegro':'Montenegro','N. Macedonia':'Noord-Macedonië','Netherlands':'Nederland','N. Ireland':'Noord-Ierland','Norway':'Noorwegen','Poland':'Polen','Portugal':'Portugal','Romania':'Roemenië','Russia':'Rusland','San Marino':'San Marino','Scotland':'Schotland','Serbia':'Servië','Slovakia':'Slowakije','Slovenia':'Slovenië','Spain':'Spanje','Sweden':'Zweden','Switzerland':'Zwitserland','Türkiye':'Turkije','Ukraine':'Oekraïne','Wales':'Wales','Argentina':'Argentinië','Bolivia':'Bolivia','Brazil':'Brazilië','Chile':'Chili','Colombia':'Colombia','Ecuador':'Ecuador','Paraguay':'Paraguay','Peru':'Peru','Uruguay':'Uruguay','Venezuela':'Venezuela','Anguilla':'Anguilla','Antigua & Barbuda':'Antigua en Barbuda','Aruba':'Aruba','Bahamas':'Bahama\'s','Barbados':'Barbados','Belize':'Belize','Bermuda':'Bermuda','Br. Virgin Is.':'Br. Maagdeneilanden','Canada':'Canada','Cayman Is.':'Caymaneilanden','Costa Rica':'Costa Rica','Cuba':'Cuba','Curaçao':'Curaçao','Dominica':'Dominica','Dominican Rep.':'Dom. Republiek','El Salvador':'El Salvador','Grenada':'Grenada','Guadeloupe':'Guadeloupe','Guatemala':'Guatemala','Guyana':'Guyana','Haiti':'Haïti','Honduras':'Honduras','Jamaica':'Jamaica','Martinique':'Martinique','Mexico':'Mexico','Montserrat':'Montserrat','Nicaragua':'Nicaragua','Panama':'Panama','Puerto Rico':'Puerto Rico','St. Kitts & Nevis':'St. Kitts en Nevis','St. Lucia':'Saint Lucia','Sint Maarten':'Sint Maarten','St. Vincent':'St. Vincent','Suriname':'Suriname','Trinidad & Tobago':'Trinidad en Tobago','Turks & Caicos':'Turks en Caicos','USA':'VS','US Virgin Is.':'Am. Maagdeneilanden','Algeria':'Algerije','Angola':'Angola','Benin':'Benin','Botswana':'Botswana','Burkina Faso':'Burkina Faso','Burundi':'Burundi','Cameroon':'Kameroen','Cape Verde':'Kaapverdië','Central Afr. Rep.':'Centr.-Afr. Republiek','Chad':'Tsjaad','Comoros':'Comoren','Congo':'Congo','Côte d\'Ivoire':'Ivoorkust','DR Congo':'DR Congo','Djibouti':'Djibouti','Egypt':'Egypte','Eq. Guinea':'Equatoriaal-Guinea','Eritrea':'Eritrea','Eswatini':'Eswatini','Ethiopia':'Ethiopië','Gabon':'Gabon','Gambia':'Gambia','Ghana':'Ghana','Guinea':'Guinee','Guinea-Bissau':'Guinee-Bissau','Kenya':'Kenia','Lesotho':'Lesotho','Liberia':'Liberia','Libya':'Libië','Madagascar':'Madagaskar','Malawi':'Malawi','Mali':'Mali','Mauritania':'Mauritanië','Mauritius':'Mauritius','Morocco':'Marokko','Mozambique':'Mozambique','Namibia':'Namibië','Niger':'Niger','Nigeria':'Nigeria','Réunion':'Réunion','Rwanda':'Rwanda','São Tomé':'São Tomé','Senegal':'Senegal','Seychelles':'Seychellen','Sierra Leone':'Sierra Leone','Somalia':'Somalië','South Africa':'Zuid-Afrika','South Sudan':'Zuid-Soedan','Sudan':'Soedan','Tanzania':'Tanzania','Togo':'Togo','Tunisia':'Tunesië','Uganda':'Oeganda','Zambia':'Zambia','Zanzibar':'Zanzibar','Zimbabwe':'Zimbabwe','Afghanistan':'Afghanistan','Bahrain':'Bahrein','Bangladesh':'Bangladesh','Bhutan':'Bhutan','Brunei':'Brunei','Cambodia':'Cambodja','China':'China','Chinese Taipei':'Chinees Taipei','Guam':'Guam','Hong Kong':'Hongkong','India':'India','Indonesia':'Indonesië','Iran':'Iran','Iraq':'Irak','Japan':'Japan','Jordan':'Jordanië','Korea DPR':'Noord-Korea','Korea Rep.':'Zuid-Korea','Kuwait':'Koeweit','Kyrgyzstan':'Kirgizië','Laos':'Laos','Lebanon':'Libanon','Macau':'Macau','Malaysia':'Maleisië','Maldives':'Maldiven','Mongolia':'Mongolië','Myanmar':'Myanmar','Nepal':'Nepal','Northern Mariana Is.':'N. Marianen','Oman':'Oman','Pakistan':'Pakistan','Palestine':'Palestina','Philippines':'Filipijnen','Qatar':'Qatar','Saudi Arabia':'Saoedi-Arabië','Singapore':'Singapore','Sri Lanka':'Sri Lanka','Syria':'Syrië','Tajikistan':'Tadzjikistan','Thailand':'Thailand','Timor-Leste':'Oost-Timor','Turkmenistan':'Turkmenistan','UAE':'VAE','Uzbekistan':'Oezbekistan','Vietnam':'Vietnam','Yemen':'Jemen','American Samoa':'Amerik. Samoa','Cook Islands':'Cookeilanden','Fiji':'Fiji','New Caledonia':'Nieuw-Caledonië','New Zealand':'Nieuw-Zeeland','Papua New Guinea':'Papoea-N.-Guinea','Samoa':'Samoa','Solomon Is.':'Salomonseilanden','Tahiti':'Tahiti','Tonga':'Tonga','Vanuatu':'Vanuatu'};
+const COUNTRY_NO={'Albania':'Albania','Armenia':'Armenia','Austria':'Østerrike','Azerbaijan':'Aserbajdsjan','Belarus':'Hviterussland','Belgium':'Belgia','Bosnia':'Bosnia-Hercegovina','Bulgaria':'Bulgaria','Croatia':'Kroatia','Cyprus':'Kypros','Czech Rep.':'Tsjekkia','Denmark':'Danmark','England':'England','Estonia':'Estland','Faroe Is.':'Færøyene','Finland':'Finland','France':'Frankrike','Georgia':'Georgia','Germany':'Tyskland','Gibraltar':'Gibraltar','Greece':'Hellas','Hungary':'Ungarn','Iceland':'Island','Ireland':'Irland','Israel':'Israel','Italy':'Italia','Kazakhstan':'Kasakhstan','Kosovo':'Kosovo','Latvia':'Latvia','Liechtenstein':'Liechtenstein','Lithuania':'Litauen','Luxembourg':'Luxembourg','Malta':'Malta','Moldova':'Moldova','Montenegro':'Montenegro','N. Macedonia':'Nord-Makedonia','Netherlands':'Nederland','N. Ireland':'Nord-Irland','Norway':'Norge','Poland':'Polen','Portugal':'Portugal','Romania':'Romania','Russia':'Russland','San Marino':'San Marino','Scotland':'Skottland','Serbia':'Serbia','Slovakia':'Slovakia','Slovenia':'Slovenia','Spain':'Spania','Sweden':'Sverige','Switzerland':'Sveits','Türkiye':'Tyrkia','Ukraine':'Ukraina','Wales':'Wales','Argentina':'Argentina','Bolivia':'Bolivia','Brazil':'Brasil','Chile':'Chile','Colombia':'Colombia','Ecuador':'Ecuador','Paraguay':'Paraguay','Peru':'Peru','Uruguay':'Uruguay','Venezuela':'Venezuela','Anguilla':'Anguilla','Antigua & Barbuda':'Antigua og Barbuda','Aruba':'Aruba','Bahamas':'Bahamas','Barbados':'Barbados','Belize':'Belize','Bermuda':'Bermuda','Br. Virgin Is.':'Br. Jomfruøyene','Canada':'Canada','Cayman Is.':'Caymanøyene','Costa Rica':'Costa Rica','Cuba':'Cuba','Curaçao':'Curaçao','Dominica':'Dominica','Dominican Rep.':'Dom. Republikk','El Salvador':'El Salvador','Grenada':'Grenada','Guadeloupe':'Guadeloupe','Guatemala':'Guatemala','Guyana':'Guyana','Haiti':'Haiti','Honduras':'Honduras','Jamaica':'Jamaica','Martinique':'Martinique','Mexico':'Mexico','Montserrat':'Montserrat','Nicaragua':'Nicaragua','Panama':'Panama','Puerto Rico':'Puerto Rico','St. Kitts & Nevis':'St. Kitts og Nevis','St. Lucia':'St. Lucia','Sint Maarten':'Sint Maarten','St. Vincent':'St. Vincent','Suriname':'Surinam','Trinidad & Tobago':'Trinidad og Tobago','Turks & Caicos':'Turks og Caicos','USA':'USA','US Virgin Is.':'Am. Jomfruøyene','Algeria':'Algerie','Angola':'Angola','Benin':'Benin','Botswana':'Botswana','Burkina Faso':'Burkina Faso','Burundi':'Burundi','Cameroon':'Kamerun','Cape Verde':'Kapp Verde','Central Afr. Rep.':'Sentralafr. republikk','Chad':'Tsjad','Comoros':'Komorene','Congo':'Kongo','Côte d\'Ivoire':'Elfenbenskysten','DR Congo':'DR Kongo','Djibouti':'Djibouti','Egypt':'Egypt','Eq. Guinea':'Ekvatorial-Guinea','Eritrea':'Eritrea','Eswatini':'Eswatini','Ethiopia':'Etiopia','Gabon':'Gabon','Gambia':'Gambia','Ghana':'Ghana','Guinea':'Guinea','Guinea-Bissau':'Guinea-Bissau','Kenya':'Kenya','Lesotho':'Lesotho','Liberia':'Liberia','Libya':'Libya','Madagascar':'Madagaskar','Malawi':'Malawi','Mali':'Mali','Mauritania':'Mauritania','Mauritius':'Mauritius','Morocco':'Marokko','Mozambique':'Mosambik','Namibia':'Namibia','Niger':'Niger','Nigeria':'Nigeria','Réunion':'Réunion','Rwanda':'Rwanda','São Tomé':'São Tomé','Senegal':'Senegal','Seychelles':'Seychellene','Sierra Leone':'Sierra Leone','Somalia':'Somalia','South Africa':'Sør-Afrika','South Sudan':'Sør-Sudan','Sudan':'Sudan','Tanzania':'Tanzania','Togo':'Togo','Tunisia':'Tunisia','Uganda':'Uganda','Zambia':'Zambia','Zanzibar':'Zanzibar','Zimbabwe':'Zimbabwe','Afghanistan':'Afghanistan','Bahrain':'Bahrain','Bangladesh':'Bangladesh','Bhutan':'Bhutan','Brunei':'Brunei','Cambodia':'Kambodsja','China':'Kina','Chinese Taipei':'Kinesisk Taipei','Guam':'Guam','Hong Kong':'Hongkong','India':'India','Indonesia':'Indonesia','Iran':'Iran','Iraq':'Irak','Japan':'Japan','Jordan':'Jordan','Korea DPR':'Nord-Korea','Korea Rep.':'Sør-Korea','Kuwait':'Kuwait','Kyrgyzstan':'Kirgisistan','Laos':'Laos','Lebanon':'Libanon','Macau':'Macao','Malaysia':'Malaysia','Maldives':'Maldivene','Mongolia':'Mongolia','Myanmar':'Myanmar','Nepal':'Nepal','Northern Mariana Is.':'Nord-Marianene','Oman':'Oman','Pakistan':'Pakistan','Palestine':'Palestina','Philippines':'Filippinene','Qatar':'Qatar','Saudi Arabia':'Saudi-Arabia','Singapore':'Singapore','Sri Lanka':'Sri Lanka','Syria':'Syria','Tajikistan':'Tadsjikistan','Thailand':'Thailand','Timor-Leste':'Øst-Timor','Turkmenistan':'Turkmenistan','UAE':'FAE','Uzbekistan':'Usbekistan','Vietnam':'Vietnam','Yemen':'Jemen','American Samoa':'Amerik. Samoa','Cook Islands':'Cookøyene','Fiji':'Fiji','New Caledonia':'Ny-Kaledonia','New Zealand':'New Zealand','Papua New Guinea':'Papua Ny-Guinea','Samoa':'Samoa','Solomon Is.':'Salomonøyene','Tahiti':'Tahiti','Tonga':'Tonga','Vanuatu':'Vanuatu'};
+const COUNTRY_SV={'Albania':'Albanien','Armenia':'Armenien','Austria':'Österrike','Azerbaijan':'Azerbajdzjan','Belarus':'Belarus','Belgium':'Belgien','Bosnia':'Bosnien och Hercegovina','Bulgaria':'Bulgarien','Croatia':'Kroatien','Cyprus':'Cypern','Czech Rep.':'Tjeckien','Denmark':'Danmark','England':'England','Estonia':'Estland','Faroe Is.':'Färöarna','Finland':'Finland','France':'Frankrike','Georgia':'Georgien','Germany':'Tyskland','Gibraltar':'Gibraltar','Greece':'Grekland','Hungary':'Ungern','Iceland':'Island','Ireland':'Irland','Israel':'Israel','Italy':'Italien','Kazakhstan':'Kazakstan','Kosovo':'Kosovo','Latvia':'Lettland','Liechtenstein':'Liechtenstein','Lithuania':'Litauen','Luxembourg':'Luxemburg','Malta':'Malta','Moldova':'Moldavien','Montenegro':'Montenegro','N. Macedonia':'Nordmakedonien','Netherlands':'Nederländerna','N. Ireland':'Nordirland','Norway':'Norge','Poland':'Polen','Portugal':'Portugal','Romania':'Rumänien','Russia':'Ryssland','San Marino':'San Marino','Scotland':'Skottland','Serbia':'Serbien','Slovakia':'Slovakien','Slovenia':'Slovenien','Spain':'Spanien','Sweden':'Sverige','Switzerland':'Schweiz','Türkiye':'Turkiet','Ukraine':'Ukraina','Wales':'Wales','Argentina':'Argentina','Bolivia':'Bolivia','Brazil':'Brasilien','Chile':'Chile','Colombia':'Colombia','Ecuador':'Ecuador','Paraguay':'Paraguay','Peru':'Peru','Uruguay':'Uruguay','Venezuela':'Venezuela','Anguilla':'Anguilla','Antigua & Barbuda':'Antigua och Barbuda','Aruba':'Aruba','Bahamas':'Bahamas','Barbados':'Barbados','Belize':'Belize','Bermuda':'Bermuda','Br. Virgin Is.':'Brittiska Jungfruöarna','Canada':'Kanada','Cayman Is.':'Caymanöarna','Costa Rica':'Costa Rica','Cuba':'Kuba','Curaçao':'Curaçao','Dominica':'Dominica','Dominican Rep.':'Dom. Republiken','El Salvador':'El Salvador','Grenada':'Grenada','Guadeloupe':'Guadeloupe','Guatemala':'Guatemala','Guyana':'Guyana','Haiti':'Haiti','Honduras':'Honduras','Jamaica':'Jamaica','Martinique':'Martinique','Mexico':'Mexiko','Montserrat':'Montserrat','Nicaragua':'Nicaragua','Panama':'Panama','Puerto Rico':'Puerto Rico','St. Kitts & Nevis':'S:t Kitts och Nevis','St. Lucia':'S:t Lucia','Sint Maarten':'Sint Maarten','St. Vincent':'S:t Vincent','Suriname':'Surinam','Trinidad & Tobago':'Trinidad och Tobago','Turks & Caicos':'Turks och Caicos','USA':'USA','US Virgin Is.':'Am. Jungfruöarna','Algeria':'Algeriet','Angola':'Angola','Benin':'Benin','Botswana':'Botswana','Burkina Faso':'Burkina Faso','Burundi':'Burundi','Cameroon':'Kamerun','Cape Verde':'Kap Verde','Central Afr. Rep.':'Centralafr. republiken','Chad':'Tchad','Comoros':'Komorerna','Congo':'Kongo','Côte d\'Ivoire':'Elfenbenskusten','DR Congo':'DR Kongo','Djibouti':'Djibouti','Egypt':'Egypten','Eq. Guinea':'Ekvatorialguinea','Eritrea':'Eritrea','Eswatini':'Eswatini','Ethiopia':'Etiopien','Gabon':'Gabon','Gambia':'Gambia','Ghana':'Ghana','Guinea':'Guinea','Guinea-Bissau':'Guinea-Bissau','Kenya':'Kenya','Lesotho':'Lesotho','Liberia':'Liberia','Libya':'Libyen','Madagascar':'Madagaskar','Malawi':'Malawi','Mali':'Mali','Mauritania':'Mauretanien','Mauritius':'Mauritius','Morocco':'Marocko','Mozambique':'Moçambique','Namibia':'Namibia','Niger':'Niger','Nigeria':'Nigeria','Réunion':'Réunion','Rwanda':'Rwanda','São Tomé':'São Tomé','Senegal':'Senegal','Seychelles':'Seychellerna','Sierra Leone':'Sierra Leone','Somalia':'Somalia','South Africa':'Sydafrika','South Sudan':'Sydsudan','Sudan':'Sudan','Tanzania':'Tanzania','Togo':'Togo','Tunisia':'Tunisien','Uganda':'Uganda','Zambia':'Zambia','Zanzibar':'Zanzibar','Zimbabwe':'Zimbabwe','Afghanistan':'Afghanistan','Bahrain':'Bahrain','Bangladesh':'Bangladesh','Bhutan':'Bhutan','Brunei':'Brunei','Cambodia':'Kambodja','China':'Kina','Chinese Taipei':'Kinesiska Taipei','Guam':'Guam','Hong Kong':'Hongkong','India':'Indien','Indonesia':'Indonesien','Iran':'Iran','Iraq':'Irak','Japan':'Japan','Jordan':'Jordanien','Korea DPR':'Nordkorea','Korea Rep.':'Sydkorea','Kuwait':'Kuwait','Kyrgyzstan':'Kirgizistan','Laos':'Laos','Lebanon':'Libanon','Macau':'Macao','Malaysia':'Malaysia','Maldives':'Maldiverna','Mongolia':'Mongoliet','Myanmar':'Myanmar','Nepal':'Nepal','Northern Mariana Is.':'Nord. Marianerna','Oman':'Oman','Pakistan':'Pakistan','Palestine':'Palestina','Philippines':'Filippinerna','Qatar':'Qatar','Saudi Arabia':'Saudiarabien','Singapore':'Singapore','Sri Lanka':'Sri Lanka','Syria':'Syrien','Tajikistan':'Tadzjikistan','Thailand':'Thailand','Timor-Leste':'Östtimor','Turkmenistan':'Turkmenistan','UAE':'FAE','Uzbekistan':'Uzbekistan','Vietnam':'Vietnam','Yemen':'Jemen','American Samoa':'Amerik. Samoa','Cook Islands':'Cooköarna','Fiji':'Fiji','New Caledonia':'Nya Kaledonien','New Zealand':'Nya Zeeland','Papua New Guinea':'Papua Nya Guinea','Samoa':'Samoa','Solomon Is.':'Salomonöarna','Tahiti':'Tahiti','Tonga':'Tonga','Vanuatu':'Vanuatu'};
 function teamDisplayName(name){
-  if(window.FCLang && FCLang.current==='tr' && COUNTRY_TR[name]) return COUNTRY_TR[name];
+  if(!window.FCLang) return name||'';
+  const cur = FCLang.current;
+  const maps = {tr:COUNTRY_TR, es:COUNTRY_ES, pt:COUNTRY_PT, fr:COUNTRY_FR,
+                de:COUNTRY_DE, it:COUNTRY_IT, nl:COUNTRY_NL, no:COUNTRY_NO, sv:COUNTRY_SV};
+  const m = maps[cur];
+  if(m && m[name]) return m[name];
   return name||'';
 }
-
 // FIFA Men's World Ranking points (April 2026)
 // Source: inside.fifa.com, April 2026 update.
 // Top 40 are exact; teams below use an approximation curve based on rank position.
@@ -3253,8 +3373,15 @@ function setMode(m){
   $('hint').textContent=HINTS[m];
   $('paint-swatch-wrap').style.display=m==='paint'?'flex':'none';
   // D3 zoom stays active in ALL modes — edit handlers use capture phase
-  mwrap.style.cursor=m==='view'?'grab':m==='erase'?'crosshair':m==='paint'?'cell':'default';
-  if(m==='game') gameOpen(); else gameClose();
+  mwrap.style.cursor=m==='erase'?'crosshair':m==='paint'?'cell':'default';
+  if(m==='game') gameOpen();
+  else if(GAME && GAME.active && GAME.mode==='conquest'){
+    // During an active conquest, mode switches (view / paint / erase / flags)
+    // should NOT close the game panel — the creator may be popping in and
+    // out of editor modes mid-run. Just clear transient overlay artwork.
+    clearGameOverlay();
+  }
+  else gameClose();
   if(m!=='erase') eraseCtx.clearRect(0,0,eraseCanvas.width,eraseCanvas.height);
   erasing=false; activePid=null;
   selectedFlagId=null; if(typeof renderHandles==='function') renderHandles();
@@ -3547,6 +3674,7 @@ function doUndo(){
   if(op.type==='battle'){undoBattle(op);historyIdx=undoStack.length;renderHistory();return;}
   if(op.type==='conquest-win'){undoConquestWin(op);historyIdx=undoStack.length;renderHistory();return;}
   if(op.type==='conquest-loss'){undoConquestLoss(op);historyIdx=undoStack.length;renderHistory();return;}
+  if(op.type==='conquest-loss-snap'){restoreState(op.prev);historyIdx=undoStack.length;renderHistory();return;}
   if(op.type==='conquest-spin'){undoConquestSpin(op);historyIdx=undoStack.length;renderHistory();return;}
   if(op.type==='erase') restoreBorder(op.pair);
   else if(op.type==='paint'){
@@ -3586,6 +3714,36 @@ function doUndo(){
   }
   renderHistory();
 }
+
+// ── Redo system ─────────────────────────────────────────────────────
+// State-snapshot based: before each undo we capture the current state so
+// doRedo() can restore it. doRedo pushes a 'reset' op back onto undoStack
+// so the user can undo their redo. A flag (_redoing) tells the undoStack.push
+// wrapper not to clear redoStack while we're redoing.
+const redoStack = [];
+let _redoing = false;
+// Wrap doUndo so the pre-undo state is captured for redo.
+const _origDoUndo_forRedo = doUndo;
+doUndo = function(){
+  if(document.body.classList.contains('web-build')) return;
+  if(!undoStack.length) return;
+  // Snapshot the current state — that's what redo will restore to.
+  try { redoStack.push(captureState()); } catch(e){ console.warn('redo capture failed', e); }
+  _origDoUndo_forRedo();
+};
+function doRedo(){
+  if(document.body.classList.contains('web-build')) return;
+  if(!redoStack.length) return;
+  const target = redoStack.pop();
+  const beforeRedo = captureState();
+  restoreState(target);
+  // Push a 'reset'-type op so the user can undo the redo. The _redoing flag
+  // tells the wrapper not to wipe redoStack on this push.
+  _redoing = true;
+  undoStack.push({type:'reset', prev: beforeRedo});
+  _redoing = false;
+}
+function canRedo(){ return redoStack.length > 0 && !document.body.classList.contains('web-build'); }
 function captureState(){
   // Snapshot the complete editable state for save/reset-undo
   const deletedBadges={};
@@ -3608,7 +3766,30 @@ function captureState(){
       state,
       ownerOf:{...GAME.ownerOf},
       attackerId:GAME.attacker?GAME.attacker.id:null,
-      defenderId:GAME.defender?GAME.defender.id:null
+      defenderId:GAME.defender?GAME.defender.id:null,
+      // Full conquest state — needed so undo can rewind losses + the redo
+      // system can restore every relevant field.
+      mode:GAME.mode,
+      heroTeamId:GAME.heroTeamId,
+      conquestStack:JSON.parse(JSON.stringify(GAME.conquestStack||[])),
+      lossCounts:{...(GAME.lossCounts||{})},
+      stats:{...(GAME.stats||{})},
+      aura:GAME.aura||0,
+      matchBoost:GAME.matchBoost||null,
+      doubleOrNothing:!!GAME.doubleOrNothing,
+      biggestWin:GAME.biggestWin||null,
+      continentsMilestoned:{...(GAME.continentsMilestoned||{})},
+      matchEvent:GAME.matchEvent||null,
+      _matchEventKey:GAME._matchEventKey||null,
+      defenderIso:GAME.defenderIso||null,
+      heroHomeIsoCount:GAME.heroHomeIsoCount||0,
+      winStreak:GAME.winStreak||0,
+      momentumProgress:GAME.momentumProgress||0,
+      lastLossOppId:GAME.lastLossOppId||null,
+      campaignStartMs:GAME.campaignStartMs||Date.now(),
+      matchTactic:GAME.matchTactic||'balanced',
+      log:(GAME.log||[]).slice(),
+      squad:Array.isArray(GAME.squad)?JSON.parse(JSON.stringify(GAME.squad)):[]
     };
   }
   return {
@@ -3666,7 +3847,13 @@ function restoreState(s){
   teams.forEach(t=>{
     const b=document.querySelector(`.fbadge[data-badge-id="${t.id}"]`);
     if(!b)return;
-    const pos=movedFlags[t.id]||proj([t.cx,t.cy]);
+    // movedFlags entries can be either [x,y] (drag) or {cx,cy} (conquest).
+    // Normalise to [x,y] here so the badge positioning is robust to both.
+    const raw=movedFlags[t.id];
+    let pos=null;
+    if(Array.isArray(raw)){ pos=(raw.length>=2 && !isNaN(raw[0])) ? [raw[0],raw[1]] : null; }
+    else if(raw && raw.cx!=null && raw.cy!=null){ pos=[raw.cx, raw.cy]; }
+    if(!pos) pos=proj([t.cx,t.cy]);
     if(!pos||isNaN(pos[0]))return;
     b.setAttribute('data-cx',pos[0]);b.setAttribute('data-cy',pos[1]);
     const ds=getScale(t.id);
@@ -3686,6 +3873,34 @@ function restoreState(s){
     });
     GAME.attacker=s.game.attackerId!=null?teams.find(t=>t.id===s.game.attackerId):null;
     GAME.defender=s.game.defenderId!=null?teams.find(t=>t.id===s.game.defenderId):null;
+    // Restore the extended conquest fields if present in the snapshot.
+    if('mode' in s.game)                 GAME.mode=s.game.mode;
+    if('heroTeamId' in s.game)           GAME.heroTeamId=s.game.heroTeamId;
+    if(Array.isArray(s.game.conquestStack)) GAME.conquestStack=s.game.conquestStack.slice();
+    if(s.game.lossCounts)                GAME.lossCounts={...s.game.lossCounts};
+    if(s.game.stats)                     GAME.stats={...s.game.stats};
+    if('aura' in s.game)                 GAME.aura=s.game.aura;
+    if('matchBoost' in s.game)           GAME.matchBoost=s.game.matchBoost;
+    if('doubleOrNothing' in s.game)      GAME.doubleOrNothing=s.game.doubleOrNothing;
+    if('biggestWin' in s.game)           GAME.biggestWin=s.game.biggestWin;
+    if(s.game.continentsMilestoned)      GAME.continentsMilestoned={...s.game.continentsMilestoned};
+    if('matchEvent' in s.game)           GAME.matchEvent=s.game.matchEvent;
+    if('_matchEventKey' in s.game)       GAME._matchEventKey=s.game._matchEventKey;
+    if('defenderIso' in s.game)          GAME.defenderIso=s.game.defenderIso;
+    if('heroHomeIsoCount' in s.game)     GAME.heroHomeIsoCount=s.game.heroHomeIsoCount;
+    if('winStreak' in s.game)            GAME.winStreak=s.game.winStreak;
+    if('momentumProgress' in s.game)     GAME.momentumProgress=s.game.momentumProgress;
+    if('lastLossOppId' in s.game)        GAME.lastLossOppId=s.game.lastLossOppId;
+    if('campaignStartMs' in s.game)      GAME.campaignStartMs=s.game.campaignStartMs;
+    if('matchTactic' in s.game)          GAME.matchTactic=s.game.matchTactic;
+    if(Array.isArray(s.game.log))        GAME.log=s.game.log.slice();
+    if(Array.isArray(s.game.squad)){
+      GAME.squad=s.game.squad.slice();
+      if(typeof saveStoredSquad==='function') saveStoredSquad();
+      if(typeof renderSquadPanel==='function') renderSquadPanel();
+    }
+    if(typeof renderGameLog==='function') renderGameLog();
+    if(typeof refreshConquestHud==='function') refreshConquestHud();
     clearGameOverlay();
     document.querySelectorAll('.g-slot.winner,.g-slot.loser').forEach(el=>el.classList.remove('winner','loser'));
     const mid=document.getElementById('g-middle');
@@ -4318,6 +4533,10 @@ function buildMap(world){
   svgSel=d3.select('#msvg');
   zoomBeh=d3.zoom().scaleExtent([1,72]).on('zoom',ev=>{
     g.attr('transform',ev.transform);scaleBadges(ev.transform.k);
+    // Use the lightweight rescale during zoom — full rebuild is too expensive
+    // at 60fps. Game-state changes (turn end, conquest, retreat) call
+    // updateHeroGlow() directly when a full rebuild is actually warranted.
+    if(typeof rescaleHeroGlow==='function') rescaleHeroGlow();
   });
   svgSel.call(zoomBeh);
   $('zi').onclick=()=>svgSel.transition().duration(250).call(zoomBeh.scaleBy,1.5);
@@ -4328,7 +4547,7 @@ function buildMap(world){
   // In edit modes we stopPropagation for single-touch so D3 doesn't also pan.
   // Multi-touch (pinch) always falls through to D3 zoom.
   // Floating UI panels that should receive clicks even in edit modes
-  const isOverUI=ev=>ev.target&&ev.target.closest&&ev.target.closest('#history-panel,#game-panel,.zc');
+  const isOverUI=ev=>ev.target&&ev.target.closest&&ev.target.closest('#history-panel,#game-panel,.zc,#g-result-modal,#g-startup-modal,#g-username-modal,#g-roulette-modal,#iw-modal,#g-squad-panel,#g-campaign-panel,#g-events-panel,#g-left-stack,#g-turn-badge,#hdr,#fc-menu');
   mwrap.addEventListener('pointerdown',ev=>{
     if(isOverUI(ev))return; // let the panel button/scroll handle it
     if(mode==='erase'){ev.stopPropagation();onEraseDown(ev);}
@@ -4355,6 +4574,9 @@ function buildMap(world){
     else if(mode==='flags') onFlagUp(ev);
   },{capture:true});
   mwrap.addEventListener('pointercancel',()=>{activePid=null;erasing=false;resizing=false;flagDragId=null;flagDragging=false;renderHandles();},{capture:true});
+  // Fallback tip hide: if the cursor leaves the map area entirely (e.g., into a fixed-position
+  // UI element on top of the map), make sure the country-name tooltip vanishes.
+  mwrap.addEventListener('mouseleave',()=>{const t=document.getElementById('tip'); if(t) t.style.display='none';});
   // Capture baseline state for History rewind
   historyBaseline=captureState();
   renderHistory();
@@ -4589,8 +4811,14 @@ const GAME={
   log:[],
 };
 
+// Hard cap on the events log so renderGameLog (which rebuilds innerHTML on
+// every call by mapping over the entire array) stays fast as the run grows.
+// 200 entries is plenty of recent history for the player + a generous tail
+// for the search feature.
+const GAME_LOG_MAX = 200;
 function gLog(msg,isResult){
   GAME.log.unshift({h:msg,r:!!isResult});
+  if(GAME.log.length > GAME_LOG_MAX) GAME.log.length = GAME_LOG_MAX;
   renderGameLog();
 }
 // Render the Events log. Each entry is {h:html, r:isMatchResult}; the r flag
@@ -4771,6 +4999,9 @@ function syncConquestBadges(){
 function clearGameOverlay(){
   const g=document.getElementById('game-layer');
   if(g) g.innerHTML='';
+  // The spin-arrow dial lived inside game-layer. Now that it's gone, let the
+  // hero indicator fade back in.
+  document.body.classList.remove('fc-spinning');
 }
 
 // Get the SVG-space centroid for a team (using its currently-owned isos, not just its default)
@@ -5010,6 +5241,8 @@ function gameSpinArrow(){
   `;
   inner.appendChild(pointer);
   g.appendChild(wrap);
+  // Fade the hero indicator out while the arrow dial is on screen.
+  document.body.classList.add('fc-spinning');
 
   // ── Animation ────────────────────────────────────────────
   // Use a normalized approach: pre-compute the END rotation, then animate from 0→endRot.
@@ -5028,6 +5261,11 @@ function gameSpinArrow(){
   let endRot=normalizedTarget;
   while(endRot < spinEndRaw + 180) endRot += 360;
   const startTime=performance.now();
+  // Audio bookkeeping: play a metallic tick every TICK_EVERY_DEG of rotation
+  // so the click cadence naturally slows alongside the visual deceleration.
+  const TICK_EVERY_DEG = 28;
+  let _prevRot = 0;
+  let _degSinceTick = 0;
   function step(now){
     const elapsed=now-startTime;
     const p=document.getElementById('g-pointer');
@@ -5037,6 +5275,9 @@ function gameSpinArrow(){
       // Phase 1: linear fast spin
       currentRot=spinSpeed*(elapsed/1000);
       p.setAttribute('transform',`rotate(${currentRot})`);
+      _degSinceTick += Math.abs(currentRot - _prevRot);
+      _prevRot = currentRot;
+      if(_degSinceTick >= TICK_EVERY_DEG){ try { fcAudio.playArrowTick(); } catch(e){} _degSinceTick = 0; }
       requestAnimationFrame(step);
     } else if(elapsed<spinDuration+slowDuration){
       // Phase 2: ease-out-cubic from spinEndRaw to endRot
@@ -5044,10 +5285,15 @@ function gameSpinArrow(){
       const eased=1-Math.pow(1-t,3);
       currentRot=spinEndRaw+(endRot-spinEndRaw)*eased;
       p.setAttribute('transform',`rotate(${currentRot})`);
+      _degSinceTick += Math.abs(currentRot - _prevRot);
+      _prevRot = currentRot;
+      if(_degSinceTick >= TICK_EVERY_DEG){ try { fcAudio.playArrowTick(); } catch(e){} _degSinceTick = 0; }
       requestAnimationFrame(step);
     } else {
       // Done — set exact final value
       p.setAttribute('transform',`rotate(${normalizedTarget})`);
+      // Landing ding — bright metallic ping to mark the snap.
+      try { fcAudio.playArrowLand(); } catch(e){}
       GAME.defender=defender;
       // Remember the SPECIFIC iso the arrow hit so handleConquestWin can move
       // the hero's flag there (matters for countries with scattered overseas
@@ -6029,10 +6275,15 @@ function undoBattle(op){
 // ── Save / Load ──────────────────────────────────────────────
 function doSave(){
   const state=captureState();
+  // Preserve a short undo trail so the player can keep undoing after load.
+  // Capped at the last 6 ops since some op types (conquest-loss-snap, reset)
+  // carry a full state snapshot and can be heavy.
+  const undoTrail = undoStack.slice(-6);
   const payload={
-    version:1,
+    version:2,
     saved:new Date().toISOString(),
-    state
+    state,
+    undoTrail
   };
   const json=JSON.stringify(payload);
   const blob=new Blob([json],{type:'application/json'});
@@ -6062,6 +6313,23 @@ function doLoad(){
         const prev=captureState();
         undoStack.push({type:'reset',prev});
         restoreState(payload.state);
+        // Restore the saved undo trail (v2 payloads only) so the player can
+        // keep undoing after loading. We push the ops directly without going
+        // through the wrapped push — that wrapper clears redoStack on every
+        // push, and we want a clean post-load slate, but with history.
+        if(Array.isArray(payload.undoTrail) && payload.undoTrail.length){
+          payload.undoTrail.forEach(op => { undoStack.push(op); });
+        }
+        // Transition out of the splash so the player lands inside the game
+        // they just loaded, rather than being parked back at PLAY CONQUEST.
+        if(typeof window.fcHideSplash==='function') window.fcHideSplash();
+        const _gp=document.getElementById('game-panel');
+        if(_gp && GAME && GAME.active){
+          _gp.classList.add('open');
+          _gp.classList.toggle('conquest-mode', GAME.mode==='conquest');
+        }
+        if(typeof refreshConquestHud==='function') refreshConquestHud();
+        if(typeof updateConquestHud==='function') updateConquestHud();
       }catch(e){alert(FCLang.t('sim.save.readfail',{message:e.message}));}
     };
     reader.readAsText(f);
@@ -6072,7 +6340,8 @@ function doLoad(){
 // Actually, only offer this on demand to avoid unexpected state — user must click Load
 
 
-// Patch undoStack.push so it also updates history
+// Patch undoStack.push so it also updates history AND clears the redoStack
+// on any new user action (so a new edit after some undos can't be redone).
 (function(){
   const origPush=undoStack.push.bind(undoStack);
   undoStack.push=function(op){
@@ -6081,6 +6350,9 @@ function doLoad(){
     if(historyIdx<undoStack.length){
       undoStack.length=historyIdx;
     }
+    // A new user action invalidates any pending redo (but skip when this
+    // push originated from doRedo itself).
+    if(!_redoing) redoStack.length=0;
     const r=origPush(op);
     historyIdx=undoStack.length;
     renderHistory();
@@ -6100,9 +6372,11 @@ document.addEventListener('keydown',ev=>{
   if(k==='v'){setMode('view');}
   else if(k==='e' && !(GAME.active && GAME.mode==='conquest')){setMode('erase');}
   else if(k==='p' && !(GAME.active && GAME.mode==='conquest')){setMode('paint');}
-  else if(k==='f' && !(GAME.active && GAME.mode==='conquest')){setMode('flags');}
+  else if(k==='f' && (!(GAME.active && GAME.mode==='conquest') || !document.body.classList.contains('web-build'))){setMode('flags');}
   else if(k==='g'){setMode('game');}
+  else if(k==='z'&&(ev.ctrlKey||ev.metaKey)&&ev.shiftKey){ev.preventDefault();if(typeof doRedo==='function') doRedo();}
   else if(k==='z'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();doUndo();}
+  else if(k==='y'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();if(typeof doRedo==='function') doRedo();}
   else if(k==='s'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();doSave();}
   else if(k==='o'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();doLoad();}
   else if((k==='delete'||k==='backspace')&&mode==='flags'){ev.preventDefault();deleteSelectedFlag();}
@@ -6981,7 +7255,13 @@ function openResultModal(){
   const ovrEl=document.getElementById('g-result-ovr-delta');
   if(ovrEl){ovrEl.classList.remove('shown','up','down');ovrEl.textContent='';}
   const card=document.querySelector('.g-result-card');
-  if(card) card.classList.remove('revealed');
+  if(card){
+    card.classList.remove('revealed');
+    // Bring the manual inputs / preview / boosts / Simulate button back for
+    // the new matchup. They were hidden by the .simulated class after the
+    // previous Simulate click.
+    card.classList.remove('simulated');
+  }
   // Roll the pre-match twist (once per matchup) and render its card. Done
   // BEFORE updateResultPreview so the win-% / xG already reflect the event.
   rollMatchEvent();
@@ -7572,6 +7852,10 @@ function wireResultModal(){
       revealBox.classList.add(heroWon?'win':'loss');
       revealBox.classList.add('shown');
     }
+    // Card flag: hide the manual inputs / preview / Simulate button now that
+    // the result is in. Works in BOTH builds — web-build was already hiding
+    // those via its own selector; offline now matches.
+    if(card) card.classList.add('simulated');
     // Finish tag — "AFTER EXTRA TIME" / "ON PENALTIES 5-4"
     if(finishTag){
       finishTag.classList.remove('shown','pens');
@@ -7721,6 +8005,57 @@ function resolveConquestBattle(won){
   }
 }
 
+// Drop a smaller, slightly-transparent copy of `team`'s flag on a
+// geographically-isolated territory they've just retaken (or now own). The
+// flag carries data-region-isos so a future hero conquest of any of those
+// isos can find + remove it. Idempotent — replaces an existing one for the
+// same iso set.
+function placeRetakenFlag(team, cx, cy, isos){
+  if(!team || !Array.isArray(isos) || isos.length===0) return;
+  const layer = document.getElementById('badge-layer');
+  if(!layer) return;
+  // Remove a prior region flag for the same iso set, if any.
+  const isosKey = isos.slice().sort().join(',');
+  const existing = layer.querySelector('.g-region-flag[data-region-isos="'+isosKey+'"]');
+  if(existing) existing.remove();
+  const k = (typeof currentK === 'function') ? currentK() : 1;
+  const scale = (typeof effS === 'function' && typeof getScale === 'function')
+    ? effS(getScale(team.id)*0.7, k)
+    : 0.5;
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const g = document.createElementNS(SVG_NS, 'g');
+  g.setAttribute('class', 'fbadge g-region-flag');
+  g.setAttribute('data-region-team-id', String(team.id));
+  g.setAttribute('data-region-isos', isosKey);
+  g.setAttribute('data-cx', String(cx));
+  g.setAttribute('data-cy', String(cy));
+  g.setAttribute('transform', 'translate('+cx+','+cy+') scale('+scale+')');
+  g.setAttribute('pointer-events','none');
+  g.setAttribute('opacity','0.88');
+  const b64 = (typeof FLAG_B64 !== 'undefined') ? FLAG_B64[team.name] : null;
+  if(b64){
+    const img = document.createElementNS(SVG_NS, 'image');
+    img.setAttribute('x', String(-BW/2));
+    img.setAttribute('y', String(-BH/2));
+    img.setAttribute('width', String(BW));
+    img.setAttribute('height', String(BH));
+    img.setAttribute('href','data:image/png;base64,'+b64);
+    img.setAttribute('preserveAspectRatio','none');
+    g.appendChild(img);
+  }
+  layer.appendChild(g);
+}
+// When the hero conquers an iso that had a retaken-flag marker, strip the marker.
+function removeRetakenFlagsForIsos(isos){
+  if(!Array.isArray(isos) || isos.length===0) return;
+  try {
+    document.querySelectorAll('.g-region-flag').forEach(el => {
+      const stored = (el.getAttribute('data-region-isos')||'').split(',');
+      if(stored.some(iso => isos.includes(iso))) el.remove();
+    });
+  } catch(e){}
+}
+
 function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   // Log
   gLog(FCLang.t('sim.log.win',{hero:teamDisplayName(hero.name), score:heroScore+'–'+oppScore+suffix, opp:teamDisplayName(opp.name),
@@ -7753,6 +8088,9 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   GAME.state[opp.id].ownedIsos.clear();
   GAME.state[opp.id].alive=false;
   mergeBordersFor(hero.id);
+  // If any of these isos had a region-flag marker (from a prior retreat),
+  // strip it — the territory just changed hands again.
+  if(typeof removeRetakenFlagsForIsos==='function') removeRetakenFlagsForIsos(opponentIsoList);
   // Delete the opponent's flag
   const oppBadge=document.querySelector(`.fbadge[data-badge-id="${opp.id}"]`);
   if(oppBadge) oppBadge.remove();
@@ -7894,6 +8232,13 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
     GAME.phase='idle';
     // Persist this run to the Hall of Fame so the player can revisit it later.
     if(typeof recordCampaignResult==='function') recordCampaignResult('victory');
+  } else {
+    // Spoils-of-victory choice modal. Skipped during instant-win and Lion's
+    // Roar cascades (those set _skipAuraReward) so the modal doesn't pop for
+    // each cascaded conquest.
+    if(!GAME._skipAuraReward && typeof window.openRecruitModal === 'function'){
+      try { window.openRecruitModal(opp); } catch(e){ console.warn('recruit modal failed', e); }
+    }
   }
   // Snapshot the run AFTER every win so the player can resume mid-campaign.
   // Victory path is fine to save too — recordCampaignResult above will clear
@@ -7902,6 +8247,16 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
 }
 
 function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
+  // Snapshot the complete state BEFORE any loss mutation so the user can
+  // undo. Covers the no-retreat case (first match) AND the with-retreat case
+  // because captureState now serializes the full GAME object including stats,
+  // aura, momentum, winStreak, lossCounts, squad, conquestStack, log, etc.
+  try {
+    if(typeof captureState==='function'){
+      undoStack.push({type:'conquest-loss-snap', prev:captureState(),
+                      heroId:hero.id, oppId:opp.id});
+    }
+  } catch(e){ console.warn('[loss-undo] snapshot failed', e); }
   // Bump campaign tally — loss + goals on both sides.
   if(GAME.stats){
     GAME.stats.losses++;
@@ -7947,7 +8302,12 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   // has a non-empty squad). Lose-by-N: remove N random players; lose by 3+
   // ends the conquest immediately on top of the existing 3-losses rule.
   if(Array.isArray(GAME.squad) && GAME.squad.length>0){
-    const goalDiff = oppScore - heroScore;
+    let goalDiff = oppScore - heroScore;
+    // Penalties / AET-into-pens loss: regulation tied means the match was
+    // decided by a shootout. Treat as a 1-goal loss so the squad rule still
+    // fires — we're in handleConquestLoss, so the shootout must have gone
+    // against the hero. One fallen player drawn from the roulette.
+    if(goalDiff === 0) goalDiff = 1;
     if(goalDiff >= 3){
       gLog('💀 '+FCLang.t('sim.squad.crushed', {n:goalDiff}));
       refreshConquestHud({lastResult:{type:'loss',hero:hero.name,opp:opp.name,score:heroScore+'–'+oppScore,gameOver:true}});
@@ -7969,10 +8329,20 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   const losses=GAME.lossCounts[opp.id];
   if(losses===1) gLog('💢 '+FCLang.t('sim.rev.nemesis',{name:'<b>'+teamDisplayName(opp.name)+'</b>'}));
   gLog('   '+FCLang.t('sim.log.lossesto',{opp:teamDisplayName(opp.name),n:losses}));
-  // Second loss to the same opponent (2/3) — a morale collapse halves the Aura bank.
-  if(losses===2 && (GAME.aura||0)>0){
-    GAME.aura=Math.floor(GAME.aura/2);
-    gLog('💔 '+FCLang.t('sim.boost.aurahalf'));
+  // Aura penalty scales with the regulation goal margin so close losses bite
+  // less than blowouts:
+  //   • 1-goal loss (or pens, where regulation was tied) → keep 75%
+  //   • 2-goal loss                                       → keep 50%
+  //   • 3+ goal loss never gets here — squad rule has already game-overed.
+  // Floor at 1 so a single loss can't fully empty an already-thin bank.
+  if((GAME.aura||0) > 0){
+    const _regDiff = oppScore - heroScore;
+    const _keepFrac = _regDiff >= 2 ? 0.5 : 0.75;
+    const _newAura = Math.max(1, Math.floor((GAME.aura||0) * _keepFrac));
+    if(_newAura < GAME.aura){
+      GAME.aura = _newAura;
+      gLog('💔 ' + FCLang.t(_keepFrac === 0.5 ? 'sim.boost.aurahalf' : 'sim.boost.auracut'));
+    }
   }
   if(losses>=3){
     gLog(FCLang.t('sim.log.gameover',{opp:teamDisplayName(opp.name),hero:teamDisplayName(hero.name)}));
@@ -8052,19 +8422,55 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   // 
   // So we don't resurrect lastConquest.opponentId team.
   // Move hero flag BACK to its previous position (before that conquest).
+  // Drop a small flag of the winning team on the territory they just took
+  // back — but ONLY if the retaken territory is geographically isolated
+  // from their other lands (e.g., Canada retook Iceland from England;
+  // Iceland doesn't border Canada). This makes the new ownership obvious
+  // on the map without spamming flags everywhere.
+  try {
+    const cents = lastConquest.opponentIsos
+      .map(function(iso){ return (typeof isoCentroid==='function') ? isoCentroid(iso, null) : null; })
+      .filter(function(p){ return p && !isNaN(p[0]); });
+    if(cents.length > 0){
+      const ccx = cents.reduce(function(s,p){return s+p[0];},0)/cents.length;
+      const ccy = cents.reduce(function(s,p){return s+p[1];},0)/cents.length;
+      const otherOppIsos = [...GAME.state[opp.id].ownedIsos]
+        .filter(function(iso){ return lastConquest.opponentIsos.indexOf(iso)===-1; });
+      let minDist = Infinity;
+      for(const iso of otherOppIsos){
+        const c = (typeof isoCentroid==='function') ? isoCentroid(iso, null) : null;
+        if(c && !isNaN(c[0])){
+          const d = Math.hypot(c[0]-ccx, c[1]-ccy);
+          if(d < minDist) minDist = d;
+        }
+      }
+      if(minDist > 500 && typeof placeRetakenFlag==='function'){
+        placeRetakenFlag(teams.find(function(t){return t.id===opp.id;}), ccx, ccy, lastConquest.opponentIsos);
+      }
+    }
+  } catch(e){ console.warn('[retaken-flag] failed', e); }
   const heroBadge=document.querySelector(`.fbadge[data-badge-id="${hero.id}"]`);
   if(heroBadge){
     let rx=lastConquest.heroFromX, ry=lastConquest.heroFromY;
     // Enclave-trap guard: the stored retreat point can land geometrically
-    // inside the WINNING team's territory — e.g. the hero was standing on a
-    // small territory engulfed by the team that just beat them (San Marino
-    // inside Italy), or a concave-shape centroid falls outside its own
-    // polygon. If so, every subsequent ray-cast spin would hit that team no
-    // matter the direction. Detect it and fall back to the centroid of the
-    // hero's largest remaining territory.
+    // inside the WINNING team's territory. Before falling back to the hero's
+    // biggest iso (which can jump us all the way home to England), try
+    // walking BACK through the conquest stack — the most recent prior
+    // conquest's landing point is the right "one step further back"
+    // retreat. Only use largest-iso as a last resort.
     if(_pointInsideTeam([rx,ry], opp.id)){
-      const safe=_largestIsoCentroid(hero.id);
-      if(safe){ rx=safe[0]; ry=safe[1]; }
+      let alt = null;
+      for(let i = GAME.conquestStack.length - 1; i >= 0; i--){
+        const c = GAME.conquestStack[i];
+        if(!_pointInsideTeam([c.heroToX, c.heroToY], opp.id)){
+          alt = [c.heroToX, c.heroToY]; break;
+        }
+      }
+      if(alt){ rx = alt[0]; ry = alt[1]; }
+      else {
+        const safe=_largestIsoCentroid(hero.id);
+        if(safe){ rx=safe[0]; ry=safe[1]; }
+      }
     }
     heroBadge.setAttribute('data-cx',rx);
     heroBadge.setAttribute('data-cy',ry);
@@ -8618,6 +9024,141 @@ function paintRoulettePlayer(player){
     portraitEl.textContent=init;
   }
 }
+// ── fcAudio: tiny Web-Audio synth helpers, no asset dependencies ──────
+// Lazy-initialized on first call (which always happens after a user gesture
+// like clicking DRAW, satisfying the browser autoplay policy). All sounds
+// are synthesized — pitched click + thud — so the file size stays flat.
+const fcAudio = (function(){
+  let ctx = null;
+  let masterGain = null;
+  let muted = false;
+  function ensureCtx(){
+    if(ctx) return ctx;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return null;
+      ctx = new AC();
+      masterGain = ctx.createGain();
+      masterGain.gain.value = 0.45;
+      masterGain.connect(ctx.destination);
+    } catch(e){ return null; }
+    return ctx;
+  }
+  // A short pitched click — used for each roulette tick. `progress` is 0..1
+  // and shifts the pitch up so the cadence feels like a wheel slowing down
+  // and "settling" near the chosen player.
+  function playTick(progress){
+    if(muted) return;
+    const c = ensureCtx(); if(!c) return;
+    const t = c.currentTime;
+    const p = Math.max(0, Math.min(1, progress||0));
+    // Pitch rises from ~750 -> ~1450 Hz across the spin so each tick reads
+    // as a step further along the slowdown.
+    const freq = 750 + p * 700;
+    const osc = c.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, t);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.6, t + 0.045);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.55, t + 0.003);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.055);
+    osc.connect(g); g.connect(masterGain);
+    osc.start(t);
+    osc.stop(t + 0.07);
+  }
+  // Punchier low thud — fires when the spin lands on the victim. Pairs with
+  // the visual 'locked' bounce + red FALLEN stamp.
+  function playLockIn(){
+    if(muted) return;
+    const c = ensureCtx(); if(!c) return;
+    const t = c.currentTime;
+    // Sub-bass thump
+    const sub = c.createOscillator();
+    sub.type = 'sine';
+    sub.frequency.setValueAtTime(120, t);
+    sub.frequency.exponentialRampToValueAtTime(45, t + 0.35);
+    const subG = c.createGain();
+    subG.gain.setValueAtTime(0, t);
+    subG.gain.linearRampToValueAtTime(0.7, t + 0.01);
+    subG.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+    sub.connect(subG); subG.connect(masterGain);
+    // Mid click for attack edge
+    const mid = c.createOscillator();
+    mid.type = 'square';
+    mid.frequency.setValueAtTime(380, t);
+    mid.frequency.exponentialRampToValueAtTime(160, t + 0.12);
+    const midG = c.createGain();
+    midG.gain.setValueAtTime(0, t);
+    midG.gain.linearRampToValueAtTime(0.25, t + 0.005);
+    midG.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    const lp = c.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 900;
+    mid.connect(lp); lp.connect(midG); midG.connect(masterGain);
+    sub.start(t); sub.stop(t + 0.55);
+    mid.start(t); mid.stop(t + 0.2);
+  }
+  // Soft wood-tap for each "detent" of the compass needle. Sine wave
+  // (warm fundamental) through a tight low-pass — more organic than the
+  // previous metallic square click. Same volume envelope shape.
+  function playArrowTick(){
+    if(muted) return;
+    const c = ensureCtx(); if(!c) return;
+    const t = c.currentTime;
+    const osc = c.createOscillator();
+    osc.type = 'sine';
+    // Lower fundamental + slight random jitter for variation.
+    const f = 330 + (Math.random()*80 - 40);
+    osc.frequency.setValueAtTime(f, t);
+    osc.frequency.exponentialRampToValueAtTime(f * 0.45, t + 0.06);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.26, t + 0.003);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
+    const lp = c.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 1100;
+    osc.connect(lp); lp.connect(g); g.connect(masterGain);
+    osc.start(t); osc.stop(t + 0.1);
+  }
+  // Bright metallic ping the moment the arrow snaps to its target —
+  // a brief two-tone bell so the landing reads as decisive.
+  function playArrowLand(){
+    if(muted) return;
+    const c = ensureCtx(); if(!c) return;
+    const t = c.currentTime;
+    // Main tone
+    function bell(freq, dur, gain){
+      const osc = c.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      const g = c.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(gain, t + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(g); g.connect(masterGain);
+      osc.start(t); osc.stop(t + dur + 0.02);
+    }
+    bell(1320, 0.32, 0.45);        // high fundamental
+    bell(1980, 0.22, 0.20);        // perfect-fifth overtone for shimmer
+    // Quick attack click on top of the bell for the "snap" of metal on metal.
+    const click = c.createOscillator();
+    click.type = 'triangle';
+    click.frequency.setValueAtTime(2400, t);
+    click.frequency.exponentialRampToValueAtTime(900, t + 0.04);
+    const cg = c.createGain();
+    cg.gain.setValueAtTime(0, t);
+    cg.gain.linearRampToValueAtTime(0.22, t + 0.002);
+    cg.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
+    click.connect(cg); cg.connect(masterGain);
+    click.start(t); click.stop(t + 0.08);
+  }
+  function setMuted(v){ muted = !!v; }
+  function isMuted(){ return muted; }
+  return { playTick, playLockIn, playArrowTick, playArrowLand, setMuted, isMuted };
+})();
+window.fcAudio = fcAudio;
+
 function spinRouletteToVictim(targetPlayer, allPlayers, onDone){
   const nameEl=document.getElementById('g-roulette-name');
   const portraitEl=document.getElementById('g-roulette-portrait');
@@ -8632,11 +9173,15 @@ function spinRouletteToVictim(targetPlayer, allPlayers, onDone){
       paintRoulettePlayer(targetPlayer);
       nameEl.classList.add('locked');
       if(portraitEl) portraitEl.classList.add('locked');
+      // Decisive thud when the roulette settles on the victim.
+      try { fcAudio.playLockIn(); } catch(e){}
       if(onDone) onDone();
       return;
     }
     const pick=allPlayers[Math.floor(Math.random()*allPlayers.length)];
     paintRoulettePlayer(pick);
+    // Pitch the click higher as the spin slows down (progress 0..1).
+    try { fcAudio.playTick(elapsed/total); } catch(e){}
     let delay;
     if(elapsed<FAST_DUR){
       delay=FAST_STEP;
@@ -8931,6 +9476,24 @@ function refreshConquestHud(extra){
   updateConquestHud(Object.assign({lossOpponent,lossCount},extra||{}));
 }
 
+// Lightweight counterpart to updateHeroGlow: just updates the existing
+// indicator wrap's transform with the current zoom-derived scale. Used in
+// the d3 zoom handler so we don't rebuild a dozen SVG nodes per frame
+// during a pan/zoom gesture. Full rebuilds (via updateHeroGlow) are still
+// triggered by game-state changes — turn end, conquest, position move.
+function rescaleHeroGlow(){
+  const wrap = document.getElementById('g-hero-glow');
+  if(!wrap) return;
+  if(!GAME || GAME.mode!=='conquest' || !GAME.heroTeamId || !GAME.active) return;
+  const heroBadge = document.querySelector('.fbadge[data-badge-id="'+GAME.heroTeamId+'"]');
+  if(!heroBadge) return;
+  const cx = parseFloat(heroBadge.getAttribute('data-cx'));
+  const cy = parseFloat(heroBadge.getAttribute('data-cy'));
+  if(isNaN(cx)||isNaN(cy)) return;
+  const k = currentK();
+  const heroScale = effS(getScale(GAME.heroTeamId), k);
+  wrap.setAttribute('transform','translate('+cx+','+cy+') scale('+heroScale+')');
+}
 function updateHeroGlow(){
   // Target the dedicated hero-glow-layer (above game-layer) so the triangles stay
   // visible even when the spin-arrow dial is overlaid on the hero flag.
@@ -8945,47 +9508,43 @@ function updateHeroGlow(){
   const cy=parseFloat(heroBadge.getAttribute('data-cy'));
   if(isNaN(cx)||isNaN(cy))return;
   const k=currentK();
-  const invK=1/k;
+  // Track the flag badge's scale (effS curve) instead of inverse-zoom so the
+  // box stays in proportion with the flag at any zoom level. The flag badge
+  // uses translate(pos) scale(effS(s,k)) — match it here.
+  const heroScale=effS(getScale(GAME.heroTeamId), k);
   const wrap=document.createElementNS('http://www.w3.org/2000/svg','g');
   wrap.setAttribute('id','g-hero-glow');
-  wrap.setAttribute('transform',`translate(${cx},${cy}) scale(${invK})`);
-  // Four triangles pointing inward toward the flag, one at each corner.
-  // Each triangle is equilateral, with its TIP pointing at the flag center.
-  // dist is set to 300 so the triangle bases sit comfortably outside the spin-arrow
-  // dial (which has radius ~200), preventing overlap during spins.
-  // Corner positions are NE, SE, SW, NW relative to flag center.
-  const dist=300;        // distance from flag center to triangle tip (X/Y component)
-  const triSize=90;      // size of each triangle side — larger for better visibility
-  const corners=[
-    {tipX: dist, tipY:-dist, baseAngle:135},  // NE corner, points SW toward flag
-    {tipX: dist, tipY: dist, baseAngle:225},  // SE corner, points NW toward flag
-    {tipX:-dist, tipY: dist, baseAngle:315},  // SW corner, points NE toward flag
-    {tipX:-dist, tipY:-dist, baseAngle: 45},  // NW corner, points SE toward flag
-  ];
-  corners.forEach((c,i)=>{
-    // Build an equilateral triangle with TIP at (c.tipX, c.tipY) pointing inward.
-    // The tip points TOWARD origin. Compute base of triangle perpendicular to that direction.
-    const angToCenter=Math.atan2(0-c.tipY,0-c.tipX); // direction from tip to flag center
-    // Triangle: tip at (c.tipX, c.tipY), base at distance triSize away from tip in opposite direction
-    const backX=c.tipX-Math.cos(angToCenter)*triSize;
-    const backY=c.tipY-Math.sin(angToCenter)*triSize;
-    // Base perpendicular offsets
-    const perp=angToCenter+Math.PI/2;
-    const halfBase=triSize/Math.sqrt(3); // equilateral
-    const b1x=backX+Math.cos(perp)*halfBase;
-    const b1y=backY+Math.sin(perp)*halfBase;
-    const b2x=backX-Math.cos(perp)*halfBase;
-    const b2y=backY-Math.sin(perp)*halfBase;
-    const tri=document.createElementNS('http://www.w3.org/2000/svg','polygon');
-    tri.setAttribute('points',`${c.tipX},${c.tipY} ${b1x},${b1y} ${b2x},${b2y}`);
-    tri.setAttribute('fill','#ffd54a');
-    tri.setAttribute('stroke','#3a2a00');
-    tri.setAttribute('stroke-width',2);
-    tri.setAttribute('class','g-hero-tri');
-    tri.style.transformOrigin=`${c.tipX}px ${c.tipY}px`;
-    tri.style.animationDelay=(i*0.12)+'s';
-    wrap.appendChild(tri);
-  });
+  wrap.setAttribute('transform',`translate(${cx},${cy}) scale(${heroScale})`);
+  const SVG_NS='http://www.w3.org/2000/svg';
+  // Box dimensions chosen to frame the 300x195 flag badge with ~24 SVG units
+  // of breathing room on all sides. rx adds a subtle rounded corner.
+  const BOX_W=352;
+  const BOX_H=235;
+  const BOX_RX=8;
+  const x=-BOX_W/2, y=-BOX_H/2;
+  // Quiet background frame — stays static, just hints at the box.
+  const frame=document.createElementNS(SVG_NS,'rect');
+  frame.setAttribute('x',x); frame.setAttribute('y',y);
+  frame.setAttribute('width',BOX_W); frame.setAttribute('height',BOX_H);
+  frame.setAttribute('rx',BOX_RX); frame.setAttribute('ry',BOX_RX);
+  frame.setAttribute('class','g-hero-frame');
+  wrap.appendChild(frame);
+  // The runner rect has the same shape, but its stroke is a dash pattern
+  // sized so only a short bright segment is visible at a time. Animating
+  // stroke-dashoffset slides that segment around the perimeter, creating
+  // the "glowing light running 360° around the box" effect.
+  const perim = 2*(BOX_W+BOX_H) - 8*BOX_RX + 2*Math.PI*BOX_RX;
+  const SEG_LEN=82;
+  const runner=document.createElementNS(SVG_NS,'rect');
+  runner.setAttribute('x',x); runner.setAttribute('y',y);
+  runner.setAttribute('width',BOX_W); runner.setAttribute('height',BOX_H);
+  runner.setAttribute('rx',BOX_RX); runner.setAttribute('ry',BOX_RX);
+  runner.setAttribute('class','g-hero-runner');
+  runner.setAttribute('stroke-dasharray', SEG_LEN.toFixed(2)+' '+(perim-SEG_LEN).toFixed(2));
+  // CSS variable drives the @keyframes end-state so any future tweak to the
+  // box dimensions Just Works.
+  runner.style.setProperty('--perim', (-perim).toFixed(2));
+  wrap.appendChild(runner);
   layer.insertBefore(wrap,layer.firstChild);
 }
 
@@ -9169,23 +9728,41 @@ function updateUltBtn(){
   const costEl=document.getElementById('g-ult-cost');
   const inConquest = GAME && GAME.mode==='conquest' && GAME.active && GAME.attacker;
   if(lblEl) lblEl.textContent = inConquest ? getUltName(GAME.attacker) : "Lion's Roar";
-  const aura=(GAME&&GAME.aura)||0;
-  if(costEl) costEl.textContent = inConquest ? ('⭐'+aura) : '';
+  // Cost indicator is intentionally cleared — the AURA bar above already
+  // shows current Aura, and the events panel announces when a roar can/can't
+  // be afforded. Keeping it on the button was redundant noise.
+  if(costEl) costEl.textContent = '';
+  const aura = (GAME&&GAME.aura) || 0;
+  // Eligible targets — at least one weak enemy in radius — is required for
+  // the button to be active. Avoids the misleading state where the button
+  // looks live but does nothing when there's no one nearby to roar at.
+  const hasTargets = inConquest && typeof findUltTargets === 'function' &&
+                     findUltTargets(GAME.attacker).length > 0;
   btn.disabled = !inConquest
     || GAME.phase!=='picked-att'
     || window._fcSpinning
-    || aura < instantWinCost(0);
+    || aura < instantWinCost(0)
+    || !hasTargets;
 }
 // Three expanding concentric rings emanating from the hero — gold, orange,
 // crimson, staggered. Fades out as it reaches the radius cap. Pure cosmetic.
+// Sonic-wave version of the roar — multiple thin rings emanate from the
+// hero flag at a measured cadence, expanding to ULT_RADIUS over ~2.3s each
+// and gently fading. No drop-shadow burst, no high-contrast color flash.
+// Designed to FEEL like sound radiating outward rather than a strobe blast.
 function drawUltShockwave(hero){
   const heroC=teamCentroid(hero.id);
   if(!heroC) return;
   const layer=document.getElementById('game-layer');
   if(!layer) return;
-  const colors=['#ffd54a','#ff7700','#c8102e'];
-  const widths=[70,52,40];
-  for(let i=0;i<3;i++){
+  const WAVE_COUNT=6;
+  const WAVE_SPACING_MS=380;   // gap between successive wavefronts
+  const WAVE_DURATION_MS=2300; // each wave's lifespan
+  // Waves only extend ~1.2x the Aura instant-win radius — they bloom around
+  // the hero flag rather than blanketing the map. ULT_RADIUS is the actual
+  // gameplay reach (which is much wider) and stays unchanged.
+  const WAVE_REACH=(typeof INSTANT_WIN_RADIUS!=='undefined' ? INSTANT_WIN_RADIUS : 333) * 1.2;
+  for(let i=0;i<WAVE_COUNT;i++){
     (function(idx){
       setTimeout(function(){
         const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
@@ -9193,24 +9770,42 @@ function drawUltShockwave(hero){
         ring.setAttribute('cy', heroC[1]);
         ring.setAttribute('r', 0);
         ring.setAttribute('fill', 'none');
-        ring.setAttribute('stroke', colors[idx]);
-        ring.setAttribute('stroke-width', widths[idx]);
-        ring.setAttribute('opacity', 0.9);
-        ring.setAttribute('class', 'g-ult-shockwave');
-        ring.style.filter='drop-shadow(0 0 40px #ffd54a)';
+        // Single warm-gold stroke for every ring — no flashing color cycle.
+        ring.setAttribute('stroke', '#ffd54a');
+        ring.setAttribute('stroke-width', 10);
+        ring.setAttribute('opacity', 0.55);
+        ring.setAttribute('class', 'g-ult-wave');
+        // Very gentle glow — soft halo, not a flashbulb.
+        ring.style.filter='drop-shadow(0 0 6px rgba(255,213,74,.55))';
         layer.appendChild(ring);
         const startTime=performance.now();
-        const duration=2600;
         function animate(now){
-          const t=(now-startTime)/duration;
+          const t=(now-startTime)/WAVE_DURATION_MS;
           if(t>=1){ if(ring.parentNode) ring.parentNode.removeChild(ring); return; }
-          const eased=1-Math.pow(1-t,2);
-          ring.setAttribute('r', (ULT_RADIUS*eased).toFixed(0));
-          ring.setAttribute('opacity', (0.9*(1-t)).toFixed(2));
+          // Eased expansion (slow start, gentle settle).
+          const eased=1-Math.pow(1-t,2.3);
+          ring.setAttribute('r', (WAVE_REACH*eased).toFixed(0));
+          // Thins as it expands so the wavefront softens naturally.
+          ring.setAttribute('stroke-width', (10*(1-t*0.6)).toFixed(2));
+          // Smooth fade-IN over the first ~18%% of life so the ring blooms in
+          // rather than popping at full opacity, then a long, gentle fade-OUT
+          // over the remaining 82%%. Both segments use a cubic ease so neither
+          // edge is choppy.
+          const PEAK=0.55;
+          const fadeIn=0.18;
+          let alpha;
+          if(t<fadeIn){
+            const u=t/fadeIn;
+            alpha=PEAK * (u*u*(3-2*u));   // smoothstep — eases both ends of the rise
+          } else {
+            const u=(t-fadeIn)/(1-fadeIn);
+            alpha=PEAK * Math.pow(1-u, 1.6);
+          }
+          ring.setAttribute('opacity', alpha.toFixed(3));
           requestAnimationFrame(animate);
         }
         requestAnimationFrame(animate);
-      }, idx*260);
+      }, idx*WAVE_SPACING_MS);
     })(i);
   }
 }
@@ -9229,14 +9824,17 @@ function drawAllUltStrikes(hero, targets){
     line.setAttribute('y1', heroC[1]);
     line.setAttribute('x2', c[0]);
     line.setAttribute('y2', c[1]);
-    line.setAttribute('stroke', '#fff5a8');
-    line.setAttribute('stroke-width', 34);
+    line.setAttribute('stroke', '#ffd680');
+    line.setAttribute('stroke-width', 14);
     line.setAttribute('stroke-linecap', 'round');
-    line.setAttribute('opacity', 1);
+    line.setAttribute('opacity', 0.8);
     line.setAttribute('class', 'g-ult-strike');
     line.setAttribute('data-team', String(t.team.id));
-    line.style.filter='drop-shadow(0 0 26px #ff8800)';
-    line.style.animationDelay = (i*22) + 'ms';
+    // Soft warm halo — much smaller than the old 26 px glow.
+    line.style.filter='drop-shadow(0 0 5px rgba(255,180,60,.55))';
+    // Slight stagger keeps the dash patterns out of lockstep without
+    // introducing any flicker.
+    line.style.animationDelay = (i*120) + 'ms';
     layer.appendChild(line);
   });
 }
@@ -9805,7 +10403,11 @@ function openUsernameGate(onDone){
     });
   });
 
-  // Splash "Load saved game" button — opens the existing file-picker flow.
+  // Splash "Load saved game" button — always opens the file picker so the
+  // creator can choose which .fcg save to load. The autosave-based Resume
+  // flow lives in the mode picker (its own button) and is intentionally NOT
+  // triggered here. doLoad() handles the splash hide + game-panel open on
+  // success so the player lands directly inside the loaded run.
   const loadBtn=document.getElementById('fc-splash-load');
   if(loadBtn){
     loadBtn.addEventListener('click',()=>{
@@ -9873,6 +10475,12 @@ function openUsernameGate(onDone){
   if(undoItem) undoItem.addEventListener('click',()=>{
     close();
     if(typeof doUndo==='function') doUndo();
+  });
+  // Redo → counterpart to undo.
+  const redoItem=document.getElementById('fc-menu-redo');
+  if(redoItem) redoItem.addEventListener('click',()=>{
+    close();
+    if(typeof doRedo==='function') doRedo();
   });
 
   // New game → confirm (only if a game is actively in progress), then end the current
@@ -9952,6 +10560,151 @@ function openUsernameGate(onDone){
   });
   // Expose for any other code path that wants to trigger it.
   window.fcToggleHideUI=toggleHideUI;
+})();
+
+// ── Recruit modal (post-win choice) ─────────────────────────────────
+// Opens after every conquest win in offline mode. Player picks: add a
+// recruit from the defeated team (free-text → squad) or take +1 Aura.
+// Layered on top of the existing passive Aura grant.
+//
+// The modal HTML appears AFTER this script block in source order, so we
+// must look up DOM nodes at call-time (not at IIFE setup-time). Handlers
+// are wired exactly once on the first successful lookup.
+(function(){
+  let _wired = false;
+  let currentOpp = null;
+  function _els(){
+    return {
+      modal:     document.getElementById('g-recruit-modal'),
+      sub:       document.getElementById('g-recruit-sub'),
+      playerBtn: document.getElementById('g-recruit-player'),
+      auraBtn:   document.getElementById('g-recruit-aura'),
+      inputWrap: document.getElementById('g-recruit-input-wrap'),
+      input:     document.getElementById('g-recruit-input'),
+      addBtn:    document.getElementById('g-recruit-add'),
+      skipBtn:   document.getElementById('g-recruit-skip'),
+      choices:   document.getElementById('g-recruit-choices')
+    };
+  }
+
+  function close(){
+    const e = _els();
+    if(e.modal)     e.modal.classList.remove('open');
+    if(e.inputWrap) e.inputWrap.style.display = 'none';
+    if(e.choices)   e.choices.style.display   = 'flex';
+    if(e.input)     e.input.value = '';
+    currentOpp = null;
+  }
+  function chooseAura(){
+    GAME.aura = (GAME.aura||0) + 1;
+    if(typeof refreshConquestHud === 'function') refreshConquestHud();
+    if(typeof gLog === 'function' && currentOpp){
+      const teamName = (typeof teamDisplayName==='function')
+        ? teamDisplayName(currentOpp.name) : currentOpp.name;
+      gLog('⭐ ' + ((typeof FCLang!=='undefined' && FCLang.t)
+        ? FCLang.t('sim.recruit.log.aura',{team:teamName})
+        : '+1 Aura from '+teamName));
+    }
+    close();
+  }
+  function showPlayerInput(){
+    const e = _els();
+    if(e.choices)   e.choices.style.display   = 'none';
+    if(e.inputWrap) e.inputWrap.style.display = 'flex';
+    if(e.input){ setTimeout(()=>e.input.focus(), 0); }
+  }
+  function addPlayer(){
+    const e = _els();
+    const name = (e.input && e.input.value || '').trim();
+    if(!name){ if(e.input) e.input.focus(); return; }
+    if(typeof addSquadPlayer === 'function'){
+      const from = currentOpp ? currentOpp.name : null;
+      addSquadPlayer(name, from);
+    }
+    if(typeof gLog === 'function' && currentOpp){
+      const teamName = (typeof teamDisplayName==='function')
+        ? teamDisplayName(currentOpp.name) : currentOpp.name;
+      gLog('👤 ' + ((typeof FCLang!=='undefined' && FCLang.t)
+        ? FCLang.t('sim.recruit.log.player',{name:name,team:teamName})
+        : 'Recruited <b>'+name+'</b> from '+teamName));
+    }
+    close();
+  }
+  function wireOnce(){
+    if(_wired) return true;
+    const e = _els();
+    if(!e.modal) return false;
+    if(e.playerBtn) e.playerBtn.addEventListener('click', showPlayerInput);
+    if(e.auraBtn)   e.auraBtn.addEventListener('click', chooseAura);
+    if(e.addBtn)    e.addBtn.addEventListener('click', addPlayer);
+    if(e.skipBtn)   e.skipBtn.addEventListener('click', close);
+    if(e.input)     e.input.addEventListener('keydown', ev => {
+      if(ev.key === 'Enter'){ ev.preventDefault(); addPlayer(); }
+      if(ev.key === 'Escape'){ ev.preventDefault(); close(); }
+    });
+    e.modal.addEventListener('click', ev => { if(ev.target === e.modal) close(); });
+    _wired = true;
+    return true;
+  }
+  function open(opp){
+    if(document.body.classList.contains('web-build')) return;
+    if(!wireOnce()) {
+      // DOM still not ready — retry next tick.
+      setTimeout(()=>open(opp), 30);
+      return;
+    }
+    currentOpp = opp;
+    const e = _els();
+    if(e.sub){
+      const teamName = (typeof teamDisplayName==='function')
+        ? teamDisplayName(opp.name) : opp.name;
+      const tmpl = (typeof FCLang!=='undefined' && FCLang.t)
+        ? FCLang.t('sim.recruit.sub', {team: teamName})
+        : 'Conquered <b>'+teamName+'</b>';
+      e.sub.innerHTML = tmpl;
+    }
+    if(e.inputWrap) e.inputWrap.style.display = 'none';
+    if(e.choices)   e.choices.style.display   = 'flex';
+    if(e.input)     e.input.value = '';
+    if(e.modal)     e.modal.classList.add('open');
+  }
+  window.openRecruitModal = open;
+})();
+</script>
+<div id="g-recruit-modal" class="g-recruit-modal">
+  <div class="g-recruit-card">
+    <div class="g-recruit-title" data-i18n="sim.recruit.title">Spoils of Victory</div>
+    <div class="g-recruit-sub" id="g-recruit-sub"></div>
+    <div class="g-recruit-choices" id="g-recruit-choices">
+      <button type="button" class="g-recruit-btn" id="g-recruit-player">
+        <div class="g-recruit-ic">👤</div>
+        <div class="g-recruit-lbl" data-i18n="sim.recruit.player">Add Player</div>
+        <div class="g-recruit-desc" data-i18n="sim.recruit.player.desc">Recruit one from their roster</div>
+      </button>
+      <button type="button" class="g-recruit-btn" id="g-recruit-aura">
+        <div class="g-recruit-ic">⭐</div>
+        <div class="g-recruit-lbl" data-i18n="sim.recruit.aura">+1 Aura</div>
+        <div class="g-recruit-desc" data-i18n="sim.recruit.aura.desc">Bank for boosts &amp; instant wins</div>
+      </button>
+    </div>
+    <div class="g-recruit-input-wrap" id="g-recruit-input-wrap" style="display:none;">
+      <input type="text" id="g-recruit-input" placeholder="Player name..."
+             data-i18n-attr="placeholder:sim.recruit.placeholder">
+      <button type="button" id="g-recruit-add" data-i18n="sim.recruit.add">Add</button>
+    </div>
+    <button type="button" class="g-recruit-skip" id="g-recruit-skip"
+            data-i18n="sim.recruit.skip">Skip — take nothing</button>
+  </div>
+</div>
+<script>
+(function(){
+  function sync(){
+    var el = document.getElementById('sim-lang-select');
+    if(el && window.FCLang && el.value !== FCLang.current) el.value = FCLang.current;
+  }
+  if(window.FCLang && Array.isArray(FCLang.onChange)) FCLang.onChange.push(sync);
+  document.addEventListener('DOMContentLoaded', sync);
+  sync();
 })();
 </script>
 </body>

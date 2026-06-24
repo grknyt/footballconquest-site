@@ -22,13 +22,44 @@
    ───────────────────────────────────────────────────────────── */
 (function () {
   var STORAGE_KEY = 'fc-lang';
-  var SUPPORTED = ['en', 'tr'];
-
-  function browserIsTurkish() {
+  var SUPPORTED = ['en', 'tr', 'es', 'pt', 'fr', 'de', 'it', 'nl', 'no', 'sv'];
+  // Browser-language prefix → app language code. Order matters for longest-match.
+  var BROWSER_PREFIX = [
+    ['tr', 'tr'],
+    ['es', 'es'],
+    ['pt', 'pt'],
+    ['fr', 'fr'],
+    ['de', 'de'],
+    ['it', 'it'],
+    ['nl', 'nl'],
+    ['nb', 'no'], ['nn', 'no'], ['no', 'no'],
+    ['sv', 'sv']
+  ];
+  // Cloudflare /cdn-cgi/trace country code → app language code.
+  var COUNTRY_LANG = {
+    TR: 'tr',
+    ES: 'es', MX: 'es', AR: 'es', CL: 'es', CO: 'es', PE: 'es', VE: 'es', UY: 'es', PY: 'es', EC: 'es', BO: 'es', GT: 'es', HN: 'es', NI: 'es', PA: 'es', SV: 'es', CR: 'es', CU: 'es', DO: 'es',
+    BR: 'pt', PT: 'pt',
+    FR: 'fr', BE: 'fr',
+    DE: 'de', AT: 'de', CH: 'de',
+    IT: 'it',
+    NL: 'nl',
+    NO: 'no',
+    SE: 'sv'
+  };
+  function detectByBrowser() {
     var langs = (navigator.languages && navigator.languages.length)
       ? navigator.languages : [navigator.language || ''];
-    return langs.some(function (l) { return (l || '').toLowerCase().indexOf('tr') === 0; });
+    for (var i = 0; i < langs.length; i++) {
+      var lc = (langs[i] || '').toLowerCase();
+      for (var j = 0; j < BROWSER_PREFIX.length; j++) {
+        if (lc.indexOf(BROWSER_PREFIX[j][0]) === 0) return BROWSER_PREFIX[j][1];
+      }
+    }
+    return null;
   }
+  // Legacy alias — older callers might still reference this.
+  function browserIsTurkish() { return detectByBrowser() === 'tr'; }
   function savedLang() {
     try {
       var v = localStorage.getItem(STORAGE_KEY);
@@ -37,16 +68,19 @@
   }
   function saveLang(l) { try { localStorage.setItem(STORAGE_KEY, l); } catch (e) {} }
 
-  // Resolves true if the Cloudflare edge reports the visitor is in Turkey.
-  function inTurkey() {
+  // Resolve the visitor's country via Cloudflare edge → app language code.
+  // Returns null if no mapping matches or the probe fails.
+  function detectByIP() {
     return fetch('/cdn-cgi/trace', { cache: 'no-store' })
       .then(function (r) { return r.text(); })
       .then(function (t) {
         var m = /(^|\n)loc=([A-Z]{2})/.exec(t);
-        return !!(m && m[2] === 'TR');
+        return (m && COUNTRY_LANG[m[2]]) || null;
       })
-      .catch(function () { return false; });
+      .catch(function () { return null; });
   }
+  // Legacy alias for any older callers.
+  function inTurkey() { return detectByIP().then(function (l) { return l === 'tr'; }); }
 
   var FCLang = {
     current: 'en',
@@ -105,19 +139,21 @@
       // The page already ships English text in the HTML, so applying the
       // synchronous best guess on DOMContentLoaded means English (and
       // Turkish-browser) visitors never see a delayed re-render flash.
-      var initial = saved || (browserIsTurkish() ? 'tr' : 'en');
+      var initial = saved || detectByBrowser() || 'en';
       self.current = initial;
       function applyNow() { self.apply(); }
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', applyNow);
       } else { applyNow(); }
       // ── Background IP probe ──
-      // Only relevant when the visitor has NO saved choice and their browser
-      // isn't already Turkish. If the Cloudflare edge says they're in Turkey,
-      // switch then — a one-time, deliberate change, not a load-flash.
-      if (!saved && initial !== 'tr') {
-        inTurkey().then(function (isTR) {
-          if (isTR && self.current !== 'tr') self.set('tr', false);
+      // Only run when no saved choice. If the Cloudflare edge resolves a
+      // language different from the synchronous first guess, switch once —
+      // a deliberate change, not a load-flash.
+      if (!saved) {
+        detectByIP().then(function (lang) {
+          if (lang && SUPPORTED.indexOf(lang) !== -1 && self.current !== lang) {
+            self.set(lang, false);
+          }
         });
       }
     }
