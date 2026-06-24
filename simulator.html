@@ -4249,7 +4249,7 @@ function buildMap(world){
       .on('mouseover',function(ev){
         if(mode!=='view')return;
         const name=currentOwnerName(this);if(!name)return;
-        $('tip').textContent=name;$('tip').style.display='block';
+        $('tip').textContent=teamDisplayName(name);$('tip').style.display='block';
       })
       .on('mousemove',ev=>{const b=mwrap.getBoundingClientRect();$('tip').style.left=(ev.clientX-b.left+10)+'px';$('tip').style.top=(ev.clientY-b.top-30)+'px';})
       .on('mouseout',()=>$('tip').style.display='none');
@@ -4359,7 +4359,7 @@ function buildMap(world){
               .on('mouseover',function(ev){
                 if(mode!=='view')return;
                 const name=currentOwnerName(this);if(!name)return;
-                $('tip').textContent=name;$('tip').style.display='block';
+                $('tip').textContent=teamDisplayName(name);$('tip').style.display='block';
               })
               .on('mousemove',ev=>{const b=mwrap.getBoundingClientRect();$('tip').style.left=(ev.clientX-b.left+10)+'px';$('tip').style.top=(ev.clientY-b.top-30)+'px';})
               .on('mouseout',()=>$('tip').style.display='none')
