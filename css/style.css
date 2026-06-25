@@ -1239,7 +1239,10 @@ img, svg { display: block; max-width: 100%; height: auto; }
   .page { padding: 56px 20px; }
 }
 
-/* Audience separation — show only the channel/content matching the
-   active site language. <html lang> is kept in sync by js/i18n.js. */
-html[lang="en"] [data-lang-only="tr"],
+/* Audience separation — the TR site shows the GRKN brand (data-lang-only="tr"),
+   every other language shows the Ghiellini brand (data-lang-only="en").
+   The two brands never appear together. <html lang> is kept in sync by js/i18n.js.
+   So even though the attribute literally says "en", treat it as
+   "Ghiellini-branded element, visible on every non-TR locale." */
 html[lang="tr"] [data-lang-only="en"]{display:none!important;}
+html:not([lang="tr"]) [data-lang-only="tr"]{display:none!important;}
