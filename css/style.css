@@ -160,6 +160,44 @@ img, svg { display: block; max-width: 100%; height: auto; }
 }
 .lang-sep { color: var(--muted); font-size: 11px; }
 
+/* 10-language dropdown — sits in the nav, shows current language, opens a
+   menu of every supported locale. Driven by the wireLangDropdown() snippet
+   in js/i18n.js. */
+.nav-lang-dropdown { position: relative; }
+.nav-lang-trigger {
+  background: transparent; border: 1px solid rgba(244, 234, 213, 0.15);
+  color: var(--paper-2);
+  font-family: var(--display); font-size: 12px; font-weight: 700;
+  letter-spacing: 1px; cursor: pointer; padding: 6px 10px;
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 4px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.nav-lang-trigger:hover { background: rgba(244, 234, 213, 0.08); border-color: rgba(244, 234, 213, 0.35); color: var(--paper); }
+.nav-lang-arrow { font-size: 9px; opacity: 0.7; transition: transform 0.15s; }
+.nav-lang-dropdown.open .nav-lang-arrow { transform: rotate(180deg); }
+.nav-lang-menu {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  list-style: none; margin: 0; padding: 6px 0;
+  background: var(--navy-2); border: 1px solid var(--navy-3);
+  border-radius: 6px; min-width: 180px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  display: none; z-index: 1000;
+  max-height: 320px; overflow-y: auto;
+}
+.nav-lang-dropdown.open .nav-lang-menu { display: block; }
+.nav-lang-menu li { margin: 0; }
+.nav-lang-menu button {
+  display: block; width: 100%; text-align: left;
+  background: transparent; border: none; color: var(--paper-2);
+  font-family: var(--display); font-size: 12px; font-weight: 600;
+  letter-spacing: 0.5px; padding: 9px 16px; cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+.nav-lang-menu button:hover { background: var(--navy-3); color: var(--paper); }
+.nav-lang-menu button.active { color: var(--red); font-weight: 700; }
+.nav-lang-menu button.active::before { content: "● "; font-size: 10px; }
+
 /* ─────────────────────────────────────────────────────────────
    HERO
    ───────────────────────────────────────────────────────────── */

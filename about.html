@@ -29,9 +29,13 @@
     <li><a href="/featured-runs.html" data-i18n="nav.featured">Featured runs</a></li>
     <li><a href="/about.html" style="color:#fff;" data-i18n="nav.about">About</a></li>
     <li class="nav-lang">
-      <button type="button" class="lang-btn" data-lang-btn="en" onclick="FCLang.set('en',true)">EN</button>
-      <span class="lang-sep">/</span>
-      <button type="button" class="lang-btn" data-lang-btn="tr" onclick="FCLang.set('tr',true)">TR</button>
+      <div class="nav-lang-dropdown" id="nav-lang-dd">
+        <button type="button" class="nav-lang-trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="nav-lang-current">EN</span>
+          <span class="nav-lang-arrow">▾</span>
+        </button>
+        <ul class="nav-lang-menu" role="listbox"></ul>
+      </div>
     </li>
   </ul>
 </nav>
@@ -118,7 +122,4 @@
 </footer>
 
 <!-- Localization: translations dictionary + i18n engine. -->
-<script src="/js/translations.js"></script>
-<script src="/js/i18n.js"></script>
-</body>
-</html>
+<script src="/js/translations.

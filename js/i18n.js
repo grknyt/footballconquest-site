@@ -163,4 +163,69 @@
   // Auto-boot once translations.js has defined the dictionary.
   if (window.FC_TRANSLATIONS) FCLang.boot(window.FC_TRANSLATIONS);
   else document.addEventListener('DOMContentLoaded', function () { FCLang.boot(window.FC_TRANSLATIONS); });
+
+  // ── 10-language nav dropdown ────────────────────────────────────
+  // Auto-wires any <div class="nav-lang-dropdown" id="nav-lang-dd"> in the
+  // page. The button toggles the menu; selecting an item calls FCLang.set().
+  // The display label always reflects the active locale.
+  var LANG_NATIVE = {
+    en: 'EN — English', tr: 'TR — Türkçe', es: 'ES — Español',
+    pt: 'PT — Português', fr: 'FR — Français', de: 'DE — Deutsch',
+    it: 'IT — Italiano', nl: 'NL — Nederlands', no: 'NO — Norsk',
+    sv: 'SV — Svenska'
+  };
+  function wireLangDropdown() {
+    var dd = document.getElementById('nav-lang-dd');
+    if (!dd || dd.dataset.wired) return;
+    dd.dataset.wired = '1';
+    var trigger = dd.querySelector('.nav-lang-trigger');
+    var menu = dd.querySelector('.nav-lang-menu');
+    var current = dd.querySelector('.nav-lang-current');
+    if (!trigger || !menu || !current) return;
+    // Build menu items for every supported language.
+    menu.innerHTML = '';
+    SUPPORTED.forEach(function (code) {
+      var li = document.createElement('li');
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.setAttribute('data-lang', code);
+      btn.textContent = LANG_NATIVE[code] || code.toUpperCase();
+      btn.addEventListener('click', function () {
+        FCLang.set(code, true);
+        dd.classList.remove('open');
+        trigger.setAttribute('aria-expanded', 'false');
+      });
+      li.appendChild(btn);
+      menu.appendChild(li);
+    });
+    function refresh() {
+      current.textContent = (FCLang.current || 'en').toUpperCase();
+      menu.querySelectorAll('button').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-lang') === FCLang.current);
+      });
+    }
+    refresh();
+    FCLang.onChange.push(refresh);
+    trigger.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var willOpen = !dd.classList.contains('open');
+      dd.classList.toggle('open', willOpen);
+      trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    });
+    document.addEventListener('click', function (e) {
+      if (!dd.contains(e.target)) {
+        dd.classList.remove('open');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && dd.classList.contains('open')) {
+        dd.classList.remove('open');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wireLangDropdown);
+  } else { wireLangDropdown(); }
 })();
