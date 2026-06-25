@@ -627,6 +627,9 @@ window.FC_TRANSLATIONS = {
   }
 ,
   tr: {
+    /* ── brand-segregation fix ── */
+    "ab.who.li2": "<strong><a href=\"https://www.youtube.com/@GRKN7\" target=\"_blank\" style=\"color:var(--red);\">@GRKN7</a></strong> — Kariyer modu ve simülasyon videoları.",
+
     /* ── marketing pages (Turkish depth pass) ── */
     "ab.who.h": "Bunu kim yaptı",
     "ab.who.p1": "Selam, ben Gürkan. EA Sports FC offline içeriklerine odaklı bir YouTube kanalı işletiyorum:",
