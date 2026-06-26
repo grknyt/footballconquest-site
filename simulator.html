@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
@@ -2030,6 +2030,24 @@ body.fc-splash-active #fc-bug-link { display: none; }
   .sim-acts-drawer .sim-lang-select { width: 100%; }
   /* Make the .acts container positioning context for the absolute drawer */
   .acts { position: relative; }
+}
+
+
+/* ── Safe-area lift for mobile bottom UI ──
+   Many phones (iPhones with home indicator, Androids with gesture nav) have
+   a 24-34px strip at the bottom of the viewport for the system UI. Without
+   accounting for it, the simulator's game panel sits underneath that strip
+   and the action buttons (Spin Arrow / Play Match / Conquest Strike) are
+   hard to tap. We push the panel up by safe-area-inset-bottom + 12px on
+   mobile, which translates to 34-46px on home-indicator phones and ~12px on
+   older devices that have no inset. */
+@media (max-width: 700px) {
+  #game-panel {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 12px) !important;
+  }
+  /* Any other absolute-positioned mobile UI gets the same treatment so the
+     bottom of the simulator never collides with the system UI. */
+  body { padding-bottom: env(safe-area-inset-bottom, 0px); }
 }
 
 </style>
