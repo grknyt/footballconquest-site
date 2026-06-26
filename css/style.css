@@ -1239,6 +1239,32 @@ img, svg { display: block; max-width: 100%; height: auto; }
   display: block;
 }
 
+/* Mobile play.html: lock the outer page so the simulator iframe is the only
+   scrollable region. Without this, on portrait mobile the touch-scroll inside
+   the game "escapes" to the outer page and reveals the play.html footer
+   instead of letting the simulator handle its own scroll/zoom. Uses 100dvh
+   so the iframe shrinks correctly when the mobile browser URL bar is showing. */
+@media (max-width: 900px) {
+  body.play-page {
+    height: 100dvh;
+    height: 100vh; /* fallback for browsers without dvh */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+  }
+  body.play-page .nav { flex: 0 0 auto; }
+  body.play-page .play-frame {
+    flex: 1 1 auto;
+    height: auto;
+    width: 100%;
+    min-height: 0;
+  }
+  /* Hide the marketing footer on mobile — the simulator has its own back-nav
+     and removing the footer eliminates the scroll-escape target entirely. */
+  body.play-page > footer.footer { display: none; }
+}
+
 /* Ad after play */
 .play-ad-strip {
   background: var(--paper-2);
