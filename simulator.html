@@ -1461,6 +1461,108 @@ body.web-build .g-result-card.revealed .g-sim-btn{
   opacity:.18;pointer-events:none;transition:opacity .25s ease;
 }
 
+/* ─────────────────────────────────────────────────────────────
+   MOBILE TACTICAL PASS — only applies to portrait-mobile viewports.
+   Desktop layout (anything ≥701px wide) is left completely intact.
+   Goal: get the simulator from "broken on portrait" to "playable on
+   portrait" without redesigning. Three pain points addressed:
+     1. Bottom action buttons (Spin Arrow / Play Match / Conquest)
+        were oversized and clipping. Now smaller + wrap.
+     2. Match result modal was too tall — Confirm button below the
+        fold. Now near-full-screen with a sticky action bar so the
+        Confirm / Simulate buttons are always reachable.
+     3. AURA bar, stats slots, squad panel all scaled to mobile.
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  /* ── Game panel: tighter padding so it doesn't dominate the screen ── */
+  #game-panel { max-width: calc(100% - 8px); bottom: 4px; }
+  .g-head { padding: 5px 10px; }
+  .g-title { font-size: 11px; }
+  .g-body { padding: 8px 10px; gap: 8px; }
+
+  /* ── Stats slots: smaller flag + tighter padding ── */
+  .g-slot { min-width: 60px; padding: 4px 6px; }
+  .g-slot-label { font-size: 9px; }
+  .g-slot-val { font-size: 10px; }
+  .g-slot-flag { width: 32px; height: 22px; margin-top: 2px; }
+
+  /* ── AURA bar / record / goals strip: narrower so it doesn't overflow ── */
+  .g-aura-hbar { width: 130px; }
+  .g-aura-hbar-text { font-size: 11px; }
+  .g-aura-hbar-val { font-size: 12px; }
+  .g-aura-hbar-star { font-size: 15px; }
+
+  /* ── Action buttons: smaller padding, allow wrapping, full text visible ── */
+  .g-actions, .g-action-group { flex-wrap: wrap; gap: 5px; justify-content: center; }
+  .g-btn {
+    min-width: 0;
+    padding: 8px 10px;
+    font-size: 11px;
+    flex: 1 1 auto;
+    white-space: nowrap;
+  }
+  /* Conquest mode: 3-button row (Spin/Play/Conquest) stacked vertically so
+     each button gets the full width and text never clips. */
+  #game-panel.conquest-mode .g-action-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  #game-panel.conquest-mode .g-action-group .g-btn {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+  /* Lion's Roar ultimate button: same full-width treatment */
+  .g-actions-ult { width: 100%; }
+  .g-btn.g-btn-ult { width: 100%; padding: 10px 12px; font-size: 12px; }
+
+  /* ── Match result modal: full-screen + sticky action bar ──
+     The modal was taller than the viewport, so Confirm/Simulate sat below
+     the fold and were unreachable. Now the card fills the screen, scrolls
+     internally, and the action row sticks to the bottom. */
+  .g-start-card, .g-result-card {
+    padding: 14px;
+    width: calc(100% - 12px);
+    max-width: 100%;
+    max-height: calc(100dvh - 12px);
+    max-height: calc(100vh - 12px); /* fallback */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  /* Scrollable inner content (everything except the sticky action row) */
+  .g-result-card > *:not(.g-result-actions) { flex: 0 0 auto; }
+  /* Sticky action row at the bottom of the modal — Confirm / Simulate are
+     always visible regardless of how tall the rest of the modal is. */
+  .g-result-actions {
+    position: sticky;
+    bottom: 0;
+    background: #0a1624;
+    margin: 0 -14px -14px;
+    padding: 12px 14px;
+    border-top: 1px solid #1a2f40;
+    z-index: 10;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .g-result-actions .g-btn {
+    min-width: 0;
+    padding: 10px 14px;
+    font-size: 12px;
+    flex: 1 1 auto;
+  }
+  /* Result modal text scales down too */
+  .g-result-title { font-size: 15px; margin-bottom: 12px; }
+  .g-sim-btn { padding: 10px 12px; font-size: 13px; }
+
+  /* ── Squad panel: narrower on mobile (still toggleable) ── */
+  #g-squad-panel { width: calc(100% - 16px); max-width: 280px; }
+
+  /* ── Splash screen: tighter padding so the play button fits ── */
+  .fc-play-btn { padding: 10px 22px; font-size: 12px; }
+}
+
 </style>
 </head>
 <!-- web-build = simulate-only public site. Remove the class to enable
