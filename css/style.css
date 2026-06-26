@@ -1243,26 +1243,39 @@ img, svg { display: block; max-width: 100%; height: auto; }
    scrollable region. Without this, on portrait mobile the touch-scroll inside
    the game "escapes" to the outer page and reveals the play.html footer
    instead of letting the simulator handle its own scroll/zoom. Uses 100dvh
-   so the iframe shrinks correctly when the mobile browser URL bar is showing. */
+   so the iframe shrinks correctly when the mobile browser URL bar is showing.
+   Also strips the marketing nav links so the nav doesn't wrap to 3 lines and
+   eat half the viewport — only the FC mark and language dropdown stay. */
 @media (max-width: 900px) {
-  body.play-page {
+  html, body.play-page {
     height: 100dvh;
-    height: 100vh; /* fallback for browsers without dvh */
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+    height: 100vh; /* fallback */
+    overflow: hidden !important;
     margin: 0;
   }
-  body.play-page .nav { flex: 0 0 auto; }
+  body.play-page {
+    display: flex;
+    flex-direction: column;
+  }
+  body.play-page .nav {
+    flex: 0 0 auto;
+    padding: 8px 16px;
+  }
+  body.play-page .nav-links { gap: 8px; flex-wrap: nowrap; }
+  /* On mobile play page, hide every nav link except the language dropdown;
+     the FC brand mark on the left still links back to the homepage. */
+  body.play-page .nav-links > li:not(.nav-lang) { display: none; }
   body.play-page .play-frame {
-    flex: 1 1 auto;
-    height: auto;
+    flex: 1 1 auto !important;
+    height: auto !important;
     width: 100%;
     min-height: 0;
+    display: block;
   }
   /* Hide the marketing footer on mobile — the simulator has its own back-nav
-     and removing the footer eliminates the scroll-escape target entirely. */
-  body.play-page > footer.footer { display: none; }
+     (FC brand mark in the top-left of play.html links back) and removing the
+     footer eliminates the scroll-escape target entirely. */
+  body.play-page > footer.footer { display: none !important; }
 }
 
 /* Ad after play */
