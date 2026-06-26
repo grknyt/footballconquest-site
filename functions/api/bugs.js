@@ -32,10 +32,11 @@ export async function onRequestPost({ request, env }) {
     return json({ success: false, message: 'Could not parse form: ' + err.message }, 400);
   }
 
-  const description = String(form.get('description') || '').trim();
-  const steps       = String(form.get('steps_to_reproduce') || '').trim();
-  const replyEmail  = String(form.get('reply_email') || '').trim();
-  const browser     = String(form.get('browser_user_agent') || '').trim();
+  const description  = String(form.get('description') || '').trim();
+  const steps        = String(form.get('steps_to_reproduce') || '').trim();
+  const reporterName = String(form.get('reporter_name') || '').trim().slice(0, 80);
+  const replyEmail   = String(form.get('reply_email') || '').trim();
+  const browser      = String(form.get('browser_user_agent') || '').trim();
   const viewport    = String(form.get('viewport_size') || '').trim();
   const language    = String(form.get('page_language') || '').trim();
   const pageUrl     = String(form.get('page_url') || '').trim();
@@ -52,13 +53,14 @@ export async function onRequestPost({ request, env }) {
   const textLines = [
     'New bug report from Football Conquest',
     '',
+    `Reporter: ${reporterName || '(anonymous)'}`,
+    `Reply email: ${replyEmail || '(not provided)'}`,
+    '',
     'Description:',
     description,
     '',
     'Steps to reproduce:',
     steps || '(none provided)',
-    '',
-    `Reply email: ${replyEmail || '(not provided)'}`,
     '',
     '──────── Auto-captured context ────────',
     `Browser:    ${browser}`,
@@ -72,14 +74,14 @@ export async function onRequestPost({ request, env }) {
   const html = `<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:640px;color:#222;">
     <h2 style="margin:0 0 12px;color:#c8102e;letter-spacing:1px;">⚽ Football Conquest Bug Report</h2>
 
+    <h3 style="margin:18px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:#666;">Reporter</h3>
+    <p style="margin:0;">${escapeHtml(reporterName) || '<em style="color:#999;">(anonymous)</em>'}${replyEmail ? ` &middot; <a href="mailto:${escapeHtml(replyEmail)}">${escapeHtml(replyEmail)}</a>` : ''}</p>
+
     <h3 style="margin:18px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:#666;">Description</h3>
     <p style="white-space:pre-wrap;margin:0;line-height:1.5;">${escapeHtml(description)}</p>
 
     <h3 style="margin:18px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:#666;">Steps to reproduce</h3>
     <p style="white-space:pre-wrap;margin:0;line-height:1.5;">${escapeHtml(steps) || '<em style="color:#999;">(none provided)</em>'}</p>
-
-    <h3 style="margin:18px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:#666;">Reply email</h3>
-    <p style="margin:0;">${replyEmail ? `<a href="mailto:${escapeHtml(replyEmail)}">${escapeHtml(replyEmail)}</a>` : '<em style="color:#999;">(not provided)</em>'}</p>
 
     <hr style="margin:24px 0;border:0;border-top:1px solid #eaeaea;">
 

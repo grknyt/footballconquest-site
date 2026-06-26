@@ -12,6 +12,7 @@
    ───────────────────────────────────────────────────────────── */
 window.FC_TRANSLATIONS = {
   en: {
+    "sim.tb.bug": "Report bug",
     /* ── shared: nav + footer ── */
     "nav.play": "Play",
     "nav.howto": "How to play",
@@ -627,6 +628,7 @@ window.FC_TRANSLATIONS = {
   }
 ,
   tr: {
+    "sim.tb.bug": "Hata bildir",
     /* ── brand-segregation fix ── */
     "ab.who.li2": "<strong><a href=\"https://www.youtube.com/@GRKN7\" target=\"_blank\" style=\"color:var(--red);\">@GRKN7</a></strong> — Kariyer modu ve simülasyon videoları.",
 
@@ -1193,6 +1195,7 @@ window.FC_TRANSLATIONS = {
     "sim.tb.view": "G\u00f6r\u00fcnt\u00fcle"
   },
   es: {
+    "sim.tb.bug": "Reportar error",
     /* ── marketing pages (added Wave 1) ── */
     "ab.eyebrow": "CAPÍTULO 03 · LA HISTORIA",
     "ab.title": "Sobre este proyecto.",
@@ -1792,6 +1795,7 @@ window.FC_TRANSLATIONS = {
     "sim.tb.view": "Ver"
   },
   pt: {
+    "sim.tb.bug": "Reportar erro",
     /* ── marketing pages (added Wave 2) ── */
     "ab.eyebrow": "CAPÍTULO 03 · A HISTÓRIA",
     "ab.title": "Sobre este projeto.",
@@ -2391,6 +2395,7 @@ window.FC_TRANSLATIONS = {
     "sim.tb.view": "Ver"
   },
   fr: {
+    "sim.tb.bug": "Signaler un bug",
     /* ── marketing pages (added Wave 3) ── */
     "ab.eyebrow": "CHAPITRE 03 · L'HISTOIRE",
     "ab.title": "À propos de ce projet.",
@@ -2990,6 +2995,7 @@ window.FC_TRANSLATIONS = {
     "sim.tb.view": "Vue"
   },
   de: {
+    "sim.tb.bug": "Fehler melden",
     /* ── marketing pages (added Wave 4) ── */
     "ab.eyebrow": "KAPITEL 03 · DIE GESCHICHTE",
     "ab.title": "Über dieses Projekt.",
@@ -3589,6 +3595,7 @@ window.FC_TRANSLATIONS = {
     "sim.tb.view": "Ansicht"
   },
   it: {
+    "sim.tb.bug": "Segnala bug",
     /* ── marketing pages (added Wave 5) ── */
     "nav.play": "Gioca",
     "nav.howto": "Come si gioca",
@@ -3987,6 +3994,7 @@ window.FC_TRANSLATIONS = {
     "sim.tb.view": "Vista"
   },
   nl: {
+    "sim.tb.bug": "Bug melden",
     /* ── marketing pages (added Wave 6) ── */
     "nav.play": "Spelen",
     "nav.howto": "Hoe spelen",
@@ -4385,6 +4393,7 @@ window.FC_TRANSLATIONS = {
     "sim.tb.view": "Weergave"
   },
   no: {
+    "sim.tb.bug": "Rapporter feil",
     /* ── marketing pages (added Wave 7) ── */
     "nav.play": "Spill",
     "nav.howto": "Hvordan spille",
@@ -4783,6 +4792,7 @@ window.FC_TRANSLATIONS = {
     "sim.tb.view": "Vis"
   },
   sv: {
+    "sim.tb.bug": "Rapportera bugg",
     /* ── marketing pages (added Wave 8) ── */
     "nav.play": "Spela",
     "nav.howto": "Hur man spelar",
