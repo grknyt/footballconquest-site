@@ -1340,9 +1340,19 @@ img, svg { display: block; max-width: 100%; height: auto; }
     padding: 8px 16px;
   }
   body.play-page .nav-links { gap: 8px; flex-wrap: nowrap; }
-  /* On mobile play page, hide every nav link except the language dropdown;
-     the FC brand mark on the left still links back to the homepage. */
-  body.play-page .nav-links > li:not(.nav-lang) { display: none; }
+  /* OLD behaviour (replaced by hamburger): we used to hide every nav link
+     except the language dropdown. Now the hamburger drawer handles this —
+     no need to hide individual items inline. (Rule kept commented for
+     context; the global hamburger rule in the section above already hides
+     the inline nav-links via `display: none` until .menu-open is set.) */
+  /* body.play-page .nav-links > li:not(.nav-lang) { display: none; } */
+  /* When the hamburger drawer is open on play.html, make sure the dropdown
+     panel sits above the simulator iframe (which has its own stacking
+     context). Without this, the drawer renders behind the iframe content. */
+  body.play-page .nav.menu-open .nav-links {
+    z-index: 1000 !important;
+    background: var(--navy-2) !important;
+  }
   body.play-page .play-frame {
     flex: 1 1 auto !important;
     height: auto !important;
