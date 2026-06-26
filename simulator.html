@@ -1372,6 +1372,8 @@ body.web-build #fc-menu-redo{display:none!important;}
 .g-result-card.simulated .g-result-finish,
 .g-result-card.simulated #g-result-pens-row,
 .g-result-card.simulated #g-result-confirm,
+.g-result-card.simulated #g-result-cancel,
+.g-result-card.simulated .g-result-actions,
 .g-result-card.simulated .g-sim-btn,
 .g-result-card.simulated .g-result-boosts,
 .g-result-card.simulated .g-result-preview{display:none!important;}
@@ -1941,23 +1943,15 @@ body.web-build .g-result-card.revealed .g-sim-btn{
 /* ── DESKTOP modal scroll fix (reported by @FreeMyBoyDomg780) ──
    Event modifier cards (Twist / Boss / Revenge) make the match modal grow
    tall enough to push the Simulate Match button off-screen on smaller
-   laptops. Make the card scrollable internally with a sticky action row so
-   the Confirm / Simulate buttons stay reachable on every viewport size.
-   The mobile pass overrides margins / padding inside @media; this rule
-   provides the universal default. */
+   laptops. Cap the card height and let it scroll naturally — the upper
+   content scrolls and the user can reach the buttons at the bottom of the
+   scroll. The mobile pass (@media max-width:700px) still keeps the sticky
+   action bar treatment for phones where the modal is much shorter and the
+   buttons need to stay pinned. */
 .g-result-card, .g-start-card {
   max-height: calc(100dvh - 32px);
   max-height: calc(100vh - 32px); /* fallback for browsers without dvh */
   overflow-y: auto;
-}
-.g-result-actions {
-  position: sticky;
-  bottom: 0;
-  margin: 14px -28px -28px;
-  padding: 14px 28px;
-  background: #0a1624;
-  border-top: 1px solid #1a2f40;
-  z-index: 10;
 }
 
 </style>
