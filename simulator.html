@@ -1645,6 +1645,81 @@ body.web-build .g-result-card.revealed .g-sim-btn{
   #game-panel.conquest-mode .g-action-group { gap: 4px !important; }
 }
 
+
+/* ── ROUND 3: relocate panels + 40% match-modal shrink ──
+   Panels (continents, events, squad) previously sat at bottom-left and got
+   covered by the game panel on portrait mobile. Now they live at top-left,
+   forced into collapsed state by default (only the header bar shows). Tap a
+   header to expand it downward over the map. Existing toggle logic still works.
+   The match-result modal was also way too tall — flags, fonts, padding all
+   shrunk to ~60% of desktop sizes. */
+@media (max-width: 700px) {
+  /* Reposition the left-stack to top-left, just below the turn badge */
+  #g-left-stack {
+    bottom: auto !important;
+    top: 40px !important;
+    left: 6px !important;
+    right: auto !important;
+    z-index: 26;
+    gap: 4px !important;
+  }
+  #g-campaign-panel, #g-events-panel, #g-squad-panel {
+    width: 200px !important;
+    max-width: calc(100vw - 12px) !important;
+  }
+  #g-campaign-header, #g-events-header, #g-squad-header {
+    padding: 6px 10px !important;
+    font-size: 10px !important;
+  }
+  /* When expanded on mobile, cap height so panel doesn't fill the whole screen */
+  #g-campaign-panel:not(.collapsed),
+  #g-events-panel:not(.collapsed),
+  #g-squad-panel:not(.collapsed) {
+    max-height: 50vh !important;
+  }
+
+  /* ── Match Result modal — shrink ~40% ── */
+  /* Flag size: 80x54 → 48x32 */
+  .g-result-flag { width: 48px !important; height: 32px !important; }
+  /* Team name: 16px → 11px */
+  .g-result-team-name { font-size: 11px !important; line-height: 1.1 !important; }
+  /* YOU/OPPONENT subtitle */
+  .g-result-team-label { font-size: 9px !important; letter-spacing: 0 !important; }
+  /* Matchup gap tightening */
+  .g-result-matchup { gap: 6px !important; }
+  .g-result-team { gap: 4px !important; }
+  /* Win probability */
+  .g-result-prob-label { font-size: 10px !important; letter-spacing: 0 !important; }
+  .g-result-prob-value { font-size: 14px !important; }
+  .g-result-prob-bar { height: 4px !important; margin-bottom: 6px !important; }
+  /* Expected goals row */
+  .g-result-or { font-size: 9px !important; gap: 6px !important; }
+  /* Preview card padding */
+  .g-result-preview { padding: 8px !important; }
+  /* Tactic buttons row */
+  .g-tactic-btn { padding: 5px 6px !important; font-size: 10px !important; gap: 3px !important; }
+  /* Aura boosts section */
+  .g-result-boosts { padding: 7px 9px !important; margin-bottom: 8px !important; }
+  .g-boost-head { margin-bottom: 6px !important; font-size: 9px !important; }
+  .g-boost-bal { font-size: 11px !important; }
+  .g-boost-btns { gap: 4px !important; }
+  .g-boost-btn { padding: 5px 4px !important; gap: 2px !important; }
+  .g-boost-ic { font-size: 14px !important; }
+  .g-boost-nm { font-size: 9px !important; line-height: 1.1 !important; }
+  .g-boost-cost { font-size: 9px !important; }
+  /* Double or Nothing row */
+  .g-boost-don { margin-top: 6px !important; font-size: 10px !important; gap: 5px !important; }
+  .g-boost-don input { width: 13px !important; height: 13px !important; }
+  /* Finish row (FT/AET/Pens) */
+  .g-result-finish { font-size: 11px !important; gap: 9px !important; margin-bottom: 8px !important; }
+  /* Result title */
+  .g-result-title { font-size: 13px !important; margin-bottom: 8px !important; }
+  /* Sim Match button — smaller */
+  .g-sim-btn { padding: 9px 12px !important; font-size: 12px !important; }
+  /* Modal action row */
+  .g-result-actions .g-btn { padding: 8px 12px !important; font-size: 11px !important; }
+}
+
 </style>
 </head>
 <!-- web-build = simulate-only public site. Remove the class to enable
@@ -10891,5 +10966,28 @@ function openUsernameGate(onDone){
   sync();
 })();
 </script>
+
+<script>
+/* ── Auto-collapse continent/events/squad panels on mobile ──
+   The panels open in their expanded state by default (sized for desktop's
+   bottom-left corner). On mobile portrait, that means they fill half the
+   screen. Force the .collapsed class on load so only the header shows;
+   user can tap to expand. */
+(function autoCollapsePanelsOnMobile(){
+  function go(){
+    if (window.innerWidth > 700) return;
+    ['g-squad-panel', 'g-campaign-panel', 'g-events-panel'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el && !el.classList.contains('collapsed')) {
+        el.classList.add('collapsed');
+      }
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', go);
+  } else { go(); }
+})();
+</script>
+
 </body>
 </html>
