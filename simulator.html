@@ -1954,6 +1954,36 @@ body.web-build .g-result-card.revealed .g-sim-btn{
   overflow-y: auto;
 }
 
+
+/* ── Floating bug-report link ──
+   Small semi-transparent emoji button anchored to the bottom-left of the
+   viewport. Clicks open /contact.html#bug-report in a new tab with the
+   current game state passed as URL params so the form can pre-fill them.
+   Hidden during demo mode + when the user hides UI via the H hotkey. */
+#fc-bug-link {
+  position: fixed; bottom: 12px; left: 12px;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(7, 14, 23, 0.75);
+  border: 1px solid rgba(122, 184, 232, 0.35);
+  border-radius: 50%;
+  font-size: 14px; line-height: 1; text-decoration: none;
+  z-index: 28;
+  opacity: 0.7;
+  transition: opacity .18s, transform .18s, border-color .18s;
+}
+#fc-bug-link:hover {
+  opacity: 1;
+  transform: scale(1.08);
+  border-color: rgba(255, 200, 100, 0.6);
+}
+body.fc-ui-hidden #fc-bug-link,
+body.fc-demo-mode #fc-bug-link,
+body.fc-splash-active #fc-bug-link { display: none; }
+@media (max-width: 700px) {
+  #fc-bug-link { bottom: 8px; left: 8px; width: 26px; height: 26px; font-size: 12px; }
+}
+
 </style>
 </head>
 <!-- web-build = simulate-only public site. Remove the class to enable
@@ -11220,6 +11250,36 @@ function openUsernameGate(onDone){
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', go);
   } else { go(); }
+})();
+</script>
+
+
+<!-- Floating bug-report shortcut. Opens the contact form with the current
+     game state passed as URL params so the form pre-fills them. -->
+<a href="/contact.html#bug-report" target="_blank" rel="noopener" id="fc-bug-link"
+   title="Report a bug" aria-label="Report a bug">🐛</a>
+<script>
+(function keepBugLinkContextFresh(){
+  var link = document.getElementById('fc-bug-link');
+  if (!link) return;
+  function update(){
+    var params = new URLSearchParams();
+    try {
+      if (typeof GAME !== 'undefined' && GAME) {
+        if (GAME.mode) params.set('mode', GAME.mode);
+        if (GAME.heroName) params.set('team', GAME.heroName);
+        else if (GAME.hero && GAME.hero.name) params.set('team', GAME.hero.name);
+        if (typeof GAME.turn === 'number') params.set('turn', String(GAME.turn));
+        if (typeof GAME.aura === 'number') params.set('aura', String(GAME.aura));
+        if (GAME.lastAction) params.set('last_action', GAME.lastAction);
+      }
+    } catch (e) {}
+    var qs = params.toString();
+    link.href = '/contact.html#bug-report' + (qs ? '?' + qs : '');
+  }
+  update();
+  // Refresh every 3 seconds so the link captures the latest game state.
+  setInterval(update, 3000);
 })();
 </script>
 

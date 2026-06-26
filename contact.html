@@ -83,16 +83,122 @@
   </ul>
   <p>Comments on recent videos get the most eyeballs. DMs work too, but please don't send multiple in a row — we see them.</p>
 
-  <h2>Bug reports</h2>
-  <p>If something in the simulator is broken, the more detail you give us, the faster we can fix it. A useful bug report includes:</p>
-  <ul>
-    <li><strong>What you were doing</strong> when it broke (e.g. "tried to play a match against Iceland after starting a World Conquest run as England")</li>
-    <li><strong>What you expected to happen</strong></li>
-    <li><strong>What actually happened</strong></li>
-    <li><strong>Your browser and OS</strong> (e.g. "Chrome 124 on Windows 11")</li>
-    <li><strong>A screenshot</strong> if you can — even a phone photo of the screen helps</li>
-  </ul>
-  <p>Send these to the email address above with the subject line starting with <strong>[BUG]</strong> and we'll route it straight into the fix queue.</p>
+  <h2 id="bug-report">Report a bug</h2>
+  <p>Found something broken? Submit it here with a screenshot and we'll take a look. The more detail you give us, the faster we can fix it.</p>
+
+  <style>
+    .bug-form{background:rgba(15,30,50,0.6);border:1px solid #2a3f55;border-radius:8px;padding:24px;margin:20px 0;}
+    .bug-form label{display:block;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--paper-2);margin:14px 0 6px;text-transform:uppercase;}
+    .bug-form label:first-of-type{margin-top:0;}
+    .bug-form input[type="text"],.bug-form input[type="email"],.bug-form textarea{width:100%;padding:10px 12px;background:#0a1624;border:1px solid #2a3f55;border-radius:4px;color:var(--paper);font-family:var(--serif);font-size:14px;box-sizing:border-box;}
+    .bug-form input[type="file"]{width:100%;padding:8px;background:#0a1624;border:1px solid #2a3f55;border-radius:4px;color:var(--paper);font-family:var(--display);font-size:12px;box-sizing:border-box;cursor:pointer;}
+    .bug-form textarea{min-height:90px;resize:vertical;line-height:1.5;}
+    .bug-form input:focus,.bug-form textarea:focus{outline:none;border-color:#7ab8e8;}
+    .bug-form .ctx-note{font-size:11px;color:var(--muted);margin:18px 0 8px;font-style:italic;}
+    .bug-form button{background:var(--red);color:#fff;border:0;border-radius:4px;padding:14px 32px;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase;margin-top:6px;transition:background .15s;}
+    .bug-form button:hover{background:var(--red-dark);}
+    .bug-form button:disabled{opacity:0.5;cursor:not-allowed;}
+    .bug-form-status{padding:14px 16px;border-radius:4px;margin-top:18px;font-size:13px;font-weight:600;display:none;}
+    .bug-form-status.success{background:rgba(109,216,109,0.15);color:#56a06c;border:1px solid rgba(109,216,109,0.4);display:block;}
+    .bug-form-status.error{background:rgba(200,16,46,0.12);color:var(--red);border:1px solid rgba(200,16,46,0.4);display:block;}
+  </style>
+
+  <form class="bug-form" id="bug-form" enctype="multipart/form-data">
+    <!-- Web3Forms access key — get yours at https://web3forms.com/. Replace the
+         placeholder below with the key Web3Forms emails you after signup. -->
+    <input type="hidden" name="access_key" value="YOUR_WEB3FORMS_ACCESS_KEY_HERE">
+    <input type="hidden" name="subject" value="[BUG] Football Conquest report">
+    <input type="hidden" name="from_name" value="Football Conquest Bug Report">
+
+    <!-- Auto-captured context fields, populated by JS below -->
+    <input type="hidden" name="browser_user_agent" id="bug-browser">
+    <input type="hidden" name="viewport_size" id="bug-viewport">
+    <input type="hidden" name="page_language" id="bug-language">
+    <input type="hidden" name="page_url" id="bug-url">
+    <input type="hidden" name="game_context" id="bug-game-context">
+
+    <label for="bug-description">What went wrong? *</label>
+    <textarea id="bug-description" name="description" required placeholder="Describe what happened and what you expected to happen instead."></textarea>
+
+    <label for="bug-steps">Steps to reproduce</label>
+    <textarea id="bug-steps" name="steps_to_reproduce" placeholder="1. Started a World Conquest run as England&#10;2. Won my first match against Wales&#10;3. Clicked Play Match against France and..."></textarea>
+
+    <label for="bug-email">Your email (optional, for follow-up)</label>
+    <input type="email" id="bug-email" name="reply_email" placeholder="you@example.com">
+
+    <label for="bug-screenshot">Screenshot (PNG / JPG, up to 10 MB)</label>
+    <input type="file" id="bug-screenshot" name="screenshot" accept="image/png,image/jpeg,image/webp">
+
+    <div class="ctx-note">We automatically include your browser, screen size, language, and current page so you don't have to type it out.</div>
+
+    <button type="submit">Send bug report</button>
+
+    <div class="bug-form-status" id="bug-form-status"></div>
+  </form>
+
+  <script>
+    (function(){
+      // Auto-populate hidden context fields on page load.
+      document.getElementById('bug-browser').value = navigator.userAgent;
+      document.getElementById('bug-viewport').value = window.innerWidth + 'x' + window.innerHeight + ' @ DPR ' + (window.devicePixelRatio || 1).toFixed(1);
+      document.getElementById('bug-language').value = (navigator.languages && navigator.languages.join(',')) || navigator.language || '';
+      document.getElementById('bug-url').value = window.location.href;
+
+      // If the simulator's bug button passed game state via the URL hash
+      // (e.g. /contact.html#bug-report?mode=conquest&team=England&turn=14),
+      // surface it as JSON in the hidden game_context field.
+      try {
+        var hashRaw = window.location.hash.replace(/^#/, '');
+        var qsIndex = hashRaw.indexOf('?');
+        if (qsIndex >= 0) {
+          var params = new URLSearchParams(hashRaw.slice(qsIndex + 1));
+          var ctx = {};
+          ['mode','team','turn','last_action','opponent','aura'].forEach(function(k){
+            if (params.has(k)) ctx[k] = params.get(k);
+          });
+          if (Object.keys(ctx).length) {
+            document.getElementById('bug-game-context').value = JSON.stringify(ctx);
+          }
+        }
+      } catch (e) {}
+
+      // Smooth-scroll into view when arriving via #bug-report.
+      if (window.location.hash.indexOf('bug-report') === 1) {
+        setTimeout(function(){
+          document.getElementById('bug-report').scrollIntoView({behavior:'smooth', block:'start'});
+        }, 100);
+      }
+
+      var form = document.getElementById('bug-form');
+      var statusEl = document.getElementById('bug-form-status');
+      form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        statusEl.className = 'bug-form-status';
+        var button = form.querySelector('button[type="submit"]');
+        button.disabled = true;
+        var originalText = button.textContent;
+        button.textContent = 'Sending…';
+        try {
+          var fd = new FormData(form);
+          var res = await fetch('https://api.web3forms.com/submit', { method:'POST', body: fd });
+          var data = await res.json();
+          if (data.success) {
+            statusEl.className = 'bug-form-status success';
+            statusEl.textContent = '✓ Bug report sent. Thanks — every report gets read by the developer.';
+            form.reset();
+          } else {
+            throw new Error(data.message || 'Web3Forms returned an error');
+          }
+        } catch (err) {
+          statusEl.className = 'bug-form-status error';
+          statusEl.textContent = '✗ Could not send: ' + err.message + '. If this keeps happening, email us directly at the address above.';
+        } finally {
+          button.disabled = false;
+          button.textContent = originalText;
+        }
+      });
+    })();
+  </script>
 
   <h2>Feature requests</h2>
   <p>We keep a running list of community-suggested features and rotate the most-requested ones into each new release. If you have an idea, the best path is:</p>
