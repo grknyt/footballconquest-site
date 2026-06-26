@@ -1325,13 +1325,15 @@ img, svg { display: block; max-width: 100%; height: auto; }
    Also strips the marketing nav links so the nav doesn't wrap to 3 lines and
    eat half the viewport — only the FC mark and language dropdown stay. */
 @media (max-width: 900px) {
-  html, body.play-page {
+  /* Scroll lock applies ONLY to play.html — every other page must keep its
+     normal vertical scroll. (Earlier this rule used `html, body.play-page`
+     which made `html { overflow: hidden }` apply to every page, locking the
+     entire site's mobile scroll.) */
+  body.play-page {
     height: 100dvh;
     height: 100vh; /* fallback */
     overflow: hidden !important;
     margin: 0;
-  }
-  body.play-page {
     display: flex;
     flex-direction: column;
   }
