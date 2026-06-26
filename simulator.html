@@ -1584,6 +1584,67 @@ body.web-build .g-result-card.revealed .g-sim-btn{
   #g-conquest-team-picker { padding-bottom: 0; }
 }
 
+
+/* ── AGGRESSIVE MOBILE SHRINK (round 2) ──
+   The first mobile pass scaled to ~70%; screenshot showed the game panel
+   still dominating half the viewport. This round goes much harder:
+   stars hidden, slot flags 24x16, AURA bar 90px, action buttons override
+   the conquest-mode 150px min-width, slot text scaled to 9-10px. */
+@media (max-width: 700px) {
+  /* Slot card — much more compact */
+  .g-slot {
+    min-width: 56px !important;
+    padding: 3px 4px !important;
+  }
+  .g-slot-label { font-size: 8px !important; letter-spacing: 0 !important; }
+  .g-slot-val { font-size: 9px !important; line-height: 1.1 !important; }
+  .g-slot-flag {
+    width: 28px !important;
+    height: 18px !important;
+    margin-top: 1px !important;
+  }
+  /* Hide the 5-star rating row on mobile — it's the single biggest space hog
+     on the slot card and not critical for gameplay decisions. */
+  .g-slot-stars { display: none !important; }
+  #game-panel.conquest-mode .g-slot-stars { display: none !important; }
+
+  /* AURA bar — even narrower than round 1 */
+  .g-aura-hbar { width: 90px !important; }
+  .g-aura-hbar-text { font-size: 9px !important; letter-spacing: 0 !important; }
+  .g-aura-hbar-val { font-size: 10px !important; }
+  .g-aura-hbar-star { font-size: 11px !important; }
+
+  /* Conquest-mode action buttons override the desktop 150px min-width and
+     the 11px/20px padding. The 3 buttons (Spin / Play / Conquest) stack
+     vertically via the round-1 rules, but we now shrink each row's height. */
+  #game-panel.conquest-mode #g-spin-team,
+  #game-panel.conquest-mode #g-resolve,
+  #game-panel.conquest-mode .g-action-group .g-btn {
+    min-width: 0 !important;
+    padding: 8px 12px !important;
+    font-size: 11px !important;
+    border-radius: 6px !important;
+  }
+  .g-btn.g-btn-ult {
+    padding: 8px 12px !important;
+    font-size: 11px !important;
+  }
+
+  /* Game panel chrome: tighter */
+  #game-panel { max-width: calc(100% - 6px) !important; bottom: 3px !important; }
+  .g-head { padding: 3px 8px !important; }
+  .g-title { font-size: 10px !important; }
+  .g-body { padding: 5px 7px !important; gap: 6px !important; }
+  .g-slots { gap: 3px !important; }
+  .g-middle { min-width: 28px !important; gap: 0 !important; }
+  .g-vs { font-size: 9px !important; }
+  .g-score { font-size: 15px !important; line-height: 1 !important; }
+  .g-score-suffix { font-size: 8px !important; }
+
+  /* Action group container: minimal gap so stacked buttons sit tight */
+  #game-panel.conquest-mode .g-action-group { gap: 4px !important; }
+}
+
 </style>
 </head>
 <!-- web-build = simulate-only public site. Remove the class to enable
