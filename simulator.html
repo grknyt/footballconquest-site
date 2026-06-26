@@ -2067,6 +2067,37 @@ body.fc-splash-active #fc-bug-link { display: none; }
   .fc-menu-wrap { display: none !important; }
 }
 
+
+/* ── Compact mode-button when selected (mobile only) ──
+   After the user taps "World Conquest", the team picker appears below and
+   the long description ("Pick one team. Conquer all 211 others...") just
+   takes up vertical space. Hide it on mobile, shrink the icon, and trim
+   padding so the Start Conquest button is reachable without scrolling. */
+@media (max-width: 700px) {
+  .g-mode-btn.selected .g-mode-desc { display: none !important; }
+  .g-mode-btn.primary.selected {
+    padding: 12px 16px !important;
+  }
+  .g-mode-btn.primary.selected .g-mode-icon {
+    font-size: 22px !important;
+    margin-bottom: 2px !important;
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .g-mode-btn.primary.selected .g-mode-name {
+    font-size: 16px !important;
+    margin-bottom: 0 !important;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  /* Imperialism mode button hidden once Conquest is committed — single mode
+     is locked in, no need to keep showing the alternative. */
+  .g-mode-btn.primary.selected ~ .g-mode-btn[data-mode="imperialism"] {
+    display: none !important;
+  }
+}
+
 </style>
 </head>
 <!-- web-build = simulate-only public site. Remove the class to enable
@@ -2122,6 +2153,7 @@ body.fc-splash-active #fc-bug-link { display: none; }
       <button class="abtn" id="btn-bug" title="Report a bug" onclick="window.fcOpenBugReport && window.fcOpenBugReport()">🐛 <span data-i18n="sim.tb.bug">Report bug</span></button>
       <button type="button" class="abtn sim-hamburger" id="sim-hamburger-btn" title="More" aria-label="Toggle toolbar menu" aria-expanded="false">☰</button>
       <div class="sim-acts-drawer" id="sim-acts-drawer">
+        <button class="abtn drawer-relay" id="drawer-save" type="button" onclick="var e=document.getElementById('fc-menu-save'); if(e) e.click();">💾 <span data-i18n="sim.tb.menu.save">Save game</span></button>
         <button class="abtn drawer-relay" id="drawer-newgame" type="button" onclick="var e=document.getElementById('fc-menu-end'); if(e) e.click();">🎲 <span data-i18n="sim.tb.menu.newgame">New game</span></button>
         <button class="abtn drawer-relay" id="drawer-hideui" type="button" onclick="var e=document.getElementById('fc-menu-hide-ui'); if(e) e.click();">👁 <span data-i18n="sim.tb.menu.hideui">Hide UI</span></button>
       <button class="abtn" id="btn-history">🕘 <span data-i18n="sim.tb.history">History</span></button>
