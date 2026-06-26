@@ -198,6 +198,84 @@ img, svg { display: block; max-width: 100%; height: auto; }
 .nav-lang-menu button.active { color: var(--red); font-weight: 700; }
 .nav-lang-menu button.active::before { content: "● "; font-size: 10px; }
 
+/* ── Mobile hamburger menu ──
+   On desktop, the .nav-hamburger button is hidden and all .nav-links show
+   in a single row. On mobile (≤800px) the wrapping became unsightly with 7+
+   items, so the row is hidden entirely and reveals as a vertical dropdown
+   drawer triggered by the hamburger. The drawer includes the language
+   selector too — single tap target on the top bar (the hamburger), with
+   everything else folded into the drawer below. */
+.nav-hamburger {
+  display: none;
+  background: transparent;
+  border: 1px solid rgba(244, 234, 213, 0.15);
+  color: var(--paper-2);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-family: var(--display);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.nav-hamburger:hover {
+  background: rgba(244, 234, 213, 0.08);
+  border-color: rgba(244, 234, 213, 0.35);
+  color: var(--paper);
+}
+@media (max-width: 800px) {
+  .nav { padding: 12px 18px; position: relative; }
+  .nav-hamburger { display: inline-flex; align-items: center; justify-content: center; }
+  /* Default: nav-links hidden as a dropdown panel anchored below the nav */
+  .nav .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 8px;
+    background: var(--navy-2);
+    border: 1px solid var(--navy-3);
+    border-radius: 8px;
+    padding: 8px;
+    flex-direction: column;
+    gap: 2px;
+    margin: 6px 0 0 0;
+    min-width: 220px;
+    max-width: calc(100vw - 16px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    z-index: 200;
+  }
+  .nav.menu-open .nav-links { display: flex; }
+  .nav.menu-open .nav-links > li {
+    list-style: none;
+    margin: 0;
+    width: 100%;
+  }
+  .nav.menu-open .nav-links > li > a {
+    display: block;
+    padding: 10px 14px;
+    color: var(--paper-2);
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+  .nav.menu-open .nav-links > li > a:hover,
+  .nav.menu-open .nav-links > li > a:focus {
+    background: var(--navy-3);
+    color: var(--paper);
+  }
+  /* Language dropdown row in the drawer: divider above, full-width trigger */
+  .nav.menu-open .nav-links > li.nav-lang {
+    border-top: 1px solid var(--navy-3);
+    padding-top: 6px;
+    margin-top: 6px;
+  }
+  .nav.menu-open .nav-links > li.nav-lang .nav-lang-trigger {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
 /* ─────────────────────────────────────────────────────────────
    HERO
    ───────────────────────────────────────────────────────────── */

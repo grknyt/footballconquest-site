@@ -169,10 +169,10 @@
   // page. The button toggles the menu; selecting an item calls FCLang.set().
   // The display label always reflects the active locale.
   var LANG_NATIVE = {
-    en: 'EN — English', tr: 'TR — Türkçe', es: 'ES — Español',
-    pt: 'PT — Português', fr: 'FR — Français', de: 'DE — Deutsch',
-    it: 'IT — Italiano', nl: 'NL — Nederlands', no: 'NO — Norsk',
-    sv: 'SV — Svenska'
+    en: 'EN', tr: 'TR', es: 'ES',
+    pt: 'PT', fr: 'FR', de: 'DE',
+    it: 'IT', nl: 'NL', no: 'NO',
+    sv: 'SV'
   };
   function wireLangDropdown() {
     var dd = document.getElementById('nav-lang-dd');
@@ -228,4 +228,43 @@
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', wireLangDropdown);
   } else { wireLangDropdown(); }
+
+  // ── Mobile nav hamburger toggle ────────────────────────────────
+  // Toggles a .menu-open class on the parent <nav> element when the
+  // hamburger button is clicked. CSS in style.css handles showing the
+  // dropdown panel under @media (max-width: 800px). Tapping outside,
+  // pressing Escape, or following any link inside the menu closes it.
+  function wireHamburger() {
+    var btn = document.getElementById('nav-hamburger-btn');
+    if (!btn || btn.dataset.wired) return;
+    btn.dataset.wired = '1';
+    var nav = btn.closest('nav.nav');
+    if (!nav) return;
+    function setOpen(open) {
+      nav.classList.toggle('menu-open', open);
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      setOpen(!nav.classList.contains('menu-open'));
+    });
+    // Close when a nav link (not the hamburger or the lang dropdown) is tapped.
+    nav.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a');
+      if (a && nav.contains(a) && !e.target.closest('.nav-lang')) {
+        setOpen(false);
+      }
+    });
+    // Close on outside-click.
+    document.addEventListener('click', function (e) {
+      if (!nav.contains(e.target)) setOpen(false);
+    });
+    // Close on Escape.
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && nav.classList.contains('menu-open')) setOpen(false);
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wireHamburger);
+  } else { wireHamburger(); }
 })();
