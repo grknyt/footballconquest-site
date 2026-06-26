@@ -1906,6 +1906,37 @@ body.web-build .g-result-card.revealed .g-sim-btn{
   .zc { display: none !important; }
 }
 
+
+/* ── ROUND 6: revert panel orientation per user feedback ──
+   Round 5 put both pills side-by-side at the top. User wants them stacked
+   vertically again (Continents on top, Events below) but with the first one
+   aligned to the same vertical level as the Turn badge. Width also restored
+   so the labels and icons read cleanly. */
+@media (max-width: 700px) {
+  #g-left-stack {
+    top: 8px !important;
+    right: 6px !important;
+    left: auto !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    align-items: stretch !important;
+  }
+  /* Restore readable width — about 180px so labels + icons fit comfortably */
+  #g-campaign-panel, #g-events-panel, #g-squad-panel {
+    width: 180px !important;
+  }
+  /* Restore header padding + font to a comfortable touch size */
+  #g-campaign-header, #g-events-header, #g-squad-header {
+    padding: 6px 10px !important;
+    font-size: 10px !important;
+    letter-spacing: 0.3px !important;
+  }
+  /* Bring back the search/filter icons in events header that round 5 hid */
+  #g-events-search-btn, #g-events-header > .g-events-filter {
+    display: inline-flex !important;
+  }
+}
+
 </style>
 </head>
 <!-- web-build = simulate-only public site. Remove the class to enable
