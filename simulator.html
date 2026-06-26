@@ -2038,6 +2038,7 @@ body.fc-splash-active #fc-bug-link { display: none; }
     <div class="acts">
       <button class="abtn" id="btn-history">🕘 <span data-i18n="sim.tb.history">History</span></button>
       <button class="abtn" id="btn-leaderboard" data-i18n-attr="title:sim.tb.tip.lb" title="View leaderboards (your runs + global)">🏆 <span data-i18n="sim.tb.leaderboards">Leaderboards</span></button>
+      <button class="abtn" id="btn-bug" title="Report a bug" onclick="window.fcOpenBugReport && window.fcOpenBugReport()">🐛 <span data-i18n="sim.tb.bug">Report bug</span></button>
       <button class="abtn" id="btn-save">💾 <span data-i18n="sim.tb.save">Save</span></button>
       <button class="abtn" id="btn-load">📂 <span data-i18n="sim.tb.load">Load</span></button>
       <button class="abtn" id="btn-theme" data-i18n-attr="title:sim.tb.tip.theme" title="Toggle light/dark map">☀️ <span id="btn-theme-label">Light</span></button>
@@ -2395,6 +2396,7 @@ body.fc-splash-active #fc-bug-link { display: none; }
           <div class="g-stat" id="g-turn">Turn 0</div>
           <div class="g-stat" id="g-remaining">— alive</div>
         </div>
+        <button id="g-head-bug" title="Report a bug" onclick="window.fcOpenBugReport && window.fcOpenBugReport()" style="background:transparent;border:none;color:#7a9bb5;font-size:13px;cursor:pointer;padding:0 4px;line-height:1;">🐛</button>
         <button id="game-settings" data-i18n-attr="title:sim.gp.tip.settings" title="Settings">⚙️</button>
         <button id="game-close" data-i18n-attr="title:sim.gp.tip.close" title="Close">✕</button>
       </div>
@@ -11254,15 +11256,12 @@ function openUsernameGate(onDone){
 </script>
 
 
-<!-- Floating bug-report shortcut. Opens the contact form with the current
-     game state passed as URL params so the form pre-fills them. -->
-<a href="/contact.html#bug-report" target="_blank" rel="noopener" id="fc-bug-link"
-   title="Report a bug" aria-label="Report a bug">🐛</a>
+<!-- Bug-report entry points: top-toolbar button + game-panel header button
+     both call window.fcOpenBugReport(), which builds the URL with current
+     game state and opens /report-bug.html in a new tab. -->
 <script>
-(function keepBugLinkContextFresh(){
-  var link = document.getElementById('fc-bug-link');
-  if (!link) return;
-  function update(){
+(function setupBugReportLauncher(){
+  window.fcOpenBugReport = function(){
     var params = new URLSearchParams();
     try {
       if (typeof GAME !== 'undefined' && GAME) {
@@ -11275,11 +11274,9 @@ function openUsernameGate(onDone){
       }
     } catch (e) {}
     var qs = params.toString();
-    link.href = '/contact.html#bug-report' + (qs ? '?' + qs : '');
-  }
-  update();
-  // Refresh every 3 seconds so the link captures the latest game state.
-  setInterval(update, 3000);
+    var url = '/report-bug.html' + (qs ? '?' + qs : '');
+    window.open(url, '_blank', 'noopener');
+  };
 })();
 </script>
 

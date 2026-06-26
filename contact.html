@@ -84,8 +84,13 @@
   <p>Comments on recent videos get the most eyeballs. DMs work too, but please don't send multiple in a row — we see them.</p>
 
   <h2 id="bug-report">Report a bug</h2>
-  <p>Found something broken? Submit it here with a screenshot and we'll take a look. The more detail you give us, the faster we can fix it.</p>
+  <p>Bug reports have their own dedicated page so we can route them straight into the fix queue:</p>
+  <p style="margin-top:14px;"><a href="/report-bug.html" style="font-family:var(--display);font-size:18px;letter-spacing:2px;color:var(--red);border-bottom:2px solid var(--red);padding-bottom:3px;">🐛 GO TO BUG REPORT FORM →</a></p>
+  <p style="margin-top:16px;font-size:14px;color:var(--muted);">The form auto-captures your browser, screen size, language, and game state so you don't have to type any of that. Just describe what went wrong and attach a screenshot if you have one.</p>
 
+  <!-- DEPRECATED: old inline bug form, replaced by /report-bug.html. Hidden
+       but kept below as a fallback in case a stale tab POSTs to it. -->
+  <div style="display:none;">
   <style>
     .bug-form{background:rgba(15,30,50,0.6);border:1px solid #2a3f55;border-radius:8px;padding:24px;margin:20px 0;}
     .bug-form label{display:block;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--paper-2);margin:14px 0 6px;text-transform:uppercase;}
@@ -199,6 +204,7 @@
       });
     })();
   </script>
+  </div><!-- end deprecated hidden bug form -->
 
   <h2>Feature requests</h2>
   <p>We keep a running list of community-suggested features and rotate the most-requested ones into each new release. If you have an idea, the best path is:</p>

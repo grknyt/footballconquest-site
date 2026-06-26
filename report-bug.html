@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report a Bug — Football Conquest</title>
+<meta name="description" content="Report a bug in the Football Conquest simulator. Include a screenshot and we'll take a look. Browser, viewport, language and game state are captured automatically.">
+
+<meta property="og:title" content="Report a Bug — Football Conquest">
+<meta property="og:description" content="Found something broken? Submit it here with a screenshot.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://footballconquest.com/report-bug.html">
+
+<link rel="canonical" href="https://footballconquest.com/report-bug.html">
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2248373411425621" crossorigin="anonymous"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/css/style.css">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+
+<style>
+  .bug-form{background:rgba(15,30,50,0.6);border:1px solid #2a3f55;border-radius:8px;padding:24px;margin:20px 0;}
+  .bug-form label{display:block;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--paper-2);margin:14px 0 6px;text-transform:uppercase;}
+  .bug-form label:first-of-type{margin-top:0;}
+  .bug-form input[type="text"],.bug-form input[type="email"],.bug-form textarea{width:100%;padding:10px 12px;background:#0a1624;border:1px solid #2a3f55;border-radius:4px;color:var(--paper);font-family:var(--serif);font-size:14px;box-sizing:border-box;}
+  .bug-form input[type="file"]{width:100%;padding:8px;background:#0a1624;border:1px solid #2a3f55;border-radius:4px;color:var(--paper);font-family:var(--display);font-size:12px;box-sizing:border-box;cursor:pointer;}
+  .bug-form textarea{min-height:90px;resize:vertical;line-height:1.5;}
+  .bug-form input:focus,.bug-form textarea:focus{outline:none;border-color:#7ab8e8;}
+  .bug-form .ctx-note{font-size:11px;color:var(--muted);margin:18px 0 8px;font-style:italic;}
+  .bug-form button{background:var(--red);color:#fff;border:0;border-radius:4px;padding:14px 32px;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase;margin-top:6px;transition:background .15s;}
+  .bug-form button:hover{background:var(--red-dark);}
+  .bug-form button:disabled{opacity:0.5;cursor:not-allowed;}
+  .bug-form-status{padding:14px 16px;border-radius:4px;margin-top:18px;font-size:13px;font-weight:600;display:none;}
+  .bug-form-status.success{background:rgba(109,216,109,0.15);color:#56a06c;border:1px solid rgba(109,216,109,0.4);display:block;}
+  .bug-form-status.error{background:rgba(200,16,46,0.12);color:var(--red);border:1px solid rgba(200,16,46,0.4);display:block;}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-brand">
+    <span class="brand-mark">FC</span>
+    <span class="brand-name">FOOTBALL CONQUEST</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/play.html">Play</a></li>
+    <li><a href="/how-to-play.html">How to play</a></li>
+    <li><a href="/beginners-guide.html">Beginner's guide</a></li>
+    <li><a href="/featured-runs.html">Featured runs</a></li>
+    <li><a href="/about.html">About</a></li>
+    <li><a href="/contact.html">Contact</a></li>
+    <li><a href="/report-bug.html" style="color:#fff;">🐛 Report bug</a></li>
+    <li class="nav-lang">
+      <div class="nav-lang-dropdown" id="nav-lang-dd">
+        <button type="button" class="nav-lang-trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="nav-lang-current">EN</span>
+          <span class="nav-lang-arrow">▾</span>
+        </button>
+        <ul class="nav-lang-menu" role="listbox"></ul>
+      </div>
+    </li>
+  </ul>
+</nav>
+
+<article class="page">
+  <div class="page-eyebrow">CHAPTER 06 · BUG REPORTS</div>
+  <h1 class="page-title">Report a bug.</h1>
+  <p class="page-lead">Found something broken in the simulator? Send it our way — every report gets read by the developer. Screenshots are gold; the more detail you give us, the faster we can fix it.</p>
+
+  <form class="bug-form" id="bug-form" enctype="multipart/form-data">
+    <input type="hidden" name="access_key" value="4db4003e-1c95-450b-970f-26fd78618f25">
+    <input type="hidden" name="subject" value="[BUG] Football Conquest report">
+    <input type="hidden" name="from_name" value="Football Conquest Bug Report">
+
+    <input type="hidden" name="browser_user_agent" id="bug-browser">
+    <input type="hidden" name="viewport_size" id="bug-viewport">
+    <input type="hidden" name="page_language" id="bug-language">
+    <input type="hidden" name="page_url" id="bug-url">
+    <input type="hidden" name="game_context" id="bug-game-context">
+
+    <label for="bug-description">What went wrong? *</label>
+    <textarea id="bug-description" name="description" required placeholder="Describe what happened and what you expected to happen instead."></textarea>
+
+    <label for="bug-steps">Steps to reproduce</label>
+    <textarea id="bug-steps" name="steps_to_reproduce" placeholder="1. Started a World Conquest run as England&#10;2. Won my first match against Wales&#10;3. Clicked Play Match against France and..."></textarea>
+
+    <label for="bug-email">Your email (optional, for follow-up)</label>
+    <input type="email" id="bug-email" name="reply_email" placeholder="you@example.com">
+
+    <label for="bug-screenshot">Screenshot (PNG / JPG, up to 10 MB)</label>
+    <input type="file" id="bug-screenshot" name="screenshot" accept="image/png,image/jpeg,image/webp">
+
+    <div class="ctx-note">We automatically include your browser, screen size, language, and current page so you don't have to type it out. If you opened this from inside the simulator, your game state (mode, team, turn) is also captured.</div>
+
+    <button type="submit">Send bug report</button>
+
+    <div class="bug-form-status" id="bug-form-status"></div>
+  </form>
+
+  <h2>What's a good bug report?</h2>
+  <p>The reports we fix fastest are the ones that give us enough to reproduce the issue. A few things that help:</p>
+  <ul>
+    <li><strong>What you were doing</strong> when it broke — "tried to play a match against Iceland after starting a World Conquest run as England"</li>
+    <li><strong>What you expected to happen</strong> vs <strong>what actually happened</strong></li>
+    <li><strong>A screenshot</strong> — even a phone photo of the screen works. Visual context catches things text descriptions miss.</li>
+    <li><strong>Whether it's reproducible</strong> — happens every time, or just once?</li>
+  </ul>
+
+  <h2>What if I don't get a reply?</h2>
+  <p>We read every report but we don't reply to every one. If you've left an email and your bug is critical (game-blocking, data loss, security), we'll follow up within a few days. Smaller issues get folded into the next release without a reply.</p>
+  <p>If your issue is more of a feature request than a bug, head to our <a href="/contact.html" style="color:var(--red);">Contact page</a> — we have a separate path for those.</p>
+
+  <p style="margin-top:32px;"><a href="/play.html" style="font-family:var(--display);font-size:20px;letter-spacing:3px;color:var(--red);border-bottom:2px solid var(--red);padding-bottom:4px;">BACK TO THE SIMULATOR →</a></p>
+
+</article>
+
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="brand-mark large">FC</div>
+      <div>FOOTBALL CONQUEST</div>
+      <div class="footer-tag" data-lang-only="en">© 2026 · Made by <a href="https://www.youtube.com/@Ghiellini">Ghiellini</a></div>
+      <div class="footer-tag" data-lang-only="tr">© 2026 · <a href="https://www.youtube.com/@GRKN7">GRKN7</a> tarafından yapıldı</div>
+    </div>
+    <div class="footer-col">
+      <div class="footer-heading" data-i18n="footer.play">PLAY</div>
+      <a href="/play.html" data-i18n="footer.play.start">Start a campaign</a>
+      <a href="/how-to-play.html" data-i18n="nav.howto">How to play</a>
+      <a href="/beginners-guide.html">Beginner's guide</a>
+      <a href="/featured-runs.html" data-i18n="nav.featured">Featured runs</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-heading" data-i18n="footer.channels">CHANNELS</div>
+      <a href="https://www.youtube.com/@Ghiellini" target="_blank" data-lang-only="en">@Ghiellini</a>
+      <a href="https://www.youtube.com/@GRKN7" target="_blank" data-lang-only="tr">@GRKN7</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-heading" data-i18n="footer.legal">LEGAL</div>
+      <a href="/privacy.html" data-i18n="footer.privacy">Privacy Policy</a>
+      <a href="/terms.html" data-i18n="footer.terms">Terms of Service</a>
+      <div class="footer-heading" data-i18n="footer.more" style="margin-top:20px;">MORE</div>
+      <a href="/about.html" data-i18n="nav.about">About</a>
+      <a href="/contact.html">Contact</a>
+      <a href="/report-bug.html">Report a bug</a>
+      <a href="https://grkn.shop" target="_blank" data-i18n="footer.maps">Custom PSD maps</a>
+    </div>
+  </div>
+  <div class="footer-fineprint" data-i18n="footer.fineprint">
+    Not affiliated with FIFA, EA Sports, or any football federation. Country ratings are public FIFA Men's World Ranking points.
+  </div>
+</footer>
+
+<script>
+  (function(){
+    document.getElementById('bug-browser').value = navigator.userAgent;
+    document.getElementById('bug-viewport').value = window.innerWidth + 'x' + window.innerHeight + ' @ DPR ' + (window.devicePixelRatio || 1).toFixed(1);
+    document.getElementById('bug-language').value = (navigator.languages && navigator.languages.join(',')) || navigator.language || '';
+    document.getElementById('bug-url').value = window.location.href;
+
+    try {
+      var qs = window.location.search;
+      if (qs) {
+        var params = new URLSearchParams(qs);
+        var ctx = {};
+        ['mode','team','turn','last_action','opponent','aura'].forEach(function(k){
+          if (params.has(k)) ctx[k] = params.get(k);
+        });
+        if (Object.keys(ctx).length) {
+          document.getElementById('bug-game-context').value = JSON.stringify(ctx);
+        }
+      }
+    } catch (e) {}
+
+    // Client-side image compression — Gemini-generated PNGs and modern
+    // phone screenshots can easily be 5-10MB, which trips the Web3Forms
+    // request-size limit. Resize to max 1920px on the longest edge and
+    // re-encode as JPEG at 85% quality. Usually cuts size 80-90%.
+    async function compressImage(file, maxDim, quality) {
+      maxDim = maxDim || 1920;
+      quality = quality || 0.85;
+      return new Promise(function(resolve, reject){
+        var reader = new FileReader();
+        reader.onload = function(e){
+          var img = new Image();
+          img.onload = function(){
+            var w = img.width, h = img.height;
+            if (w > maxDim || h > maxDim) {
+              var ratio = Math.min(maxDim / w, maxDim / h);
+              w = Math.round(w * ratio);
+              h = Math.round(h * ratio);
+            }
+            var canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            canvas.toBlob(function(blob){
+              if (!blob) { reject(new Error('Canvas encoding failed')); return; }
+              var newName = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+              resolve(new File([blob], newName, { type: 'image/jpeg' }));
+            }, 'image/jpeg', quality);
+          };
+          img.onerror = function(){ reject(new Error('Could not decode image')); };
+          img.src = e.target.result;
+        };
+        reader.onerror = function(){ reject(new Error('Could not read file')); };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    var form = document.getElementById('bug-form');
+    var statusEl = document.getElementById('bug-form-status');
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      statusEl.className = 'bug-form-status';
+      var button = form.querySelector('button[type="submit"]');
+      button.disabled = true;
+      var originalText = button.textContent;
+      try {
+        var fd = new FormData(form);
+        // If a screenshot is attached, compress it. Files under 1MB go
+        // through untouched; anything bigger gets resized.
+        var fileInput = document.getElementById('bug-screenshot');
+        var f = fileInput.files[0];
+        if (f && f.type.indexOf('image/') === 0 && f.size > 1024 * 1024) {
+          button.textContent = 'Compressing screenshot…';
+          try {
+            var compressed = await compressImage(f);
+            // If compression still left it > 4MB, drop quality further.
+            if (compressed.size > 4 * 1024 * 1024) {
+              compressed = await compressImage(f, 1600, 0.75);
+            }
+            fd.set('screenshot', compressed);
+          } catch (compErr) {
+            // Compression failed — fall back to original file, let server decide.
+            console.warn('Image compression failed:', compErr);
+          }
+        }
+        button.textContent = 'Sending…';
+        var res = await fetch('https://api.web3forms.com/submit', { method:'POST', body: fd });
+        var data = await res.json();
+        if (data.success) {
+          statusEl.className = 'bug-form-status success';
+          statusEl.textContent = '✓ Bug report sent. Thanks — every report gets read by the developer.';
+          form.reset();
+        } else {
+          throw new Error(data.message || 'Web3Forms returned an error');
+        }
+      } catch (err) {
+        statusEl.className = 'bug-form-status error';
+        var msg = err.message || 'unknown';
+        if (/too long|too large|payload/i.test(msg)) {
+          msg = 'Screenshot is too large even after compression. Try uploading a smaller image (under 4 MB raw).';
+        }
+        statusEl.textContent = '✗ Could not send: ' + msg + '. If this keeps happening, email us directly via the Contact page.';
+      } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    });
+  })();
+</script>
+
+<script src="/js/translations.js"></script>
+<script src="/js/i18n.js"></script>
+</body>
+</html>
