@@ -1561,6 +1561,27 @@ body.web-build .g-result-card.revealed .g-sim-btn{
 
   /* ── Splash screen: tighter padding so the play button fits ── */
   .fc-play-btn { padding: 10px 22px; font-size: 12px; }
+
+  /* ── Start-card team picker: list scrolls, Start Conquest button sticky ──
+     The g-start-card already flex-fills with internal overflow handling.
+     But the team picker contents grow vertically (search input + 220px list +
+     Start Conquest button), so the bottom button could fall off screen. Pin
+     it to the bottom of the card the same way we did with the result modal. */
+  .g-team-list { max-height: 160px; }
+  #g-start-conquest {
+    position: sticky;
+    bottom: 0;
+    margin: 0 -14px -14px;
+    width: calc(100% + 28px);
+    padding: 12px;
+    border-radius: 0;
+    z-index: 10;
+    background: #c8102e;
+    color: #fff;
+    border: 0;
+    border-top: 1px solid #1a2f40;
+  }
+  #g-conquest-team-picker { padding-bottom: 0; }
 }
 
 </style>
