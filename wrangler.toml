@@ -18,3 +18,13 @@ database_id = "63c08277-a7bf-41e1-9b77-e047abe11d0f"
 #   Pages project → Settings → Environment variables → Production
 #   Variable name: IP_SALT     Type: Secret     Value: any random 32+ char string
 # It's referenced in functions/api/submit.js as env.IP_SALT.
+
+# RESEND_API_KEY is also set via the dashboard (Type: Secret).
+# Referenced in functions/api/bugs.js as env.RESEND_API_KEY.
+
+# Plain-text vars live HERE (not in the dashboard) because Wrangler-managed
+# projects only allow Secrets through the dashboard UI. The orange banner in
+# the dashboard sidebar spells this out.
+[vars]
+BUG_TO   = "footballconquestbugs@gmail.com"
+BUG_FROM = "Football Conquest <bugs@footballconquest.com>"

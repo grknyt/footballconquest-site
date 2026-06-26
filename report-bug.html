@@ -72,9 +72,8 @@
   <p class="page-lead">Found something broken in the simulator? Send it our way — every report gets read by the developer. Screenshots are gold; the more detail you give us, the faster we can fix it.</p>
 
   <form class="bug-form" id="bug-form" enctype="multipart/form-data">
-    <input type="hidden" name="access_key" value="4db4003e-1c95-450b-970f-26fd78618f25">
-    <input type="hidden" name="subject" value="[BUG] Football Conquest report">
-    <input type="hidden" name="from_name" value="Football Conquest Bug Report">
+    <!-- Backend is now /api/bugs (Cloudflare Pages Function → Resend).
+         The Web3Forms hidden fields below are no longer needed but harmless. -->
 
     <input type="hidden" name="browser_user_agent" id="bug-browser">
     <input type="hidden" name="viewport_size" id="bug-viewport">
@@ -239,7 +238,7 @@
           }
         }
         button.textContent = 'Sending…';
-        var res = await fetch('https://api.web3forms.com/submit', { method:'POST', body: fd });
+        var res = await fetch('/api/bugs', { method:'POST', body: fd });
         var data = await res.json();
         if (data.success) {
           statusEl.className = 'bug-form-status success';
