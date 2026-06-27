@@ -2143,6 +2143,14 @@ body.fc-splash-active #fc-bug-link { display: none; }
   }
 }
 
+
+/* ── Hide Skip turn in imperialism mode ──
+   "Skip turn" only makes sense in World Conquest mode where the player can
+   skip a tough matchup. In Random Imperialism, the simulator drives every
+   move — there's nothing for the player to skip. Hide the button entirely
+   when not in conquest mode so the remaining buttons sit cleanly. */
+#game-panel:not(.conquest-mode) #g-skip { display: none !important; }
+
 </style>
 </head>
 <!-- web-build = simulate-only public site. Remove the class to enable
