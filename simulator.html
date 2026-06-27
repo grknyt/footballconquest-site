@@ -2098,6 +2098,51 @@ body.fc-splash-active #fc-bug-link { display: none; }
   }
 }
 
+
+/* ── Settings popover fix (reported by YouTube user @krisBer2682) ──
+   The popover is positioned absolute, anchored bottom: calc(100% + 6px) to
+   put it just above the game-panel head. BUT #game-panel has overflow:hidden
+   which clips the popover invisible — clicking the ⚙️ button silently does
+   nothing. Switch to position: fixed so it escapes the overflow clip and is
+   anchored to the viewport bottom instead. */
+#g-settings-popover {
+  position: fixed !important;
+  bottom: auto !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translate(-50%, -50%);
+  z-index: 200 !important;
+  max-width: calc(100vw - 24px);
+}
+
+/* ── Imperialism-mode mobile button stacking ──
+   Originally only #game-panel.conquest-mode got vertical-stack treatment on
+   mobile. Imperialism mode (the random-battle-royale flow) was left with the
+   default horizontal layout which on portrait phones causes buttons to wrap
+   awkwardly and some to clip behind the panel border. Apply the same
+   stacking treatment whenever the game panel is open. */
+@media (max-width: 700px) {
+  #game-panel:not(.conquest-mode) .g-action-group {
+    flex-direction: column !important;
+    gap: 4px !important;
+    width: 100% !important;
+  }
+  #game-panel:not(.conquest-mode) .g-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+    width: 100% !important;
+  }
+  #game-panel:not(.conquest-mode) .g-actions .g-btn {
+    flex: 1 1 calc(50% - 2px) !important;
+    min-width: 0 !important;
+    padding: 8px 10px !important;
+    font-size: 11px !important;
+  }
+}
+
 </style>
 </head>
 <!-- web-build = simulate-only public site. Remove the class to enable
