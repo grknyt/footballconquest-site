@@ -6447,6 +6447,43 @@ function _ringsFor(iso){
     });
     return _isoRings[iso]=rings;
   }
+  // ── Australia special-case (iso 36) ───────────────────────────────
+  // YouTube users reported "countries phase through Australia" during arrow
+  // spins. The default polygon-as-is path occasionally lets rays slip past
+  // because Australia is a MultiPolygon in the topojson (mainland + Tasmania
+  // + smaller islands) and any anomalously long projected edge in the
+  // simplified mainland outline gets silently dropped by the antimeridian-
+  // skip heuristic, punching a "hole" in the coastline test.
+  //
+  // Defensive fix mirrors England's pattern: build the country as the UNION
+  // of two clean axis-aligned bbox clips — mainland Australia and Tasmania —
+  // so the ray test always sees a closed polygon for each.
+  if(iso==='36'){
+    const rings=[];
+    polys.forEach(poly=>{
+      if(!poly||!poly.length)return;
+      const projected=poly[0].map(pt=>proj(pt)).filter(p=>p&&!isNaN(p[0]));
+      if(projected.length<3)return;
+      // Box A: Mainland Australia — lon 112°E to 154°E, lat -39° to -10°
+      const ax1=proj([112,-39]),ax2=proj([154,-10]);
+      // Box B: Tasmania — lon 144°E to 149°E, lat -44° to -40°
+      const bx1=proj([144,-44]),bx2=proj([149,-40]);
+      [[ax1,ax2],[bx1,bx2]].forEach(([p1,p2])=>{
+        if(!p1||!p2)return;
+        const X1=Math.min(p1[0],p2[0]),X2=Math.max(p1[0],p2[0]);
+        const Y1=Math.min(p1[1],p2[1]),Y2=Math.max(p1[1],p2[1]);
+        const clipped=_clipPolyToBox(projected,X1,Y1,X2,Y2);
+        if(clipped.length<3)return;
+        let mnX=Infinity,mnY=Infinity,mxX=-Infinity,mxY=-Infinity;
+        clipped.forEach(p=>{
+          if(p[0]<mnX)mnX=p[0];if(p[0]>mxX)mxX=p[0];
+          if(p[1]<mnY)mnY=p[1];if(p[1]>mxY)mxY=p[1];
+        });
+        rings.push({points:clipped,bbox:{minX:mnX,minY:mnY,maxX:mxX,maxY:mxY}});
+      });
+    });
+    return _isoRings[iso]=rings;
+  }
   // Standard countries — use the polygon as-is
   const rings=[];
   // Antimeridian handling: when a polygon's geometry crosses 180°E/180°W, the
