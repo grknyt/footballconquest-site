@@ -7127,7 +7127,20 @@ $('g-spin-arrow').onclick=()=>window.gameSpinArrow();
 $('g-resolve').onclick=()=>window.gameResolve();
 const _ultBtn=document.getElementById('g-ult'); if(_ultBtn) _ultBtn.onclick=function(){ if(typeof unleashUltimate==='function') unleashUltimate(); };
 $('g-skip').onclick=gameSkip;
-$('game-close').onclick=()=>setMode('view');
+$('game-close').onclick=()=>{
+  // Confirmation prompt so an accidental X-tap during a live game doesn't
+  // silently abandon progress. YouTube user "tobias" reported pressing X
+  // mid-imperialism (turn 35) and not being able to recover. Conquest mode
+  // has autosave to fall back on; imperialism has none, so the only safety
+  // net is asking before we drop them into view mode.
+  if(typeof GAME!=='undefined' && GAME && GAME.active){
+    var msg = (GAME.mode==='imperialism')
+      ? 'Close the game? Your Random Imperialism run will be lost.'
+      : 'Close the game? You can resume conquest runs from the splash later.';
+    if(!confirm(msg)) return;
+  }
+  setMode('view');
+};
 $('btn-reset').onclick=doReset;
 $('btn-save').onclick=doSave;
 $('btn-load').onclick=doLoad;
