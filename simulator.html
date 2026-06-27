@@ -2151,6 +2151,24 @@ body.fc-splash-active #fc-bug-link { display: none; }
    when not in conquest mode so the remaining buttons sit cleanly. */
 #game-panel:not(.conquest-mode) #g-skip { display: none !important; }
 
+
+/* ── Game-panel collapsed state (was: X close, now: collapse to header) ──
+   Tapping the X collapses the game-panel body so the user can inspect the
+   map without losing their game state. The header remains as a clickable
+   bar; tapping it re-expands. Replaces the previous behaviour that dropped
+   the user into view mode and abandoned active imperialism runs. */
+#game-panel.g-collapsed .g-body { display: none !important; }
+#game-panel.g-collapsed .g-head {
+  cursor: pointer;
+  border-bottom: 0 !important;
+}
+#game-panel.g-collapsed .g-head:hover { background: #102031; }
+#game-panel.g-collapsed #game-close {
+  transform: rotate(45deg);
+  transition: transform 0.18s ease;
+}
+#game-panel #game-close { transition: transform 0.18s ease; }
+
 </style>
 </head>
 <!-- web-build = simulate-only public site. Remove the class to enable
@@ -7127,20 +7145,31 @@ $('g-spin-arrow').onclick=()=>window.gameSpinArrow();
 $('g-resolve').onclick=()=>window.gameResolve();
 const _ultBtn=document.getElementById('g-ult'); if(_ultBtn) _ultBtn.onclick=function(){ if(typeof unleashUltimate==='function') unleashUltimate(); };
 $('g-skip').onclick=gameSkip;
-$('game-close').onclick=()=>{
-  // Confirmation prompt so an accidental X-tap during a live game doesn't
-  // silently abandon progress. YouTube user "tobias" reported pressing X
-  // mid-imperialism (turn 35) and not being able to recover. Conquest mode
-  // has autosave to fall back on; imperialism has none, so the only safety
-  // net is asking before we drop them into view mode.
-  if(typeof GAME!=='undefined' && GAME && GAME.active){
-    var msg = (GAME.mode==='imperialism')
-      ? 'Close the game? Your Random Imperialism run will be lost.'
-      : 'Close the game? You can resume conquest runs from the splash later.';
-    if(!confirm(msg)) return;
-  }
-  setMode('view');
+// X (now collapse arrow): hides the game-panel body so the user can see the
+// full map, while preserving the game state. Tapping the collapsed header
+// re-expands the panel. Previously this was a "close" that called
+// setMode('view') and silently abandoned imperialism runs — see bug from
+// YouTube user "tobias" who lost his turn-35 imperialism run by tapping X.
+$('game-close').onclick = function(e){
+  e.stopPropagation();
+  var panel = document.getElementById('game-panel');
+  if(panel) panel.classList.toggle('g-collapsed');
 };
+// Whole header is a click target while collapsed, so the user just needs to
+// tap anywhere on the visible bar to bring the body back.
+(function(){
+  var head = document.querySelector('#game-panel .g-head');
+  if(!head) return;
+  head.addEventListener('click', function(e){
+    var panel = document.getElementById('game-panel');
+    if(!panel || !panel.classList.contains('g-collapsed')) return;
+    // Don't double-trigger when the close button itself is tapped
+    if(e.target.closest('#game-close')) return;
+    if(e.target.closest('#game-settings')) return;
+    if(e.target.closest('#g-head-bug')) return;
+    panel.classList.remove('g-collapsed');
+  });
+})();
 $('btn-reset').onclick=doReset;
 $('btn-save').onclick=doSave;
 $('btn-load').onclick=doLoad;
