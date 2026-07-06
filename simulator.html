@@ -6524,32 +6524,55 @@ function _ringsFor(iso){
     return _isoRings[iso]=rings;
   }
   // ── Australia special-case (iso 36) ───────────────────────────────
-  // YouTube users reported "countries phase through Australia" during arrow
-  // spins. Earlier attempts (polygon-as-is; then Sutherland–Hodgman bbox clip
-  // mirroring England's pattern) both proved fragile: Australia's topojson is
-  // a MultiPolygon that projects through Natural Earth 1 to CURVED quadrilateral
-  // shapes — an "axis-aligned bbox" in screen space isn't actually axis-aligned
-  // to the projected coastline, and any vertex the projection drops leaves a
-  // gap the ray can slip through.
+  // YouTube + Gürkan reported "countries phase through Australia" during arrow
+  // spins. Three prior attempts all failed:
+  //   1. Raw polygon-as-is → antimeridian heuristic silently dropped edges
+  //   2. Sutherland–Hodgman bbox clip → Natural Earth 1 curves parallels, so
+  //      "axis-aligned bbox" wasn't actually aligned to the coastline
+  //   3. SVGGeometryElement.isPointInFill on isoPaths['36'] → the ray still
+  //      passed straight through the mainland (Gürkan diagnosed: "this island
+  //      is what's being thought of Australia, rather than the ginormous main
+  //      continent"). Something about the SVG element or its subpaths made
+  //      isPointInFill return false over the mainland even though the mainland
+  //      renders correctly on screen.
   //
-  // Bulletproof fix: skip the ring/polygon math entirely and delegate to the
-  // browser's native SVGGeometryElement.isPointInFill() — d3 has already
-  // rendered Australia's exact filled <path>, so the browser's hit-test is the
-  // ground truth. We store a single "svg-fill ring" record with the element
-  // reference; _rayHitsRing detects the flag and samples points along the ray,
-  // calling isPointInFill() on each. This can't produce phase-through bugs.
+  // Attempt #4: bypass SVG entirely. Look up Australia's raw topojson feature
+  // fresh from worldTopo (not via isoPaths, which may point to the wrong node)
+  // and hit-test with d3.geoContains on GEOGRAPHIC coordinates. Ray samples in
+  // SVG user-space get inverted back to [lon,lat] via proj.invert, then
+  // d3.geoContains uses the same spherical containment algorithm d3 already
+  // uses to draw the country. Consistency between drawing and hit-testing is
+  // guaranteed. No SVG state, no projection quirks, no simplified-outline gaps.
   if(iso==='36'){
-    const el=isoPaths['36'];
-    if(!el||typeof el.isPointInFill!=='function') return _isoRings[iso]=[];
+    if(!worldTopo||!worldTopo.objects||!worldTopo.objects.countries){
+      return _isoRings[iso]=[];
+    }
+    // Find every geometry whose id resolves to 36 — normally one MultiPolygon.
+    // If the topojson has fragmented Australia across multiple entries, we
+    // merge them all into a single GeometryCollection so geoContains sees
+    // every piece of Aussie land at once.
+    const geoms=worldTopo.objects.countries.geometries.filter(g=>+g.id===36);
+    if(!geoms.length) return _isoRings[iso]=[];
+    const collection={type:'GeometryCollection',geometries:geoms};
+    const feature=topojson.feature(worldTopo,collection);
+    // Compute the bbox in SVG user-space from the projected path so the
+    // ray's tmin/tmax reject stays cheap.
     let gb;
-    try{ gb=el.getBBox(); }catch(e){ return _isoRings[iso]=[]; }
-    // Pad the bbox slightly so a ray brushing the coastline still enters the
-    // sampling region (isPointInFill handles the actual coastline precision).
-    const PAD=8;
+    try{
+      const isoEl=isoPaths['36'];
+      if(isoEl) gb=isoEl.getBBox();
+      // Fallback: derive bbox from the feature's projected d string.
+      if(!gb){
+        const tmpPath=pg(feature);
+        // Very loose bbox — encompass the whole hemisphere Australia lives in.
+        gb={x:5000,y:2500,width:5000,height:2500};
+      }
+    }catch(e){ gb={x:5000,y:2500,width:5000,height:2500}; }
+    const PAD=20;
     return _isoRings[iso]=[{
-      __svgEl: el,
-      __svgFill: true,
-      points: [],  // unused for svg-fill rings
+      __geoContains: true,
+      __feature: feature,
+      points: [],  // unused for geoContains rings
       bbox: {minX:gb.x-PAD,minY:gb.y-PAD,maxX:gb.x+gb.width+PAD,maxY:gb.y+gb.height+PAD}
     }];
   }
@@ -6609,24 +6632,25 @@ function _rayHitsRing(rayX,rayY,dx,dy,maxDist,ring){
     tmax=Math.min(tmax,Math.max(ty1,ty2));
   } else if(rayY<bb.minY||rayY>bb.maxY) return null;
   if(tmin>tmax||tmax<0) return null;
-  // ── SVG-fill sampling path (Australia iso 36) ────────────────────
-  // For rings flagged __svgFill we defer entirely to the browser's native
-  // SVGGeometryElement.isPointInFill(). Sample points along the ray inside
-  // the bbox t-range; the first sample that lands in the fill is our hit.
-  // The 10000-wide viewBox means STEP=10 covers ~0.1% of map width — small
-  // enough that no realistic country outline is skipped over.
-  if(ring.__svgFill){
-    const el=ring.__svgEl;
-    const svg=el&&el.ownerSVGElement;
-    if(!el||!svg||typeof el.isPointInFill!=='function') return null;
-    const STEP=10;
+  // ── d3.geoContains sampling (Australia iso 36) ───────────────────
+  // For rings flagged __geoContains we skip polygon-edge math AND SVG hit
+  // tests. Sample the ray in SVG user-space, invert each sample back to
+  // [lon,lat] via proj.invert, then ask d3.geoContains whether the point
+  // is inside Australia's raw topojson feature. This is the same algorithm
+  // d3 uses to draw the country, so consistency between visible pixels and
+  // hit-testing is guaranteed. STEP=8 covers ~0.08% of the 10000-wide map.
+  if(ring.__geoContains){
+    const feature=ring.__feature;
+    if(!feature||!proj||typeof proj.invert!=='function') return null;
+    const STEP=8;
     const startT=Math.max(tmin,0.01);
     const endT=Math.min(tmax,maxDist);
     if(startT>endT) return null;
-    const pt=svg.createSVGPoint();
     for(let t=startT; t<=endT; t+=STEP){
-      pt.x=rayX+t*dx; pt.y=rayY+t*dy;
-      try{ if(el.isPointInFill(pt)) return t; }catch(e){ return null; }
+      const px=rayX+t*dx, py=rayY+t*dy;
+      const geo=proj.invert([px,py]);
+      if(!geo) continue;
+      try{ if(d3.geoContains(feature,geo)) return t; }catch(e){ return null; }
     }
     return null;
   }
