@@ -6520,40 +6520,33 @@ function _ringsFor(iso){
   }
   // ── Australia special-case (iso 36) ───────────────────────────────
   // YouTube users reported "countries phase through Australia" during arrow
-  // spins. The default polygon-as-is path occasionally lets rays slip past
-  // because Australia is a MultiPolygon in the topojson (mainland + Tasmania
-  // + smaller islands) and any anomalously long projected edge in the
-  // simplified mainland outline gets silently dropped by the antimeridian-
-  // skip heuristic, punching a "hole" in the coastline test.
+  // spins. Earlier attempts (polygon-as-is; then Sutherland–Hodgman bbox clip
+  // mirroring England's pattern) both proved fragile: Australia's topojson is
+  // a MultiPolygon that projects through Natural Earth 1 to CURVED quadrilateral
+  // shapes — an "axis-aligned bbox" in screen space isn't actually axis-aligned
+  // to the projected coastline, and any vertex the projection drops leaves a
+  // gap the ray can slip through.
   //
-  // Defensive fix mirrors England's pattern: build the country as the UNION
-  // of two clean axis-aligned bbox clips — mainland Australia and Tasmania —
-  // so the ray test always sees a closed polygon for each.
+  // Bulletproof fix: skip the ring/polygon math entirely and delegate to the
+  // browser's native SVGGeometryElement.isPointInFill() — d3 has already
+  // rendered Australia's exact filled <path>, so the browser's hit-test is the
+  // ground truth. We store a single "svg-fill ring" record with the element
+  // reference; _rayHitsRing detects the flag and samples points along the ray,
+  // calling isPointInFill() on each. This can't produce phase-through bugs.
   if(iso==='36'){
-    const rings=[];
-    polys.forEach(poly=>{
-      if(!poly||!poly.length)return;
-      const projected=poly[0].map(pt=>proj(pt)).filter(p=>p&&!isNaN(p[0]));
-      if(projected.length<3)return;
-      // Box A: Mainland Australia — lon 112°E to 154°E, lat -39° to -10°
-      const ax1=proj([112,-39]),ax2=proj([154,-10]);
-      // Box B: Tasmania — lon 144°E to 149°E, lat -44° to -40°
-      const bx1=proj([144,-44]),bx2=proj([149,-40]);
-      [[ax1,ax2],[bx1,bx2]].forEach(([p1,p2])=>{
-        if(!p1||!p2)return;
-        const X1=Math.min(p1[0],p2[0]),X2=Math.max(p1[0],p2[0]);
-        const Y1=Math.min(p1[1],p2[1]),Y2=Math.max(p1[1],p2[1]);
-        const clipped=_clipPolyToBox(projected,X1,Y1,X2,Y2);
-        if(clipped.length<3)return;
-        let mnX=Infinity,mnY=Infinity,mxX=-Infinity,mxY=-Infinity;
-        clipped.forEach(p=>{
-          if(p[0]<mnX)mnX=p[0];if(p[0]>mxX)mxX=p[0];
-          if(p[1]<mnY)mnY=p[1];if(p[1]>mxY)mxY=p[1];
-        });
-        rings.push({points:clipped,bbox:{minX:mnX,minY:mnY,maxX:mxX,maxY:mxY}});
-      });
-    });
-    return _isoRings[iso]=rings;
+    const el=isoPaths['36'];
+    if(!el||typeof el.isPointInFill!=='function') return _isoRings[iso]=[];
+    let gb;
+    try{ gb=el.getBBox(); }catch(e){ return _isoRings[iso]=[]; }
+    // Pad the bbox slightly so a ray brushing the coastline still enters the
+    // sampling region (isPointInFill handles the actual coastline precision).
+    const PAD=8;
+    return _isoRings[iso]=[{
+      __svgEl: el,
+      __svgFill: true,
+      points: [],  // unused for svg-fill rings
+      bbox: {minX:gb.x-PAD,minY:gb.y-PAD,maxX:gb.x+gb.width+PAD,maxY:gb.y+gb.height+PAD}
+    }];
   }
   // Standard countries — use the polygon as-is
   const rings=[];
@@ -6611,6 +6604,27 @@ function _rayHitsRing(rayX,rayY,dx,dy,maxDist,ring){
     tmax=Math.min(tmax,Math.max(ty1,ty2));
   } else if(rayY<bb.minY||rayY>bb.maxY) return null;
   if(tmin>tmax||tmax<0) return null;
+  // ── SVG-fill sampling path (Australia iso 36) ────────────────────
+  // For rings flagged __svgFill we defer entirely to the browser's native
+  // SVGGeometryElement.isPointInFill(). Sample points along the ray inside
+  // the bbox t-range; the first sample that lands in the fill is our hit.
+  // The 10000-wide viewBox means STEP=10 covers ~0.1% of map width — small
+  // enough that no realistic country outline is skipped over.
+  if(ring.__svgFill){
+    const el=ring.__svgEl;
+    const svg=el&&el.ownerSVGElement;
+    if(!el||!svg||typeof el.isPointInFill!=='function') return null;
+    const STEP=10;
+    const startT=Math.max(tmin,0.01);
+    const endT=Math.min(tmax,maxDist);
+    if(startT>endT) return null;
+    const pt=svg.createSVGPoint();
+    for(let t=startT; t<=endT; t+=STEP){
+      pt.x=rayX+t*dx; pt.y=rayY+t*dy;
+      try{ if(el.isPointInFill(pt)) return t; }catch(e){ return null; }
+    }
+    return null;
+  }
   // Now test each polygon edge for intersection; return smallest positive t.
   // ring.skipEdges (built by _ringsFor) holds indices of antimeridian-wrap
   // spurious edges that we must NOT test — without this, Russia's polygon
