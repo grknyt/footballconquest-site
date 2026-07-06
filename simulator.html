@@ -6545,6 +6545,7 @@ function _ringsFor(iso){
   // guaranteed. No SVG state, no projection quirks, no simplified-outline gaps.
   if(iso==='36'){
     if(!worldTopo||!worldTopo.objects||!worldTopo.objects.countries){
+      console.warn('[FC-AUS-DEBUG] worldTopo missing at _ringsFor(36) time');
       return _isoRings[iso]=[];
     }
     // Find every geometry whose id resolves to 36 — normally one MultiPolygon.
@@ -6552,6 +6553,27 @@ function _ringsFor(iso){
     // merge them all into a single GeometryCollection so geoContains sees
     // every piece of Aussie land at once.
     const geoms=worldTopo.objects.countries.geometries.filter(g=>+g.id===36);
+    // One-shot self-diagnostic: log what we found so if the ray still phases
+    // through Australia after this fix, we know if it's a "no feature found",
+    // "wrong feature", or "geoContains disagrees with visible pixels" bug.
+    // Rate-limited to once per session via a global flag.
+    if(!window._fcAusLogged){
+      window._fcAusLogged=true;
+      const sampleGeom=geoms[0];
+      console.log('[FC-AUS-DEBUG] attempt#4 (d3.geoContains) active');
+      console.log('[FC-AUS-DEBUG] geoms found with id===36:',geoms.length);
+      if(sampleGeom){
+        console.log('[FC-AUS-DEBUG] first geom type:',sampleGeom.type,
+                    '| id:',sampleGeom.id,'| arcs sample:',
+                    Array.isArray(sampleGeom.arcs)?sampleGeom.arcs.length:'(not array)');
+      }
+      // Sanity-test geoContains at Australia's centroid (lon 133.8, lat -25.3).
+      try{
+        const testFeature=topojson.feature(worldTopo,{type:'GeometryCollection',geometries:geoms});
+        const centroidTest=d3.geoContains(testFeature,[133.8,-25.3]);
+        console.log('[FC-AUS-DEBUG] geoContains([133.8,-25.3]) at Aussie centroid:',centroidTest,'← should be TRUE');
+      }catch(e){ console.warn('[FC-AUS-DEBUG] centroid sanity test threw:',e); }
+    }
     if(!geoms.length) return _isoRings[iso]=[];
     const collection={type:'GeometryCollection',geometries:geoms};
     const feature=topojson.feature(worldTopo,collection);
