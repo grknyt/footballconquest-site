@@ -6577,19 +6577,28 @@ function _ringsFor(iso){
     if(!geoms.length) return _isoRings[iso]=[];
     const collection={type:'GeometryCollection',geometries:geoms};
     const feature=topojson.feature(worldTopo,collection);
-    // Compute the bbox in SVG user-space from the projected path so the
-    // ray's tmin/tmax reject stays cheap.
+    // Compute the bbox from the REASSEMBLED FEATURE using d3.geoPath.bounds()
+    // — NOT from isoPaths['36'].getBBox(). The whole reason attempts #1-3
+    // failed was that isoPaths['36'] points at a wrong/tiny polygon in the DOM,
+    // so getBBox() returned a tiny bbox that made _rayHitsRing's bbox-reject
+    // fire before geoContains could run on the mainland. pg.bounds(feature)
+    // returns the projected [[minX,minY],[maxX,maxY]] for the ACTUAL geometry
+    // we're hit-testing against, so the bbox aligns with geoContains's answer.
     let gb;
     try{
-      const isoEl=isoPaths['36'];
-      if(isoEl) gb=isoEl.getBBox();
-      // Fallback: derive bbox from the feature's projected d string.
-      if(!gb){
-        const tmpPath=pg(feature);
-        // Very loose bbox — encompass the whole hemisphere Australia lives in.
-        gb={x:5000,y:2500,width:5000,height:2500};
+      const b=pg.bounds(feature);
+      gb={x:b[0][0], y:b[0][1], width:b[1][0]-b[0][0], height:b[1][1]-b[0][1]};
+      if(!window._fcAusBboxLogged){
+        window._fcAusBboxLogged=true;
+        console.log('[FC-AUS-DEBUG] feature bounds (svg user-space):',
+                    'x=',gb.x|0,'y=',gb.y|0,'w=',gb.width|0,'h=',gb.height|0);
       }
-    }catch(e){ gb={x:5000,y:2500,width:5000,height:2500}; }
+    }catch(e){
+      // Fallback: no bbox reject — the sampling loop scans the whole ray.
+      // Slower, but geoContains is fast and this branch shouldn't ever fire.
+      gb={x:-1e9,y:-1e9,width:2e9,height:2e9};
+      console.warn('[FC-AUS-DEBUG] pg.bounds threw, using no-reject bbox:',e);
+    }
     const PAD=20;
     return _isoRings[iso]=[{
       __geoContains: true,
