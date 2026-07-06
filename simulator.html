@@ -6545,59 +6545,27 @@ function _ringsFor(iso){
   // guaranteed. No SVG state, no projection quirks, no simplified-outline gaps.
   if(iso==='36'){
     if(!worldTopo||!worldTopo.objects||!worldTopo.objects.countries){
-      console.warn('[FC-AUS-DEBUG] worldTopo missing at _ringsFor(36) time');
       return _isoRings[iso]=[];
     }
-    // Find every geometry whose id resolves to 36 — normally one MultiPolygon.
-    // If the topojson has fragmented Australia across multiple entries, we
-    // merge them all into a single GeometryCollection so geoContains sees
-    // every piece of Aussie land at once.
+    // Find every geometry whose id resolves to 36 — the world-atlas@2 topojson
+    // splits Australia across TWO entries (mainland+Tasmania in one, outlying
+    // islands in another). Merge them into a single GeometryCollection so
+    // geoContains sees every piece of Aussie land at once.
     const geoms=worldTopo.objects.countries.geometries.filter(g=>+g.id===36);
-    // One-shot self-diagnostic: log what we found so if the ray still phases
-    // through Australia after this fix, we know if it's a "no feature found",
-    // "wrong feature", or "geoContains disagrees with visible pixels" bug.
-    // Rate-limited to once per session via a global flag.
-    if(!window._fcAusLogged){
-      window._fcAusLogged=true;
-      const sampleGeom=geoms[0];
-      console.log('[FC-AUS-DEBUG] attempt#4 (d3.geoContains) active');
-      console.log('[FC-AUS-DEBUG] geoms found with id===36:',geoms.length);
-      if(sampleGeom){
-        console.log('[FC-AUS-DEBUG] first geom type:',sampleGeom.type,
-                    '| id:',sampleGeom.id,'| arcs sample:',
-                    Array.isArray(sampleGeom.arcs)?sampleGeom.arcs.length:'(not array)');
-      }
-      // Sanity-test geoContains at Australia's centroid (lon 133.8, lat -25.3).
-      try{
-        const testFeature=topojson.feature(worldTopo,{type:'GeometryCollection',geometries:geoms});
-        const centroidTest=d3.geoContains(testFeature,[133.8,-25.3]);
-        console.log('[FC-AUS-DEBUG] geoContains([133.8,-25.3]) at Aussie centroid:',centroidTest,'← should be TRUE');
-      }catch(e){ console.warn('[FC-AUS-DEBUG] centroid sanity test threw:',e); }
-    }
     if(!geoms.length) return _isoRings[iso]=[];
-    const collection={type:'GeometryCollection',geometries:geoms};
-    const feature=topojson.feature(worldTopo,collection);
-    // Compute the bbox from the REASSEMBLED FEATURE using d3.geoPath.bounds()
-    // — NOT from isoPaths['36'].getBBox(). The whole reason attempts #1-3
-    // failed was that isoPaths['36'] points at a wrong/tiny polygon in the DOM,
-    // so getBBox() returned a tiny bbox that made _rayHitsRing's bbox-reject
-    // fire before geoContains could run on the mainland. pg.bounds(feature)
-    // returns the projected [[minX,minY],[maxX,maxY]] for the ACTUAL geometry
-    // we're hit-testing against, so the bbox aligns with geoContains's answer.
+    const feature=topojson.feature(worldTopo,{type:'GeometryCollection',geometries:geoms});
+    // Bbox for the _rayHitsRing bbox-reject shortcut. Must come from the
+    // reassembled feature (via pg.bounds), NOT from isoPaths['36'].getBBox()
+    // — the DOM element for iso 36 points at only ONE of the two topojson
+    // fragments, so its bbox is too small and would cause the ray-cast to
+    // miss the mainland before geoContains ever runs.
     let gb;
     try{
       const b=pg.bounds(feature);
       gb={x:b[0][0], y:b[0][1], width:b[1][0]-b[0][0], height:b[1][1]-b[0][1]};
-      if(!window._fcAusBboxLogged){
-        window._fcAusBboxLogged=true;
-        console.log('[FC-AUS-DEBUG] feature bounds (svg user-space):',
-                    'x=',gb.x|0,'y=',gb.y|0,'w=',gb.width|0,'h=',gb.height|0);
-      }
     }catch(e){
-      // Fallback: no bbox reject — the sampling loop scans the whole ray.
-      // Slower, but geoContains is fast and this branch shouldn't ever fire.
+      // Fallback: no bbox reject — sample the whole ray. geoContains is fast.
       gb={x:-1e9,y:-1e9,width:2e9,height:2e9};
-      console.warn('[FC-AUS-DEBUG] pg.bounds threw, using no-reject bbox:',e);
     }
     const PAD=20;
     return _isoRings[iso]=[{
