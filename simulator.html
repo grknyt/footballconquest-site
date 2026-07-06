@@ -1364,6 +1364,11 @@ body.web-build #g-result-pens-row,
 body.web-build #g-result-confirm{display:none!important;}
 body.web-build #fc-menu-undo,
 body.web-build #fc-menu-redo{display:none!important;}
+/* Hide the "Click to reveal score" checkbox on web build. It's a
+   video-commentary feature for the Creator Build; on web build the Confirm
+   button is hidden, so enabling this setting would hang the modal with no
+   way to progress. Belt-and-braces: JS also ignores the setting on web build. */
+body.web-build label.g-set-row:has(#set-clickToReveal){display:none!important;}
 /* Offline build: the same inputs are present by default, but once the player
    clicks Simulate Match we hide them so the score-reveal animation has the
    stage to itself — matching the live build's experience. */
@@ -8730,8 +8735,16 @@ function wireResultModal(){
       }
     }
     if(card) card.classList.add('revealed');
-    if(window.GAME_SETTINGS?.clickToReveal){
-      // Dramatic-pacing mode — let the user hit Confirm themselves.
+    // Dramatic-pacing "click to reveal" — user must click Confirm themselves.
+    // ONLY honour this on the offline Creator Build. On the public web build the
+    // Confirm button is hidden via `body.web-build #g-result-confirm{display:none}`,
+    // so respecting clickToReveal there hangs the modal with no way to progress
+    // (user reported: "the result stays stuck open, and won't progress"). The
+    // setting is a video-commentary feature that only makes sense in the offline
+    // build where the whole result card is manually editable.
+    const isWebBuild = document.body && document.body.classList.contains('web-build');
+    if(!isWebBuild && window.GAME_SETTINGS?.clickToReveal){
+      // Offline build: honour the pause. User will click Confirm to progress.
       return;
     }
     if(_simAutoConfirmTimer) clearTimeout(_simAutoConfirmTimer);
