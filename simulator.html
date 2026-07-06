@@ -8577,11 +8577,28 @@ function updateResultPreview(){
   });
 }
 function wireResultModal(){
-  // Esc closes the modal
+  // Esc handling — cheat-safe.
+  // Before Simulate is clicked: Esc closes the modal normally (user backed out
+  // of the matchup before seeing anything, so there's nothing to preserve).
+  // AFTER Simulate has run (card is .simulated / result revealed): Esc COMMITS
+  // the result instead of cancelling it. Otherwise players could hit Esc during
+  // the reveal to nullify unfavourable outcomes and re-roll — an exploit
+  // reported by Gürkan: "press Esc to not have it count, and get another chance
+  // at simulating."
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){
       const m=document.getElementById('g-result-modal');
-      if(m&&m.classList.contains('open')) closeResultModal();
+      if(m&&m.classList.contains('open')){
+        const card=m.querySelector('.g-result-card');
+        if(card&&card.classList.contains('simulated')){
+          // Result already revealed — treat Esc as Confirm so the result sticks.
+          if(_simAutoConfirmTimer){clearTimeout(_simAutoConfirmTimer);_simAutoConfirmTimer=null;}
+          const confirmBtn=document.getElementById('g-result-confirm');
+          if(confirmBtn) confirmBtn.click();
+        } else {
+          closeResultModal();
+        }
+      }
       const s=document.getElementById('g-startup-modal');
       if(s&&s.classList.contains('open')) closeConquestStartup();
     }
