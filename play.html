@@ -66,26 +66,25 @@
   /* When the wrapper is the fullscreen element, make the iframe fill it. */
   .play-frame-wrap:fullscreen { width: 100vw; height: 100vh; background: #0a1929; }
   .play-frame-wrap:fullscreen .play-frame { width: 100%; height: 100%; border: 0; flex: 1 1 auto; }
+  /* Sits BELOW the game's own toolbar (which occupies the top ~48px of the
+     wrapper) so it no longer covers it. Slightly larger tap target. */
   .play-fs-btn {
-    position: absolute; top: 10px; right: 14px; z-index: 40;
-    display: inline-flex; align-items: center; gap: 7px;
-    background: rgba(7,14,23,.82); color: #22d63c;
-    border: 1px solid rgba(24,191,47,.5); border-radius: 7px;
-    padding: 7px 13px; font-family: var(--display); font-size: 12px;
+    position: absolute; top: 58px; right: 16px; z-index: 40;
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(7,14,23,.85); color: #22d63c;
+    border: 1px solid rgba(24,191,47,.55); border-radius: 8px;
+    padding: 10px 18px; font-family: var(--display); font-size: 14px;
     font-weight: 700; letter-spacing: .5px; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,.4);
     backdrop-filter: blur(4px); -webkit-tap-highlight-color: transparent;
     transition: background .15s, border-color .15s, transform .12s;
   }
-  .play-fs-btn:hover { background: rgba(10,25,41,.95); border-color: #22d63c; transform: translateY(-1px); }
+  .play-fs-btn:hover { background: rgba(10,25,41,.97); border-color: #22d63c; transform: translateY(-1px); }
   .play-fs-btn:active { transform: translateY(0); }
-  .play-fs-ico { font-size: 15px; line-height: 1; }
-  /* While fullscreen the button floats over the game's own toolbar top-right;
-     nudge it down-left a touch so it doesn't collide with the hamburger. */
-  .play-frame-wrap:fullscreen .play-fs-btn { top: 8px; right: 200px; }
+  .play-fs-ico { font-size: 17px; line-height: 1; }
   @media (max-width: 700px) {
     .play-fs-btn .play-fs-txt { display: none; }
-    .play-fs-btn { padding: 8px 10px; }
-    .play-frame-wrap:fullscreen .play-fs-btn { right: 150px; }
+    .play-fs-btn { padding: 10px 12px; top: 54px; }
   }
 </style>
 
