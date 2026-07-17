@@ -293,17 +293,16 @@ box-shadow:0 2px 6px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12);}
   min-width:150px;padding:11px 20px;font-size:13px;font-weight:600;
   border-radius:8px;letter-spacing:.4px;
 }
-/* v-green: both action-button glow pulses recoloured to brand green so they
-   match the now-green button fills (were blue for Spin, red for Play Match).
-   Kept as two near-identical keyframes so the existing animation hooks below
-   don't need renaming. */
+/* Glow pulses match each button's own fill colour (v-green polish):
+   Spin Arrow = green (glow-blue keyframe, now green); Play Match stays a red
+   .g-btn.danger, so its glow-red keyframe stays RED. */
 @keyframes g-action-glow-blue{
   0%,100%{box-shadow:0 0 0 0 rgba(46,232,74,.50),0 0 0 0 rgba(46,232,74,0);}
   50%{box-shadow:0 0 18px 4px rgba(46,232,74,.42),0 0 0 2px rgba(46,232,74,.32);}
 }
 @keyframes g-action-glow-red{
-  0%,100%{box-shadow:0 0 0 0 rgba(46,232,74,.55),0 0 0 0 rgba(46,232,74,0);}
-  50%{box-shadow:0 0 20px 5px rgba(46,232,74,.45),0 0 0 2px rgba(46,232,74,.35);}
+  0%,100%{box-shadow:0 0 0 0 rgba(255,90,90,.55),0 0 0 0 rgba(255,90,90,0);}
+  50%{box-shadow:0 0 20px 5px rgba(255,90,90,.45),0 0 0 2px rgba(255,90,90,.35);}
 }
 #game-panel.conquest-mode #g-spin-team:not(:disabled){animation:g-action-glow-blue 1.6s ease-in-out infinite;}
 #game-panel.conquest-mode #g-resolve:not(:disabled){animation:g-action-glow-red 1.4s ease-in-out infinite;}
@@ -760,19 +759,24 @@ body.web-build #fc-menu-hide-ui{display:none!important;}
    conquest game-panel. Only visible in conquest mode. */
 .g-actions-ult{display:none;}
 #game-panel.conquest-mode .g-actions-ult{display:flex;justify-content:center;}
-.g-btn.g-btn-ult{background:linear-gradient(135deg,#7a0a1d,#c8102e);
-  color:#fff;border:1px solid #d4a936;padding:9px 16px;font-size:11px;
-  letter-spacing:.6px;font-weight:700;min-width:160px;border-radius:6px;
+/* v-green polish: Conquest Strike recoloured red → amber/orange so it stands
+   apart from the red Play Match button. Dark text for contrast on the bright
+   fill; glow (g-action-glow-gold below) matches the orange. */
+.g-btn.g-btn-ult{background:linear-gradient(135deg,#e6820f,#ffb01f);
+  color:#2a1806;border:1px solid #ffc74a;padding:9px 16px;font-size:11px;
+  letter-spacing:.6px;font-weight:800;min-width:160px;border-radius:6px;
   transition:all .15s;}
 .g-btn.g-btn-ult:not(:disabled):hover{
-  background:linear-gradient(135deg,#a01030,#e63250);
-  border-color:#ffd54a;}
+  background:linear-gradient(135deg,#ff9418,#ffc23a);
+  border-color:#ffe08a;}
 .g-btn.g-btn-ult:disabled{opacity:.32;cursor:not-allowed;}
 .g-btn.g-btn-ult:not(:disabled){animation:g-action-glow-gold 2.2s ease-in-out infinite;}
-.g-ult-cost{color:#ffd54a;margin-left:6px;font-weight:800;font-variant-numeric:tabular-nums;}
+/* Cost text darkened so it reads on the amber fill (was gold-on-gold). */
+.g-ult-cost{color:#2a1806;margin-left:6px;font-weight:800;font-variant-numeric:tabular-nums;}
+/* Orange glow to match the amber Conquest Strike fill. */
 @keyframes g-action-glow-gold{
-  0%,100%{box-shadow:0 0 0 0 rgba(212,169,54,0);}
-  50%   {box-shadow:0 0 16px 2px rgba(212,169,54,.55);}}
+  0%,100%{box-shadow:0 0 0 0 rgba(255,160,20,0);}
+  50%   {box-shadow:0 0 18px 3px rgba(255,160,20,.6);}}
 /* Lion's Roar — calm sonic waves emanating from the hero flag, plus thin
    steady conduits to each target. No high-frequency strobing — the previous
    .14s opacity/stroke-width pulse triggered an epilepsy concern, so the
@@ -13007,7 +13011,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v84-green-splash-toolbar-don-2026-07-17';
+  window._FC_CAP_VERSION = 'v85-conquest-strike-amber-glow-match-2026-07-17';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
