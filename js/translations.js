@@ -95,6 +95,7 @@ window.FC_TRANSLATIONS = {
     /* ── play page ── */
     "play.header.live": "SIMULATOR · LIVE",
     "play.header.help": "Need help? Read the guide →",
+    "play.fullscreen": "Fullscreen",
     "play.fineprint": "Country ratings are public FIFA Men's World Ranking points (April 2026). Not affiliated with FIFA or EA Sports.",
     "footer.learn": "LEARN",
     "footer.about2": "About this project",

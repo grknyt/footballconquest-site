@@ -46,7 +46,74 @@
 </nav>
 
 <!-- The simulator itself, in an iframe -->
-<iframe src="/simulator.html" class="play-frame" title="Football Conquest Simulator" allowfullscreen></iframe>
+<div class="play-frame-wrap">
+  <iframe src="/simulator.html" class="play-frame" id="play-frame" title="Football Conquest Simulator" allowfullscreen></iframe>
+  <!-- Fullscreen toggle: expands ONLY the game (hides the site nav + the
+       browser chrome) so the two stacked bars don't eat play space. Uses the
+       Fullscreen API on the iframe wrapper. Swaps icon + label when active. -->
+  <button type="button" id="play-fs-btn" class="play-fs-btn" aria-label="Toggle fullscreen">
+    <span class="play-fs-ico">⛶</span>
+    <span class="play-fs-txt" data-i18n="play.fullscreen">Fullscreen</span>
+  </button>
+</div>
+
+<style>
+  /* Wrapper is a flex column so it can (a) grow to fill the body flex layout
+     on mobile — the old `body.play-page .play-frame{flex:1}` now flows through
+     the wrapper to the iframe — and (b) act as the fullscreen element. */
+  .play-frame-wrap { position: relative; display: flex; flex-direction: column; }
+  body.play-page .play-frame-wrap { flex: 1 1 auto; min-height: 0; }
+  /* When the wrapper is the fullscreen element, make the iframe fill it. */
+  .play-frame-wrap:fullscreen { width: 100vw; height: 100vh; background: #0a1929; }
+  .play-frame-wrap:fullscreen .play-frame { width: 100%; height: 100%; border: 0; flex: 1 1 auto; }
+  .play-fs-btn {
+    position: absolute; top: 10px; right: 14px; z-index: 40;
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(7,14,23,.82); color: #22d63c;
+    border: 1px solid rgba(24,191,47,.5); border-radius: 7px;
+    padding: 7px 13px; font-family: var(--display); font-size: 12px;
+    font-weight: 700; letter-spacing: .5px; cursor: pointer;
+    backdrop-filter: blur(4px); -webkit-tap-highlight-color: transparent;
+    transition: background .15s, border-color .15s, transform .12s;
+  }
+  .play-fs-btn:hover { background: rgba(10,25,41,.95); border-color: #22d63c; transform: translateY(-1px); }
+  .play-fs-btn:active { transform: translateY(0); }
+  .play-fs-ico { font-size: 15px; line-height: 1; }
+  /* While fullscreen the button floats over the game's own toolbar top-right;
+     nudge it down-left a touch so it doesn't collide with the hamburger. */
+  .play-frame-wrap:fullscreen .play-fs-btn { top: 8px; right: 200px; }
+  @media (max-width: 700px) {
+    .play-fs-btn .play-fs-txt { display: none; }
+    .play-fs-btn { padding: 8px 10px; }
+    .play-frame-wrap:fullscreen .play-fs-btn { right: 150px; }
+  }
+</style>
+
+<script>
+(function(){
+  var wrap = document.querySelector('.play-frame-wrap');
+  var btn  = document.getElementById('play-fs-btn');
+  if (!wrap || !btn) return;
+  function inFS(){ return document.fullscreenElement || document.webkitFullscreenElement; }
+  btn.addEventListener('click', function(){
+    if (inFS()) {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    } else {
+      (wrap.requestFullscreen || wrap.webkitRequestFullscreen).call(wrap);
+    }
+  });
+  // Reflect state on the button (icon + label) when fullscreen changes,
+  // including when the user hits Esc to leave.
+  function sync(){
+    var on = !!inFS();
+    btn.querySelector('.play-fs-ico').textContent = on ? '🡼' : '⛶';
+    var txt = btn.querySelector('.play-fs-txt');
+    if (txt) txt.textContent = on ? 'Exit' : 'Fullscreen';
+  }
+  document.addEventListener('fullscreenchange', sync);
+  document.addEventListener('webkitfullscreenchange', sync);
+})();
+</script>
 
 <!-- Mini footer -->
 <footer class="footer" style="padding:48px 36px 32px;">
@@ -79,7 +146,7 @@
 </footer>
 
 <!-- Localization: translations dictionary + i18n engine. -->
-<script src="/js/translations.js?v=20260630"></script>
-<script src="/js/i18n.js?v=20260630"></script>
+<script src="/js/translations.js?v=20260717green"></script>
+<script src="/js/i18n.js?v=20260717green"></script>
 </body>
 </html>
