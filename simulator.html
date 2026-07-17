@@ -664,27 +664,31 @@ body.web-build .g-recruit-modal{display:none!important;}
 .g-top-row .g-aura-hbar{order:2;}
 /* AURA pill — same unified design as before, but now sized for the left
    slot of the top row (was full width). */
+/* v-green: AURA bar re-themed. Was maroon bg + gold fill + red text. Now a
+   near-black graphite track that fills with a lighter grey, and the AURA
+   label / star / value all in brand green. Reads as a neutral "gauge" that
+   the green text + green fill-glow tie into the new palette. */
 .g-aura-hbar{position:relative;display:none;margin:0;width:210px;flex:0 0 auto;
   height:30px;
-  background:linear-gradient(135deg,#1a1117 0%,#2a1820 100%);
-  border:1px solid #d4a936;border-radius:9px;overflow:hidden;
-  box-shadow:inset 0 1px 3px rgba(0,0,0,.6),0 0 14px rgba(212,169,54,.15);}
+  background:linear-gradient(135deg,#141619 0%,#1c1f23 100%);
+  border:1px solid #2e3a31;border-radius:9px;overflow:hidden;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.6),0 0 14px rgba(24,191,47,.12);}
 #game-panel.open.conquest-mode .g-aura-hbar{display:block;}
 .g-aura-hbar-fill{position:absolute;inset:0;width:0;
-  background:linear-gradient(90deg,#c89a26 0%,#f4d77a 50%,#ffd54a 100%);
+  background:linear-gradient(90deg,#3a4048 0%,#4c535c 50%,#5a626c 100%);
   transition:width .45s cubic-bezier(.22,.61,.36,1);
-  box-shadow:inset 0 0 14px rgba(255,213,74,.5);}
+  box-shadow:inset 0 0 14px rgba(90,98,108,.5);}
 .g-aura-hbar-label{position:relative;z-index:2;height:100%;
   display:flex;align-items:center;padding:0 14px;gap:9px;
   pointer-events:none;}
 .g-aura-hbar-text{font-family:'Montserrat',Impact,'Arial Black','Helvetica Neue Black',sans-serif;
-  font-size:23px;font-weight:900;letter-spacing:.5px;color:#c8102e;text-transform:uppercase;
-  text-shadow:none;}
-.g-aura-hbar-star{color:#c8102e;font-size:19px;font-weight:900;
-  line-height:1;filter:none;}
+  font-size:23px;font-weight:900;letter-spacing:.5px;color:#22d63c;text-transform:uppercase;
+  text-shadow:0 0 8px rgba(24,191,47,.35);}
+.g-aura-hbar-star{color:#22d63c;font-size:19px;font-weight:900;
+  line-height:1;filter:drop-shadow(0 0 4px rgba(24,191,47,.4));}
 .g-aura-hbar-val{margin-left:auto;font-family:'Montserrat',Impact,'Arial Black','Helvetica Neue Black',sans-serif;
-  font-size:14px;font-weight:900;color:#c8102e;letter-spacing:.5px;
-  text-shadow:none;font-variant-numeric:tabular-nums;}
+  font-size:14px;font-weight:900;color:#22d63c;letter-spacing:.5px;
+  text-shadow:0 0 6px rgba(24,191,47,.3);font-variant-numeric:tabular-nums;}
 /* Territory + Momentum — thin vertical bars to the LEFT of the attacker slot,
    inside the .g-slots flex row. */
 .g-tm-bars{display:none;flex-direction:row;align-items:stretch;gap:8px;
@@ -1429,8 +1433,11 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
    pushing the button too tall). */
 .g-sim-btn-row .g-sim-btn-don .g-sim-sub{
   display:block;width:100%;text-align:center;
-  font-size:9px;font-weight:600;letter-spacing:0.6px;
-  text-transform:uppercase;opacity:.75;line-height:1;color:#4a2f10;}
+  /* v-green: was 9px #4a2f10 @0.75 opacity — too faint on the gold button,
+     especially on desktop. Bumped to 10px, full opacity, near-black + bolder
+     so "2X AURA OR LOSE IT ALL" reads clearly. */
+  font-size:10px;font-weight:700;letter-spacing:0.5px;
+  text-transform:uppercase;opacity:1;line-height:1.1;color:#241606;}
 .g-result-or{display:flex;align-items:center;gap:10px;color:#7a9bb5;font-size:11px;
   letter-spacing:2px;text-transform:uppercase;margin:0 0 14px;}
 .g-result-or::before,.g-result-or::after{content:"";flex:1;height:1px;background:#1a2f40;}
@@ -1684,10 +1691,14 @@ body.fc-splash-active .zc{display:none;}
 body.fc-splash-active #btn-undo,
 body.fc-splash-active #btn-history{display:none;}
 /* Logo in the top-left replaces the old "FC Map Editor" text */
+/* v-green: top toolbar logo now shows the green FC-arrow logo image
+   (was red "FC" text). Text kept in DOM for a11y, hidden visually. */
 .fc-logo{display:inline-flex;align-items:center;justify-content:center;
-  width:26px;height:26px;background:#0a1929;border:1px solid #1a2f40;border-radius:4px;
-  font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;font-weight:bold;
-  color:#c8102e;font-size:15px;line-height:1;letter-spacing:-0.5px;margin-right:6px;}
+  width:26px;height:26px;border-radius:5px;margin-right:6px;
+  background:url(/assets/fc-logo.png?v=green) center / cover no-repeat;
+  border:1px solid rgba(24,191,47,0.4);
+  color:transparent;text-indent:-9999px;overflow:hidden;
+  font-size:15px;line-height:1;}
 /* Wordmark next to the FC badge — gives the app a branded strip identity
    inside the WebView (Gemini polish reference). Two-line stack keeps the
    header the same height as the toolbar buttons. Hidden on very narrow
@@ -1711,23 +1722,26 @@ body.fc-splash-active #btn-history{display:none;}
   color:#f4ead5;opacity:0.4;letter-spacing:1.5px;}
 .fc-splash-content{position:relative;height:100%;display:flex;flex-direction:column;
   align-items:center;justify-content:center;padding:24px;gap:14px;}
-.fc-splash-badge{width:38px;height:38px;background:#0a1929;
-  border:1px solid rgba(212,169,54,0.5);border-radius:5px;
-  display:inline-flex;align-items:center;justify-content:center;
-  font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;font-weight:bold;
-  color:#c8102e;font-size:22px;line-height:1;}
+/* v-green: splash badge now shows the real green FC-arrow logo image
+   (was a red "FC" text glyph). Wordmark unchanged. */
+.fc-splash-badge{width:44px;height:44px;border-radius:8px;
+  background:url(/assets/fc-logo.png?v=green) center / cover no-repeat;
+  border:1px solid rgba(24,191,47,0.5);
+  color:transparent;text-indent:-9999px;overflow:hidden;
+  display:inline-flex;line-height:1;}
 .fc-splash-wordmark{color:#f4ead5;font-size:11px;font-weight:700;letter-spacing:3.5px;
   text-align:center;margin-bottom:14px;}
-.fc-play-btn{padding:12px 30px;border-radius:6px;border:1px solid #c8102e;
-  background:#c8102e;color:#fff;font-size:13px;font-weight:600;letter-spacing:1px;
+/* Play button red → brand green, black text, green pulse glow. */
+.fc-play-btn{padding:12px 30px;border-radius:6px;border:1px solid #18bf2f;
+  background:linear-gradient(180deg,#22d63c 0%,#0f9a24 100%);color:#062a0d;font-size:13px;font-weight:800;letter-spacing:1px;
   cursor:pointer;display:inline-flex;align-items:center;gap:9px;font-family:inherit;
   animation:fc-pulse-glow 2.4s ease-in-out infinite;
   -webkit-tap-highlight-color:transparent;transition:transform .15s;}
 .fc-play-btn:hover{transform:translateY(-1px);animation-duration:1.6s;}
 .fc-play-btn:active{transform:translateY(0);}
 @keyframes fc-pulse-glow{
-  0%,100%{box-shadow:0 0 18px rgba(200,16,46,0.35),0 0 36px rgba(200,16,46,0.15);}
-  50%{box-shadow:0 0 30px rgba(200,16,46,0.75),0 0 60px rgba(200,16,46,0.35);}
+  0%,100%{box-shadow:0 0 18px rgba(24,191,47,0.4),0 0 36px rgba(24,191,47,0.18);}
+  50%{box-shadow:0 0 30px rgba(24,191,47,0.8),0 0 60px rgba(24,191,47,0.4);}
 }
 /* Pulse rings behind the card */
 .fc-pulse-rings{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
@@ -3144,8 +3158,8 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
     <!-- ── Splash launcher: front door when no game is active ─────────────── -->
     <div id="fc-splash" aria-hidden="false">
       <svg class="fc-pulse-rings" viewBox="0 0 340 340" aria-hidden="true">
-        <circle cx="170" cy="170" r="80" fill="none" stroke="#d4a936" stroke-width="1.5" opacity="0.6"/>
-        <circle cx="170" cy="170" r="80" fill="none" stroke="#d4a936" stroke-width="1.5" opacity="0.6"/>
+        <circle cx="170" cy="170" r="80" fill="none" stroke="#18bf2f" stroke-width="1.5" opacity="0.6"/>
+        <circle cx="170" cy="170" r="80" fill="none" stroke="#18bf2f" stroke-width="1.5" opacity="0.6"/>
       </svg>
       <div class="fc-splash-card" role="dialog" aria-label="Football Conquest launcher">
         <svg class="fc-bg" viewBox="0 0 300 300" fill="none" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
@@ -3157,12 +3171,15 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
             <line x1="100" y1="0" x2="100" y2="300"/>
             <line x1="200" y1="0" x2="200" y2="300"/>
           </g>
+          <!-- v-green: abstract map blobs — the two red #c8102e shapes recoloured
+               to brand green so the splash card backdrop matches the palette.
+               Gold/cream/navy blobs kept for variety at this low opacity. -->
           <g opacity="0.55">
-            <path d="M32 75 Q16 91 22 118 L27 150 Q38 166 64 161 L86 139 Q97 123 86 107 L75 91 Q59 70 43 70 Z" fill="#c8102e"/>
+            <path d="M32 75 Q16 91 22 118 L27 150 Q38 166 64 161 L86 139 Q97 123 86 107 L75 91 Q59 70 43 70 Z" fill="#18bf2f"/>
             <path d="M77 177 Q70 209 77 236 L88 257 Q99 263 107 255 L113 230 Q116 204 107 177 Z" fill="#d4a936"/>
             <path d="M127 70 L150 67 L167 80 L164 102 L145 107 L129 99 Z" fill="#f4ead5"/>
             <path d="M131 123 Q127 147 139 177 L155 201 L167 197 L171 166 L165 142 L153 126 Z" fill="#1a3b5c"/>
-            <path d="M182 65 Q207 63 246 78 L279 90 L284 107 L268 118 L238 110 L198 96 L177 84 Z" fill="#c8102e"/>
+            <path d="M182 65 Q207 63 246 78 L279 90 L284 107 L268 118 L238 110 L198 96 L177 84 Z" fill="#18bf2f"/>
             <path d="M238 139 L243 163 L252 180 L259 164 L252 139 Z" fill="#d4a936"/>
             <path d="M252 214 Q241 230 252 248 L273 257 L289 251 L284 233 L270 220 Z" fill="#1a3b5c"/>
           </g>
@@ -12990,7 +13007,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v82-green-ingame-buttons-2026-07-17';
+  window._FC_CAP_VERSION = 'v84-green-splash-toolbar-don-2026-07-17';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
