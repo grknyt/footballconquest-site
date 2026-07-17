@@ -320,7 +320,11 @@ img, svg { display: block; max-width: 100%; height: auto; }
   content: '';
   position: absolute;
   inset: -20px; /* over-fill so blur edges don't show */
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><g font-family='Impact, Arial Black, sans-serif' font-weight='900' text-anchor='middle' fill='%23c8102e'><text x='50' y='50' dy='0.35em' font-size='54' opacity='0.22'>FC</text><text x='150' y='50' dy='0.35em' font-size='28' opacity='0.16'>FC</text><text x='50' y='150' dy='0.35em' font-size='28' opacity='0.16'>FC</text><text x='150' y='150' dy='0.35em' font-size='54' opacity='0.22'>FC</text></g></svg>");
+  /* v-green: the hero backdrop watermark now uses the green FC-arrow LOGO
+     mark (fc-watermark-dark.png — a 200×200 checker tile of the mark, green
+     baked at 0.15/0.22 opacity), matching the app icon + game map. Was a
+     red "FC" text SVG. */
+  background-image: url("/assets/fc-watermark-dark.png?v=green");
   background-size: 200px 200px;
   background-repeat: repeat;
   filter: blur(3.5px);
