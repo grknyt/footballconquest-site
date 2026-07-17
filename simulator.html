@@ -1712,8 +1712,11 @@ body.fc-splash-active #btn-history{display:none;}
    header the same height as the toolbar buttons. Hidden on very narrow
    phones (< 400px CSS) to preserve room for the Report bug + hamburger
    buttons on the right. */
-.fc-wordmark{display:inline-block;font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
-  font-weight:bold;font-size:11px;line-height:1;letter-spacing:1px;white-space:nowrap;
+.fc-wordmark{display:inline-block;
+  /* v-green: match the site nav's brand-name font (system sans, not the old
+     Impact condensed) — same typeface as the lighter wordmark, kept green. */
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Roboto,Helvetica,Arial,sans-serif;
+  font-weight:800;font-size:12px;line-height:1;letter-spacing:1px;white-space:nowrap;
   color:#22d63c;text-transform:uppercase;margin-right:10px;
   text-shadow:0 1px 0 rgba(0,0,0,.4);}
 @media (max-width: 400px) { .fc-wordmark { display: none; } }
@@ -13015,7 +13018,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v87-hide-zoom-pm-wordmark-oneline-2026-07-17';
+  window._FC_CAP_VERSION = 'v88-wordmark-match-nav-font-2026-07-17';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
