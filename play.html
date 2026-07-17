@@ -66,10 +66,12 @@
   /* When the wrapper is the fullscreen element, make the iframe fill it. */
   .play-frame-wrap:fullscreen { width: 100vw; height: 100vh; background: #0a1929; }
   .play-frame-wrap:fullscreen .play-frame { width: 100%; height: 100%; border: 0; flex: 1 1 auto; }
-  /* Sits BELOW the game's own toolbar (which occupies the top ~48px of the
-     wrapper) so it no longer covers it. Slightly larger tap target. */
+  /* Moved to the BOTTOM-RIGHT so it no longer covers the Events/Continents
+     dropdowns at the top. Sits just above the game's own ⟳ reset-view button
+     (which lives inside the iframe at bottom:12px right:12px, ~38px tall) so
+     the two coexist in a clean vertical stack in the corner. */
   .play-fs-btn {
-    position: absolute; top: 58px; right: 16px; z-index: 40;
+    position: absolute; bottom: 60px; right: 12px; z-index: 40;
     display: inline-flex; align-items: center; gap: 8px;
     background: rgba(7,14,23,.85); color: #22d63c;
     border: 1px solid rgba(24,191,47,.55); border-radius: 8px;
@@ -84,7 +86,7 @@
   .play-fs-ico { font-size: 17px; line-height: 1; }
   @media (max-width: 700px) {
     .play-fs-btn .play-fs-txt { display: none; }
-    .play-fs-btn { padding: 10px 12px; top: 54px; }
+    .play-fs-btn { padding: 10px 12px; bottom: 58px; }
   }
 </style>
 

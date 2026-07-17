@@ -58,7 +58,11 @@ body.map-light #fc-bg-pattern image{filter:brightness(0.7) saturate(0.85);opacit
 #hint{position:absolute;top:8px;left:10px;font-size:10px;color:rgba(255,255,255,.28);pointer-events:none;z-index:4;line-height:1.5;}
 .tip{position:absolute;background:rgba(8,16,28,.95);border:1px solid #2a3f55;border-radius:6px;padding:4px 9px;font-size:11px;color:#fff;pointer-events:none;display:none;white-space:nowrap;z-index:30;}
 .zc{position:absolute;bottom:12px;right:12px;display:flex;flex-direction:column;gap:5px;z-index:10;}
-.zb{width:32px;height:32px;background:rgba(7,14,23,.92);border:1px solid #2a3f55;color:#7ab8e8;border-radius:6px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+/* v-green: hide the + / - zoom buttons on ALL devices — scroll-wheel and
+   pinch both zoom, so they're redundant everywhere. Only the ⟳ reset-view
+   button (#zr) remains, and the play.html fullscreen button stacks above it. */
+#zi, #zo { display:none !important; }
+.zb{width:38px;height:38px;background:rgba(7,14,23,.92);border:1px solid #2a3f55;color:#7ab8e8;border-radius:8px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
 .zb:hover{background:#1a2f40;}
 /* Horizontal strip across the bottom, full-width */
 /* Default panel: centered horizontally, width hugs its content (with a max so
@@ -1709,7 +1713,7 @@ body.fc-splash-active #btn-history{display:none;}
    phones (< 400px CSS) to preserve room for the Report bug + hamburger
    buttons on the right. */
 .fc-wordmark{display:inline-block;font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
-  font-weight:bold;font-size:10px;line-height:1.05;letter-spacing:1.2px;
+  font-weight:bold;font-size:11px;line-height:1;letter-spacing:1px;white-space:nowrap;
   color:#22d63c;text-transform:uppercase;margin-right:10px;
   text-shadow:0 1px 0 rgba(0,0,0,.4);}
 @media (max-width: 400px) { .fc-wordmark { display: none; } }
@@ -3063,7 +3067,7 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
 <div id="app">
   <div id="hdr">
     <span class="fc-logo" aria-label="Football Conquest">FC</span>
-    <span class="fc-wordmark" aria-hidden="true">FOOTBALL<br>CONQUEST</span>
+    <span class="fc-wordmark" aria-hidden="true">FOOTBALL CONQUEST</span>
     <div class="modes">
       <button class="mbtn active" id="btn-view">👁 <span data-i18n="sim.tb.view">View</span><span class="kbadge">V</span></button>
       <button class="mbtn" id="btn-erase">✏ <span data-i18n="sim.tb.erase">Erase</span><span class="kbadge">E</span></button>
@@ -13011,7 +13015,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v86-green-toolbar-wordmark-2026-07-17';
+  window._FC_CAP_VERSION = 'v87-hide-zoom-pm-wordmark-oneline-2026-07-17';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
