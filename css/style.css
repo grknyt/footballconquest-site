@@ -87,13 +87,19 @@ img, svg { display: block; max-width: 100%; height: auto; }
   justify-content: center;
   width: 38px;
   height: 38px;
-  background: var(--green);
-  /* Black FC on green — mirrors the app launcher icon exactly (v-green). */
-  color: var(--ink);
+  /* v-green: use the actual FC-arrow app logo (black mark on green gradient)
+     as the nav brand. The literal "FC" text stays in the DOM for
+     accessibility / SEO but is visually replaced by the logo image via a
+     background + text-indent hide. One CSS change → every page's nav +
+     footer brand mark updates. */
+  background: url(/assets/fc-logo.png?v=green) center / cover no-repeat, var(--green);
+  color: transparent;
+  text-indent: -9999px;
+  overflow: hidden;
   font-family: var(--display);
   font-size: 18px;
   letter-spacing: 0;
-  border-radius: 2px;
+  border-radius: 6px;
   font-weight: 900;
 }
 
@@ -101,6 +107,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   width: 56px;
   height: 56px;
   font-size: 26px;
+  border-radius: 8px;
 }
 
 .brand-name {
