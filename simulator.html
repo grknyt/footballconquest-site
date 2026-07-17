@@ -89,8 +89,45 @@ display:flex;flex-direction:row;align-items:center;justify-content:space-between
 /* Settings gear hidden in conquest mode (user-flagged as unused). Settings still
    reachable for non-conquest sessions in case existing imperialism users rely on it. */
 #game-panel.conquest-mode #game-settings{display:none;}
-#game-close{background:transparent;border:none;color:#7a9bb5;font-size:14px;cursor:pointer;padding:0;}
-#game-close:hover{color:#fff;}
+/* v72/v74: collapse arrow is a panel-level absolute button (top-right
+   corner) so it renders in BOTH imperialism (head visible) and conquest
+   (head hidden). z-index 3 floats it over head bar / body content.
+   Flips to ▲ while either tuck-away state (mini or collapsed) is on. */
+#game-close{background:transparent;border:none;color:#7a9bb5;font-size:13px;cursor:pointer;
+  position:absolute;top:4px;right:4px;z-index:3;line-height:1;
+  /* v78: much bigger touch target. The glyph is small (13px) but the button
+     is now a 40x40 hit area with the arrow centred, so users don't have to
+     land a pixel-perfect tap on the arrowhead. */
+  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  border-radius:8px;
+  transition:transform 0.18s ease, color 0.18s ease, background 0.15s ease;}
+#game-close:hover{color:#fff;background:rgba(122,155,181,.12);}
+#game-close:active{background:rgba(122,155,181,.2);}
+/* v80: in MINI the arrow floats as its own pill just to the RIGHT of the
+   compact card, vertically centred against it, instead of overlapping the
+   opponent flag or sitting above. Own rounded background so it reads as a
+   discrete "expand" control. Rotates to ▲ + gold. (Needs the panel's
+   overflow:hidden lifted in mini — done below — so the off-card position
+   isn't clipped.) */
+#game-panel.g-mini #game-close{
+  top:50%; right:-50px;
+  width:38px; height:38px;
+  transform:translateY(-50%) rotate(180deg);
+  color:#f4d77a;
+  background:linear-gradient(180deg,#1e3452 0%,#0e1a2c 100%);
+  border:1.5px solid #3a5a80;
+  box-shadow:0 4px 14px rgba(0,0,0,.5);
+}
+#game-panel.g-mini #game-close:hover{
+  color:#fff;
+  background:linear-gradient(180deg,#264066 0%,#13233a 100%);
+}
+/* Lift the panel's clip so the arrow beside the card is visible. */
+#game-panel.g-mini.conquest-mode{ overflow:visible !important; }
+/* Reserve space at the right end of the header bar so the imperialism-mode
+   header content (title, stats, bug, settings) doesn't slide under the
+   absolutely-positioned corner button (now a 40px hit box, v78). */
+.g-head{padding-right:46px !important;}
 /* Default body layout (used by Imperialism mode): flags + score on top row,
    button row below. Conquest mode further overrides with tighter padding +
    centered alignment via #game-panel.conquest-mode .g-body. */
@@ -154,13 +191,9 @@ box-shadow:0 2px 6px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12);}
   transform:translateX(-50%);
 }
 /* Hide the title bar entirely in conquest — the hero context is already shown
-   in the floating top HUD. The close button stays as a tiny corner X. */
+   in the floating top HUD. The corner buttons (– mini, ▼ collapse) are
+   panel-level children (v72) so they survive the head being hidden. */
 #game-panel.conquest-mode .g-head{display:none;}
-#game-panel.conquest-mode #game-close{
-  display:block;position:absolute;top:6px;right:8px;z-index:2;
-  font-size:13px;color:#6a7e93;
-}
-#game-panel.conquest-mode #game-close:hover{color:#fff;}
 #game-panel.conquest-mode .g-body{
   flex-direction:column;gap:10px;align-items:center;padding:14px 22px 14px;
 }
@@ -948,10 +981,16 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-start-card, .g-result-card{background:#0a1624;border:1px solid #2a3f55;border-radius:12px;
   padding:20px;max-width:520px;width:min(100%, 520px);
   box-shadow:0 12px 40px rgba(0,0,0,.7);
-  /* margin:auto centers the card in the flex column both when there's
-     extra vertical space (short content) AND when content overflows and
-     the modal scrolls. */
-  margin:auto;flex-shrink:0;}
+  /* v61: card auto-fits viewport height across ALL devices — was previously
+     `flex-shrink:0` (natural height, whole modal scrolled), now it's a flex
+     column that caps at viewport height, and internal scroll happens on the
+     team list inside #g-conquest-team-picker. Start Conquest button stays
+     pinned above the fold no matter how short the screen is. */
+  margin:auto;
+  display:flex;flex-direction:column;
+  max-height:calc(100dvh - 32px);
+  max-height:calc(100vh - 32px);
+  overflow:hidden;}
 .g-start-title, .g-result-title{font-size:18px;font-weight:600;color:#7ab8e8;
   letter-spacing:.5px;margin-bottom:18px;text-align:center;}
 .g-start-modes{display:flex;gap:14px;flex-direction:column;}
@@ -967,11 +1006,15 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-mode-btn:hover{border-color:#7ab8e8;background:#13283e;}
 .g-mode-btn.selected{border-color:#7ab8e8;background:#13283e;}
 /* Primary mode: World Conquest — bigger, gold-accented hero button */
-.g-mode-btn.primary{padding:28px 26px;border-color:#d4a936;background:linear-gradient(180deg,#13283e 0%,#0e2034 100%);}
+/* v59 compact pass: shrink the World Conquest primary card so the modal
+   fits above the fold on desktop/tablet without scrolling. Padding cut
+   from 28→14px, icon 44→28, name 22→17, description 13→11 — ~45% less
+   vertical footprint. Selected state keeps the same trimmed proportions. */
+.g-mode-btn.primary{padding:14px 20px;border-color:#d4a936;background:linear-gradient(180deg,#13283e 0%,#0e2034 100%);}
 .g-mode-btn.primary:hover{border-color:#f0c660;background:linear-gradient(180deg,#1a334d 0%,#13283e 100%);}
-.g-mode-btn.primary .g-mode-icon{font-size:44px;margin-bottom:10px;}
-.g-mode-btn.primary .g-mode-name{font-size:22px;color:#f4d77a;margin-bottom:6px;}
-.g-mode-btn.primary .g-mode-desc{font-size:13px;color:#bcc9d8;}
+.g-mode-btn.primary .g-mode-icon{font-size:28px;margin-bottom:4px;}
+.g-mode-btn.primary .g-mode-name{font-size:17px;color:#f4d77a;margin-bottom:3px;}
+.g-mode-btn.primary .g-mode-desc{font-size:11px;color:#bcc9d8;line-height:1.35;}
 /* Compact mode: Random Imperialism — smaller, secondary visual weight */
 .g-mode-btn.compact{padding:12px 14px;}
 .g-mode-btn.compact .g-mode-icon{font-size:20px;margin-bottom:2px;display:inline-block;margin-right:8px;vertical-align:middle;}
@@ -983,19 +1026,115 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 /* BETA badge for in-development modes */
 .g-mode-beta{position:absolute;top:8px;right:10px;background:#c8102e;color:#fff;font-size:9px;
   font-weight:700;letter-spacing:1px;padding:2px 6px;border-radius:3px;line-height:1;}
-#g-conquest-team-picker{margin-top:18px;border-top:1px solid #1a2f40;padding-top:18px;}
+/* v62: team picker no longer needs a flex-grow list — the carousel is
+   fixed height (~110 px). Stack children naturally in a column so the
+   card can still shrink-to-fit its content. */
+#g-conquest-team-picker{margin-top:14px;border-top:1px solid #1a2f40;padding-top:14px;
+  display:flex;flex-direction:column;}
+#g-conquest-team-picker > *{flex:0 0 auto;}
 .g-pick-label{font-size:11px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
 .g-team-search{width:100%;background:#0e2034;border:1px solid #1a2f40;border-radius:6px;
   padding:8px 10px;color:#fff;font-size:13px;margin-bottom:8px;box-sizing:border-box;}
 .g-team-search:focus{outline:none;border-color:#7ab8e8;}
-.g-team-list{max-height:220px;overflow-y:auto;background:#0a1624;border:1px solid #1a2f40;
-  border-radius:6px;margin-bottom:12px;}
-.g-team-item{display:flex;align-items:center;gap:10px;padding:6px 10px;cursor:pointer;
-  border-bottom:1px solid #0e2034;color:#cfdaea;font-size:12px;}
-.g-team-item:hover{background:#13283e;}
-.g-team-item.selected{background:#1a3a5a;color:#fff;}
-.g-team-flag{width:32px;height:22px;border:1px solid rgba(255,255,255,0.15);border-radius:2px;
+/* v62 — HORIZONTAL SWIPE CAROUSEL for team selection.
+   v63 refinement: beefed up the scrollbar from 6px → 16px tall so it's
+   actually grabbable on a tablet, AND added prev/next arrow buttons on
+   the edges of the carousel (see .g-team-carousel-wrap) so you can page
+   through 8 cards at a time with a single tap instead of dragging. */
+.g-team-list{
+  display:flex;flex-direction:row;flex:0 0 auto;
+  overflow-x:auto;overflow-y:hidden;
+  /* v69: proximity instead of mandatory so the browser only snaps when a
+     card is already close to alignment. mandatory was overriding our
+     scrollTo() center-math on Random Team + tap-to-select, pulling the
+     card a few px off-center to the nearest card-left snap point. */
+  scroll-snap-type:x proximity;
+  -webkit-overflow-scrolling:touch;
+  gap:6px;padding:8px 6px 6px;
+  background:#0a1624;border:1px solid #1a2f40;border-radius:8px;
+  margin-bottom:20px;
+  scrollbar-width:auto;scrollbar-color:#4a6a80 #0e2034;
+}
+/* WebKit scrollbar: fat, high-contrast pill with 4px inset so it feels
+   like a real interactive element instead of a hairline decoration. */
+.g-team-list::-webkit-scrollbar{height:16px;}
+.g-team-list::-webkit-scrollbar-track{
+  background:#0e2034;border-radius:8px;margin:0 40px;
+}
+.g-team-list::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,#5a7a95 0%,#3a5a75 100%);
+  border:2px solid #0a1624;border-radius:8px;min-width:60px;
+}
+.g-team-list::-webkit-scrollbar-thumb:hover{
+  background:linear-gradient(180deg,#7ab8e8 0%,#4a7a9a 100%);
+}
+/* Wrapper that positions the prev/next paging buttons on the edges
+   of the carousel. The buttons overlay the leftmost/rightmost cards
+   with a semi-transparent gradient so they don't obscure content. */
+.g-team-carousel-wrap{position:relative;}
+.g-team-nav-btn{
+  position:absolute;top:8px;bottom:22px;width:36px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(90deg,rgba(10,22,36,.95) 0%,rgba(10,22,36,.6) 100%);
+  border:none;color:#7ab8e8;font-size:22px;font-weight:700;
+  cursor:pointer;z-index:2;
+  -webkit-tap-highlight-color:transparent;
+  transition:color .12s ease, background .12s ease;
+}
+.g-team-nav-btn.next{
+  right:0;left:auto;border-radius:0 8px 8px 0;
+  background:linear-gradient(270deg,rgba(10,22,36,.95) 0%,rgba(10,22,36,.6) 100%);
+}
+.g-team-nav-btn.prev{left:0;border-radius:8px 0 0 8px;}
+.g-team-nav-btn:hover{color:#fff;}
+.g-team-nav-btn:active{color:#f4d77a;}
+.g-team-nav-btn:disabled{opacity:.25;cursor:default;}
+.g-team-item{
+  flex:0 0 auto;width:76px;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  gap:4px;padding:6px 4px;cursor:pointer;
+  border:1px solid #1a2f40;border-radius:6px;
+  background:#0e2034;color:#cfdaea;font-size:10px;line-height:1.15;text-align:center;
+  /* v69: snap to card CENTER, not start — so the Random Team + tap-to-select
+     scrollTo() math lands the card exactly in the middle of the carousel. */
+  scroll-snap-align:center;
+  transition:border-color .12s ease, background .12s ease, transform .12s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.g-team-item:hover{border-color:#7ab8e8;background:#13283e;}
+/* v67: restore the golden card-border on picker selection — the v66 wavy
+   flag mask was a misread of Gürkan's request; the real target for the
+   artistic wavy indicator was the HERO FLAG on the map (see updateHeroGlow
+   + .g-hero-frame). Picker cards stay clean rectangles here. */
+.g-team-item.selected{border-color:#f4d77a;background:#1a3a5a;color:#fff;
+  box-shadow:0 0 0 1px #f4d77a inset,0 4px 12px rgba(244,215,122,.25);}
+.g-team-item > div:last-child{
+  width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.g-team-flag{width:56px;height:36px;border:1px solid rgba(255,255,255,0.15);border-radius:3px;
   background-size:cover;background-position:center;flex-shrink:0;}
+
+/* v64 — TYPE SCALE +15% inside the startup modal only.
+   All rules scoped under .g-start-card so nothing outside this card
+   (result modal, in-game HUD, etc.) is affected. Percentages are ~15%
+   larger than the base sizes; padding on inputs/buttons scaled to match
+   so the visual proportions stay balanced. */
+.g-start-card .g-start-title       { font-size: 21px; margin-bottom: 20px; }
+.g-start-card .g-resume-btn        { font-size: 17px; padding: 15px 20px; }
+.g-start-card .g-mode-icon         { font-size: 32px; }
+.g-start-card .g-mode-name         { font-size: 18px; }
+.g-start-card .g-mode-desc         { font-size: 13px; }
+.g-start-card .g-mode-btn.primary .g-mode-icon { font-size: 32px; }
+.g-start-card .g-mode-btn.primary .g-mode-name { font-size: 20px; }
+.g-start-card .g-mode-btn.primary .g-mode-desc { font-size: 13px; }
+.g-start-card .g-mode-btn.compact .g-mode-icon { font-size: 23px; }
+.g-start-card .g-mode-btn.compact .g-mode-name { font-size: 15px; }
+.g-start-card .g-mode-btn.compact .g-mode-desc { font-size: 12px; }
+.g-start-card .g-pick-label        { font-size: 13px; margin-bottom: 10px; }
+.g-start-card .g-team-search       { font-size: 15px; padding: 10px 12px; }
+.g-start-card .g-team-item         { font-size: 12px; }
+.g-start-card #g-random-team       { font-size: 13px; padding: 10px 14px; }
+.g-start-card #g-start-conquest    { font-size: 15px; padding: 12px; }
 #g-start-conquest{width:100%;padding:10px;font-size:13px;}
 #g-start-conquest:disabled{opacity:0.4;cursor:not-allowed;}
 /* Random team picker — sits between the search field and the team list.
@@ -1292,20 +1431,17 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
    for space. */
 #g-hero-glow{transition:opacity .35s ease;opacity:1;}
 body.fc-spinning #g-hero-glow{opacity:0;}
-.g-hero-frame{ fill:none; stroke:#ffd54a; stroke-width:12;
-  stroke-linejoin:round; opacity:.92;
-  filter:drop-shadow(0 0 4px rgba(212,169,54,.55)); }
-.g-hero-runner{
-  fill:none; stroke:#fff4c4; stroke-width:15; stroke-linecap:round;
-  /* The dasharray + animation are sized to the box in JS so the visible
-     segment is always ~90 SVG units long no matter the box dimensions. */
-  filter:drop-shadow(0 0 6px #ffd54a) drop-shadow(0 0 14px rgba(255,213,74,.55));
-  animation:g-hero-runner-spin 2.6s linear infinite;
+/* v68 — HERO FLAG selection: soft radial glow behind the flag, nothing
+   else. No frame, no chasing light, no wavy banner — just a gold
+   aura that reads "this is your team" without competing with the flag
+   or drawing a hard rectangle around it. Radial gradient defined
+   per-render in updateHeroGlow; this rule just runs the gentle breathe. */
+.g-hero-aura{
+  animation: g-hero-aura-breathe 3.2s ease-in-out infinite;
 }
-@keyframes g-hero-runner-spin{
-  /* Offset is set via CSS custom property --perim from JS so the same
-     keyframe works for any box perimeter. */
-  to{ stroke-dashoffset:var(--perim, -1240); }
+@keyframes g-hero-aura-breathe{
+  0%,100%{ opacity:.7; }
+  50%    { opacity:1;  }
 }
 
 
@@ -1884,10 +2020,9 @@ body.web-build .g-result-card.revealed .g-sim-btn{
 
   /* ── Start-card team picker: list scrolls, Start Conquest button sticky ──
      The g-start-card already flex-fills with internal overflow handling.
-     But the team picker contents grow vertically (search input + 220px list +
-     Start Conquest button), so the bottom button could fall off screen. Pin
-     it to the bottom of the card the same way we did with the result modal. */
-  .g-team-list { max-height: 160px; }
+     v61: list max-height now handled by the flex-grow model in the base
+     stylesheet — no fixed cap needed here anymore, list absorbs whatever
+     vertical space remains after the sticky button pins to the bottom. */
   #g-start-conquest {
     position: sticky;
     bottom: 0;
@@ -2236,8 +2371,25 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     letter-spacing: 0;
   }
 
-  /* (4) Hide manual zoom controls — pinch-zoom is intuitive on touch */
-  .zc { display: none !important; }
+  /* (4) Phone-size screens: keep reset, hide +/- (pinch covers them).
+     v75: was hiding the whole .zc cluster — reset earns its place even
+     on touch because there's no gesture for "snap back to full world". */
+  #zi, #zo { display: none !important; }
+}
+
+/* ── v75: touch devices of ANY size (tablets included) ──
+   pointer:coarse matches devices whose primary input is a finger. The
+   +/- buttons are redundant there (pinch-zoom / double-tap are native),
+   but the ⟳ reset stays: pinching back to exactly-full-world is fiddly
+   and there's no gesture equivalent. Slightly bigger tap target too. */
+@media (pointer: coarse) {
+  #zi, #zo { display: none !important; }
+  #zr {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 15px !important;
+    border-radius: 10px !important;
+  }
 }
 
 
@@ -2571,6 +2723,16 @@ body.web-build .g-result-card.revealed .g-sim-btn{
 body.fc-ui-hidden #fc-bug-link,
 body.fc-demo-mode #fc-bug-link,
 body.fc-splash-active #fc-bug-link { display: none; }
+/* Splash screen: hide in-game floating chrome that would otherwise bleed
+   through from an auto-restored game state before the user hits Play. On
+   cold launch with an active save, refreshConquestHud fires to prime the
+   HUD, which sets #g-loss-float visible if the last session had losses —
+   correct behavior mid-game, but on the splash it looks like a bug. Same
+   goes for the event toast, turn badge, and floating New Game button. */
+body.fc-splash-active #g-loss-float,
+body.fc-splash-active #g-event-toast,
+body.fc-splash-active #g-turn-badge,
+body.fc-splash-active #g-final-newgame { display: none !important; }
 @media (max-width: 700px) {
   #fc-bug-link { bottom: 8px; left: 8px; width: 26px; height: 26px; font-size: 12px; }
 }
@@ -2754,16 +2916,86 @@ body.fc-splash-active #fc-bug-link { display: none; }
    bar; tapping it re-expands. Replaces the previous behaviour that dropped
    the user into view mode and abandoned active imperialism runs. */
 #game-panel.g-collapsed .g-body { display: none !important; }
+/* v74: g-collapsed is imperialism-only now (conquest's ▼ toggles g-mini
+   instead — a full collapse there shrank the panel to an unusable sliver
+   because conquest hides the header too). */
 #game-panel.g-collapsed .g-head {
   cursor: pointer;
   border-bottom: 0 !important;
 }
 #game-panel.g-collapsed .g-head:hover { background: #102031; }
+/* v71: collapse glyph is now ▼ (was ✕). While collapsed it flips 180° to
+   read ▲ = "bring the panel back up". 45° was only right for the old ✕→+
+   trick. */
 #game-panel.g-collapsed #game-close {
-  transform: rotate(45deg);
+  transform: rotate(180deg);
   transition: transform 0.18s ease;
 }
 #game-panel #game-close { transition: transform 0.18s ease; }
+
+/* ── v70: MINI state for the conquest bottom UI ──
+   Between full (everything) and collapsed (header only) sits "mini":
+   flags + team names + vs stay visible so the panel still looks alive,
+   but the stats strip, aura bar, T/M bars, OVR, stars, and all action
+   buttons hide. Toggled by the ▼ corner button (mode-aware, v74);
+   icon flips 180° while minimized. Turn badge follows automatically
+   via the existing ResizeObserver on the panel. */
+#game-panel.g-mini .g-top-row        { display: none !important; }
+#game-panel.g-mini .g-action-group   { display: none !important; }
+#game-panel.g-mini .g-tm-bars        { display: none !important; }
+#game-panel.g-mini .g-slot-overall   { display: none !important; }
+#game-panel.g-mini .g-slot-stars     { display: none !important; }
+#game-panel.g-mini .g-conquest-loss  { display: none !important; }
+#game-panel.g-mini .g-body {
+  padding: 8px 14px 10px !important;
+  gap: 0 !important;
+}
+/* Slots compact but still pretty: flag + name only */
+#game-panel.g-mini.conquest-mode .g-slot {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  min-width: 90px !important;
+  padding: 5px 10px !important;
+  grid-template-columns: none !important;
+  grid-template-areas: none !important;
+}
+#game-panel.g-mini.conquest-mode .g-slot-flag {
+  width: 48px !important;
+  height: 32px !important;
+  margin: 0 0 3px !important;
+}
+#game-panel.g-mini.conquest-mode .g-slot-val {
+  font-size: 11px !important;
+  margin: 0 !important;
+  text-align: center !important;
+}
+/* v77: pull the flags TIGHT to the centre "vs" — v76's 360px cap + 90px
+   gutter still left them spread wide. Now the slots row hugs its content
+   (max-width:none, width auto) with a slim 44px vs gutter, so the two
+   flag cards sit close together around vs like a real matchup card.
+   The whole .g-body also shrinks-to-fit rather than filling the panel. */
+#game-panel.g-mini.conquest-mode .g-slots {
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 auto !important;
+  justify-content: center !important;
+  gap: 0 !important;
+}
+#game-panel.g-mini.conquest-mode .g-middle {
+  min-width: 44px !important;   /* slim symmetric gutter around vs */
+  margin: 0 !important;
+}
+/* Let the panel itself shrink to the compact matchup card rather than
+   staying full bleed. Auto width + centred keeps it tidy on the map. */
+#game-panel.g-mini.conquest-mode {
+  width: auto !important;
+  max-width: 420px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+/* v74: single ▼ control handles both modes (mini in conquest, collapse in
+   imperialism) — the separate #game-mini button was removed. */
 
 </style>
 </head>
@@ -2959,7 +3191,14 @@ body.fc-splash-active #fc-bug-link { display: none; }
                respecting the current search filter. Useful for players who
                want a challenge without deliberating. -->
           <button id="g-random-team" class="g-btn" type="button" data-i18n="sim.mode.random">🎲 Random Team</button>
-          <div id="g-team-list" class="g-team-list"></div>
+          <!-- v63: wrap the carousel so prev/next arrow buttons can overlay
+               its left/right edges. The buttons page-scroll ~5 cards at a
+               time so users don't have to precision-drag the scrollbar. -->
+          <div class="g-team-carousel-wrap">
+            <button type="button" id="g-team-prev" class="g-team-nav-btn prev" aria-label="Previous teams">‹</button>
+            <div id="g-team-list" class="g-team-list"></div>
+            <button type="button" id="g-team-next" class="g-team-nav-btn next" aria-label="Next teams">›</button>
+          </div>
           <button id="g-start-conquest" class="g-btn primary" disabled data-i18n="sim.mode.start">Start Conquest</button>
         </div>
       </div>
@@ -3239,8 +3478,13 @@ body.fc-splash-active #fc-bug-link { display: none; }
         </div>
         <button id="g-head-bug" title="Report a bug" onclick="window.fcOpenBugReport && window.fcOpenBugReport()" style="background:transparent;border:none;color:#7a9bb5;font-size:13px;cursor:pointer;padding:0 4px;line-height:1;">🐛</button>
         <button id="game-settings" data-i18n-attr="title:sim.gp.tip.settings" title="Settings">⚙️</button>
-        <button id="game-close" data-i18n-attr="title:sim.gp.tip.close" title="Close">✕</button>
       </div>
+      <!-- v72/v74: collapse arrow lives OUTSIDE .g-head as a direct child
+           of the panel (conquest hides .g-head entirely, which hides all
+           descendants — the old in-header corner button never rendered
+           there). Mode-aware: ▼ toggles flags-only MINI in conquest,
+           full header-collapse in imperialism. Flips to ▲ while active. -->
+      <button id="game-close" data-i18n-attr="title:sim.gp.tip.close" title="Minimize">▼</button>
       <div id="g-settings-popover" style="display:none;">
         <div class="g-set-title" data-i18n="sim.gp.prodsettings">Production Settings</div>
         <label class="g-set-row">
@@ -7904,10 +8148,19 @@ $('g-skip').onclick=gameSkip;
 // re-expands the panel. Previously this was a "close" that called
 // setMode('view') and silently abandoned imperialism runs — see bug from
 // YouTube user "tobias" who lost his turn-35 imperialism run by tapping X.
+// v74: ▼ is mode-aware. In World Conquest it toggles the MINI state
+// (flags stay visible — a full header-only collapse made the panel
+// shrink to a near-invisible sliver since conquest hides the header
+// too). In imperialism it keeps the original full collapse.
 $('game-close').onclick = function(e){
   e.stopPropagation();
   var panel = document.getElementById('game-panel');
-  if(panel) panel.classList.toggle('g-collapsed');
+  if(!panel) return;
+  if(panel.classList.contains('conquest-mode')){
+    panel.classList.toggle('g-mini');
+  } else {
+    panel.classList.toggle('g-collapsed');
+  }
 };
 // Whole header is a click target while collapsed, so the user just needs to
 // tap anywhere on the visible bar to bring the body back.
@@ -7924,6 +8177,8 @@ $('game-close').onclick = function(e){
     panel.classList.remove('g-collapsed');
   });
 })();
+// v74: separate mini (–) button removed — the ▼ arrow above now toggles
+// mini directly in conquest mode. One control, no ambiguity.
 $('btn-reset').onclick=doReset;
 $('btn-save').onclick=doSave;
 $('btn-load').onclick=doLoad;
@@ -7987,10 +8242,20 @@ function renderTeamList(filter){
   const list=document.getElementById('g-team-list');
   if(!list)return;
   const f=(filter||'').toLowerCase().trim();
-  const matched=teams.filter(t=>!f||t.name.toLowerCase().includes(f)||teamDisplayName(t.name).toLowerCase().includes(f));
+  // v62: sort explicitly by teamDisplayName (respects current i18n
+  // language — Türkiye files under T in EN but under T also in TR, etc.)
+  // so the carousel is always global-alphabetical regardless of the
+  // insertion order of the `teams` array. Uses localeCompare with the
+  // current UI language so diacritics sort correctly (Ç, Ş, İ in TR,
+  // Å, Ä, Ö in SV, etc.).
+  const uiLang=(window.FCLang && FCLang.current) ? FCLang.current : 'en';
+  const matched=teams
+    .filter(t=>!f||t.name.toLowerCase().includes(f)||teamDisplayName(t.name).toLowerCase().includes(f))
+    .slice()
+    .sort((a,b)=>teamDisplayName(a.name).localeCompare(teamDisplayName(b.name), uiLang, {sensitivity:'base'}));
   list.innerHTML=matched.map(t=>{
     const flagBg=FLAG_B64[t.name]?`background-image:url(data:image/png;base64,${FLAG_B64[t.name]})`:'';
-    return `<div class="g-team-item${_selectedConquestTeamId===t.id?' selected':''}" data-team-id="${t.id}">
+    return `<div class="g-team-item${_selectedConquestTeamId===t.id?' selected':''}" data-team-id="${t.id}" title="${teamDisplayName(t.name)}">
       <div class="g-team-flag" style="${flagBg}"></div>
       <div>${teamDisplayName(t.name)}</div>
     </div>`;
@@ -8001,6 +8266,13 @@ function renderTeamList(filter){
       list.querySelectorAll('.g-team-item').forEach(x=>x.classList.remove('selected'));
       el.classList.add('selected');
       document.getElementById('g-start-conquest').disabled=false;
+      // v65: explicit scrollLeft math (see the random-team handler for
+      // the WebView bug context) — guarantees the picked card lands in
+      // the visual center of the carousel on every platform.
+      try {
+        const targetLeft = el.offsetLeft - (list.clientWidth - el.offsetWidth) / 2;
+        list.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
+      } catch(e){}
     });
   });
 }
@@ -8035,6 +8307,42 @@ function wireStartupModal(){
   });
   const search=document.getElementById('g-team-search');
   if(search) search.addEventListener('input',e=>renderTeamList(e.target.value));
+
+  // v63: wire the carousel prev/next paging buttons. Each tap scrolls by
+  // roughly one full visible-page (viewport width) so a user can chew
+  // through 200+ teams with 5-8 taps instead of trying to precision-drag
+  // the scrollbar. Buttons disable themselves at the ends of the range.
+  (function wireTeamCarouselNav(){
+    var list = document.getElementById('g-team-list');
+    var prev = document.getElementById('g-team-prev');
+    var next = document.getElementById('g-team-next');
+    if (!list || !prev || !next) return;
+    function pageWidth() {
+      // Scroll by ~90% of visible width so there's slight overlap and the
+      // user doesn't lose their place between pages.
+      return Math.max(200, Math.floor(list.clientWidth * 0.9));
+    }
+    function updateBtns() {
+      var atStart = list.scrollLeft <= 2;
+      var atEnd = list.scrollLeft >= (list.scrollWidth - list.clientWidth - 2);
+      prev.disabled = atStart;
+      next.disabled = atEnd;
+    }
+    prev.addEventListener('click', function(){
+      list.scrollBy({ left: -pageWidth(), behavior: 'smooth' });
+    });
+    next.addEventListener('click', function(){
+      list.scrollBy({ left:  pageWidth(), behavior: 'smooth' });
+    });
+    list.addEventListener('scroll', updateBtns, { passive: true });
+    // ResizeObserver on the list catches viewport rotation + orientation
+    // changes so button enabled-state stays accurate after a resize.
+    if (window.ResizeObserver) {
+      new ResizeObserver(updateBtns).observe(list);
+    }
+    // Initial state
+    setTimeout(updateBtns, 100);
+  })();
   const startBtn=document.getElementById('g-start-conquest');
   if(startBtn) startBtn.addEventListener('click',()=>{
     if(_selectedConquestTeamId==null)return;
@@ -8052,13 +8360,22 @@ function wireStartupModal(){
     if(pool.length===0) return;
     const pick=pool[Math.floor(Math.random()*pool.length)];
     _selectedConquestTeamId=pick.id;
-    // Re-render so the selection highlight visually updates, then scroll
-    // the picked row into view + enable Start.
+    // Re-render so the selection highlight visually updates.
     renderTeamList(search ? search.value : '');
     const list=document.getElementById('g-team-list');
     if(list){
       const row=list.querySelector('.g-team-item.selected');
-      if(row && row.scrollIntoView) row.scrollIntoView({block:'center', behavior:'smooth'});
+      if(row){
+        // v65: horizontal-scroll containers need EXPLICIT scrollLeft math.
+        // scrollIntoView({inline:'center'}) is spec-compliant but the
+        // Android WebView (Chromium 130 as of this build) sometimes lands
+        // the target flush against the left or right edge instead of
+        // centering. Manual math sidesteps both the browser bug AND the
+        // block/inline axis confusion that caused the previous version to
+        // vertically-center inside a horizontal carousel (i.e. do nothing).
+        const targetLeft = row.offsetLeft - (list.clientWidth - row.offsetWidth) / 2;
+        list.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
+      }
     }
     if(startBtn) startBtn.disabled=false;
   });
@@ -10661,7 +10978,10 @@ function updateConquestHud(state){
       if(state.lossCount===1) lossFloatEl.classList.add('warn');
       if(state.lossCount>=2) lossFloatEl.classList.add('danger');
       lossFloatEl.classList.add('visible');
-      lossFloatEl.innerHTML='⚠ '+FCLang.t('sim.hud.losses',{opp:teamDisplayName(state.lossOpponent),n:state.lossCount});
+      // v71: no prepended '⚠ ' — the translation string already leads with
+      // the ⚠️ emoji, so the pill was showing two warning triangles (one
+      // monochrome, one emoji). Keep just the emoji from the string.
+      lossFloatEl.innerHTML=FCLang.t('sim.hud.losses',{opp:teamDisplayName(state.lossOpponent),n:state.lossCount});
     } else {
       lossFloatEl.classList.remove('visible','warn','danger');
     }
@@ -11330,36 +11650,46 @@ function updateHeroGlow(){
   wrap.setAttribute('id','g-hero-glow');
   wrap.setAttribute('transform',`translate(${cx},${cy}) scale(${heroScale})`);
   const SVG_NS='http://www.w3.org/2000/svg';
-  // Box dimensions chosen to frame the 300x195 flag badge with ~24 SVG units
-  // of breathing room on all sides. rx adds a subtle rounded corner.
-  const BOX_W=352;
-  const BOX_H=235;
-  const BOX_RX=8;
-  const x=-BOX_W/2, y=-BOX_H/2;
-  // Quiet background frame — stays static, just hints at the box.
-  const frame=document.createElementNS(SVG_NS,'rect');
-  frame.setAttribute('x',x); frame.setAttribute('y',y);
-  frame.setAttribute('width',BOX_W); frame.setAttribute('height',BOX_H);
-  frame.setAttribute('rx',BOX_RX); frame.setAttribute('ry',BOX_RX);
-  frame.setAttribute('class','g-hero-frame');
-  wrap.appendChild(frame);
-  // The runner rect has the same shape, but its stroke is a dash pattern
-  // sized so only a short bright segment is visible at a time. Animating
-  // stroke-dashoffset slides that segment around the perimeter, creating
-  // the "glowing light running 360° around the box" effect.
-  const perim = 2*(BOX_W+BOX_H) - 8*BOX_RX + 2*Math.PI*BOX_RX;
-  const SEG_LEN=82;
-  const runner=document.createElementNS(SVG_NS,'rect');
-  runner.setAttribute('x',x); runner.setAttribute('y',y);
-  runner.setAttribute('width',BOX_W); runner.setAttribute('height',BOX_H);
-  runner.setAttribute('rx',BOX_RX); runner.setAttribute('ry',BOX_RX);
-  runner.setAttribute('class','g-hero-runner');
-  runner.setAttribute('stroke-dasharray', SEG_LEN.toFixed(2)+' '+(perim-SEG_LEN).toFixed(2));
-  // CSS variable drives the @keyframes end-state so any future tweak to the
-  // box dimensions Just Works.
-  runner.style.setProperty('--perim', (-perim).toFixed(2));
-  wrap.appendChild(runner);
-  layer.insertBefore(wrap,layer.firstChild);
+
+  // v68 — SIMPLE RADIAL AURA. One ellipse behind the flag, filled with a
+  // radial gradient that fades gold → transparent. No hard edges, no
+  // frame, no chasing light. The gradient's outer radius extends well
+  // beyond the flag so the falloff sits OUTSIDE the flag's rectangle
+  // rather than under it — the flag itself stays crisply readable.
+  const defs = document.createElementNS(SVG_NS, 'defs');
+  const grad = document.createElementNS(SVG_NS, 'radialGradient');
+  grad.setAttribute('id', 'g-hero-aura-grad');
+  grad.setAttribute('cx', '50%');
+  grad.setAttribute('cy', '50%');
+  grad.setAttribute('r', '50%');
+  [
+    ['0%',   '#ffd54a', '0.55'],
+    ['40%',  '#ffd54a', '0.28'],
+    ['75%',  '#ffd54a', '0.08'],
+    ['100%', '#ffd54a', '0'  ],
+  ].forEach(function(s){
+    var stop = document.createElementNS(SVG_NS, 'stop');
+    stop.setAttribute('offset', s[0]);
+    stop.setAttribute('stop-color', s[1]);
+    stop.setAttribute('stop-opacity', s[2]);
+    grad.appendChild(stop);
+  });
+  defs.appendChild(grad);
+  wrap.appendChild(defs);
+
+  // Ellipse sized wider + taller than the ~300x195 flag so the visible
+  // aura extends past the flag on all sides. rx=240, ry=160 gives ~40 SVG
+  // units of visible glow beyond each edge before the gradient hits zero.
+  const aura = document.createElementNS(SVG_NS, 'ellipse');
+  aura.setAttribute('cx', 0);
+  aura.setAttribute('cy', 0);
+  aura.setAttribute('rx', 240);
+  aura.setAttribute('ry', 160);
+  aura.setAttribute('fill', 'url(#g-hero-aura-grad)');
+  aura.setAttribute('class', 'g-hero-aura');
+  wrap.appendChild(aura);
+
+  layer.insertBefore(wrap, layer.firstChild);
 }
 
 function drawConquestTrailArrow(x1,y1,x2,y2,opts){
@@ -12643,7 +12973,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v57-rewarded-continue-freeboost-2026-07-16';
+  window._FC_CAP_VERSION = 'v80-mini-arrow-right-of-card-2026-07-16';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
@@ -13018,9 +13348,62 @@ function openUsernameGate(onDone){
     }
   };
 
+  // ── (6) GDPR / US-state consent (Google UMP) ─────────────────────────
+  // AdMob TOS requires that EEA/UK/Swiss users see a consent screen before
+  // ANY personalized ad is loaded, and CCPA requires US-state users see the
+  // "Do Not Sell" flow. Both are configured in the AdMob console under
+  // Privacy & messaging → European regulations / US state regulations, and
+  // deployed with Ad Unit Deployment ON. This block calls the plugin's UMP
+  // methods to fire whichever message applies to the user's geo:
+  //   1. requestConsentInfo → returns REQUIRED / NOT_REQUIRED / OBTAINED
+  //   2. If REQUIRED + form available → showConsentForm (blocks until user
+  //      accepts / rejects)
+  //   3. Continue to preload ads regardless of choice (non-personalized ads
+  //      still serve if consent was declined — no revenue is total zero)
+  // Non-Capacitor plugin builds or plugin versions without UMP support fall
+  // through to preloadAds() immediately.
+  function requestConsentThen(next) {
+    if (!AdMob || !AdMob.requestConsentInfo) { next(); return; }
+    AdMob.requestConsentInfo({}).then(function(info){
+      try { console.log('[FC-CAP] consent info:', info); } catch(e){}
+      var status = info && info.status;
+      var formAvail = info && info.isConsentFormAvailable;
+      // Statuses: 'UNKNOWN' | 'NOT_REQUIRED' | 'REQUIRED' | 'OBTAINED'
+      if (status === 'REQUIRED' && formAvail && AdMob.showConsentForm) {
+        AdMob.showConsentForm().then(function(result){
+          try { console.log('[FC-CAP] consent form dismissed:', result); } catch(e){}
+          next();
+        }).catch(function(err){
+          try { console.warn('[FC-CAP] showConsentForm failed (proceeding anyway):', err); } catch(e){}
+          next();
+        });
+      } else {
+        try { console.log('[FC-CAP] consent flow skipped (status=' + status + ', formAvail=' + formAvail + ')'); } catch(e){}
+        next();
+      }
+    }).catch(function(err){
+      try { console.warn('[FC-CAP] requestConsentInfo failed (proceeding without consent flow):', err); } catch(e){}
+      next();
+    });
+  }
+
+  // Expose a reset helper so QA can wipe consent state from the browser
+  // console and re-trigger the flow on the next launch. Not called from
+  // anywhere in production — dev/testing only.
+  window.fcResetAdMobConsent = function() {
+    if (AdMob && AdMob.resetConsentInfo) {
+      return AdMob.resetConsentInfo().then(function(){
+        try { console.log('[FC-CAP] consent info reset — reload the app to re-trigger the form'); } catch(e){}
+      });
+    }
+    return Promise.resolve();
+  };
+
   // Init AdMob and preload first interstitial + first rewarded video. iOS
   // requires requestTrackingAuthorization to display the ATT prompt on
-  // first launch — harmless on Android.
+  // first launch — harmless on Android. Consent form is shown AFTER init
+  // but BEFORE any ad preload so the first ad request already reflects
+  // the user's consent decision (personalized vs non-personalized).
   if (AdMob && AdMob.initialize) {
     AdMob.initialize({
       requestTrackingAuthorization: true,
@@ -13028,8 +13411,10 @@ function openUsernameGate(onDone){
       testingDevices: []
     }).then(function(){
       try { console.log('[FC-CAP] AdMob initialized (isTesting=' + AD_IS_TESTING + ')'); } catch(e){}
-      preloadInterstitial();
-      preloadRewarded();
+      requestConsentThen(function(){
+        preloadInterstitial();
+        preloadRewarded();
+      });
     }).catch(function(err){
       try { console.warn('[FC-CAP] AdMob init failed:', err); } catch(e){}
     });
