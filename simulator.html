@@ -67,10 +67,18 @@ body.map-light #fc-bg-pattern text{fill:#1a3550;opacity:0.13;}
    left:10px right:10px — that wasted huge amounts of horizontal space in
    Imperialism mode where the body content is naturally narrow. */
 #game-panel{position:absolute;bottom:10px;left:50%;
-transform:translateX(-50%);width:auto;max-width:calc(100% - 24px);
-background:rgba(7,14,23,.96);border:1px solid #2a3f55;border-radius:10px;
+transform:translateX(-50%);width:calc(100% - 6px);max-width:calc(100% - 6px);
+/* Diagonal gradient with subtle highlight per Gürkan v32 polish — reads as
+   a real "container" with light source rather than a flat dark rectangle.
+   Three stops: brighter navy top-left, mid-tone through, deep navy bottom-right.
+   Kept in the same blue family so it doesn't clash with brand colours. */
+background:linear-gradient(135deg,#1e3452 0%,#0e1a2c 50%,#050c17 100%);
+/* Brighter/thicker border per Gürkan v27 polish — matches the outline
+   presence of the Play Match button so the whole panel reads as one
+   deliberate container instead of blending into the map. */
+border:1.5px solid #3a5a80;border-radius:12px;
 display:none;flex-direction:column;z-index:25;overflow:hidden;
-box-shadow:0 6px 18px rgba(0,0,0,.5);}
+box-shadow:0 8px 24px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08), 0 0 20px rgba(58,90,128,.15);}
 #game-panel.open{display:flex;}
 .g-head{padding:7px 16px;background:#0a1624;border-bottom:1px solid #1a2f40;
 display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:6px;}
@@ -88,8 +96,10 @@ display:flex;flex-direction:row;align-items:center;justify-content:space-between
    centered alignment via #game-panel.conquest-mode .g-body. */
 .g-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px;flex:1;align-items:center;min-width:0;}
 .g-slots{display:flex;gap:6px;align-items:center;flex-shrink:0;}
-.g-slot{background:#0e2034;border:1px solid #1a2f40;border-radius:6px;padding:6px 10px;
-min-width:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+.g-slot{background:linear-gradient(180deg,#152a40 0%,#0b1a2c 100%);
+border:1px solid #2a3f55;border-radius:8px;padding:6px 10px;
+min-width:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 2px 6px rgba(0,0,0,.25);}
 .g-slot-label{font-size:11px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
 .g-slot-val{font-size:12px;color:#fff;font-weight:500;margin-top:3px;text-align:center;line-height:1.15;}
 .g-slot-flag{width:48px;height:32px;border:1px solid rgba(255,255,255,0.2);border-radius:2px;
@@ -121,15 +131,17 @@ min-width:90px;display:flex;flex-direction:column;align-items:center;justify-con
    centered under the flags. Conquest mode overrides padding + button size
    below via its scoped rules. */
 .g-action-group{display:flex;flex-direction:row;gap:10px;flex-shrink:0;justify-content:center;align-items:center;}
-.g-btn{min-width:110px;padding:6px 10px;border-radius:5px;border:none;cursor:pointer;
-font-size:11px;font-weight:500;-webkit-tap-highlight-color:transparent;transition:all .15s;white-space:nowrap;}
-.g-btn.primary{background:#1d5a8c;color:#fff;}
-.g-btn.primary:hover:not(:disabled){background:#2470ad;}
-.g-btn.danger{background:#8c1d1d;color:#fff;}
-.g-btn.danger:hover:not(:disabled){background:#a82222;}
-.g-btn.ghost{background:transparent;color:#7ab8e8;border:1px solid #2a4f6a;}
-.g-btn.ghost:hover{background:#1a2f40;}
-.g-btn:disabled{opacity:.4;cursor:not-allowed;}
+.g-btn{min-width:110px;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;
+font-size:11px;font-weight:600;-webkit-tap-highlight-color:transparent;transition:all .15s;white-space:nowrap;
+box-shadow:0 2px 6px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12);}
+.g-btn.primary{background:linear-gradient(180deg,#2b7cbd 0%,#154870 100%);color:#fff;border:1px solid #2b7cbd;}
+.g-btn.primary:hover:not(:disabled){background:linear-gradient(180deg,#3690d5 0%,#1a5680 100%);}
+.g-btn.danger{background:linear-gradient(180deg,#c72a2a 0%,#6e1414 100%);color:#fff;border:1px solid #c72a2a;}
+.g-btn.danger:hover:not(:disabled){background:linear-gradient(180deg,#e03535 0%,#821818 100%);}
+.g-btn.ghost{background:linear-gradient(180deg,#1a2f40 0%,#0e1a26 100%);color:#7ab8e8;border:1px solid #2a4f6a;}
+.g-btn.ghost:hover{background:linear-gradient(180deg,#254057 0%,#132435 100%);}
+.g-btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
+.g-btn:active:not(:disabled){transform:translateY(1px);box-shadow:0 1px 3px rgba(0,0,0,.35);}
 
 /* ──── Conquest mode: compact centered card with stacked layout ────────────
    Card centers horizontally (auto width hugs content) instead of stretching
@@ -465,6 +477,12 @@ body.web-build .g-recruit-modal{display:none!important;}
 #g-campaign-panel.collapsed #g-campaign-toggle{transform:rotate(-90deg);}
 #g-campaign-panel.collapsed #g-campaign-header{border-bottom:none;}
 #g-campaign-body{padding:10px 12px;display:flex;flex-direction:column;gap:7px;overflow-y:auto;}
+/* v43 — reverted the merge per Gürkan feedback. Separate #g-campaign-panel
+   restored to visibility; 🌍 button hidden and inline Continents view
+   removed. Code paths that write to #g-events-continents-view still run
+   but the element is display:none so it's a harmless no-op. */
+#g-events-mode-continents{display:none!important;}
+#g-events-continents-view{display:none!important;}
 .g-cont-row{display:flex;align-items:center;gap:9px;font-size:12px;color:#cfdaea;}
 .g-cont-name{flex:0 0 88px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;}
 .g-cont-bar{flex:1;height:6px;background:#1a2f40;border-radius:3px;overflow:hidden;}
@@ -506,12 +524,17 @@ body.web-build .g-recruit-modal{display:none!important;}
    info that used to live in the events header (and was getting elbowed by
    the search + filter buttons) has room to breathe. Visible only in conquest
    mode while a game is active. */
-#g-turn-badge{position:absolute;top:14px;left:14px;display:none;
-  background:rgba(7,14,23,.92);border:1px solid #2a3f55;border-radius:8px;
-  padding:7px 13px;color:#cfdaea;font-size:12px;font-weight:700;
-  letter-spacing:.6px;text-transform:uppercase;white-space:nowrap;
-  box-shadow:0 4px 14px rgba(0,0,0,.45);z-index:22;pointer-events:none;
-  user-select:none;}
+/* Turn badge — v28 polish: back to a floating pill, but positioned above
+   the bottom game panel (not the top of the map like earlier versions).
+   Centered horizontally via left:50% + translateX. Sits at bottom:245px
+   which clears the game panel's typical height (max-height ~230px) with a
+   small gap. Compact styling — small text, tight padding. */
+#g-turn-badge{position:absolute;bottom:245px;left:50%;transform:translateX(-50%);
+  display:none;background:rgba(7,14,23,.95);border:1px solid #3a5a80;border-radius:6px;
+  padding:4px 12px;color:#cfdaea;font-size:10px;font-weight:700;
+  letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;
+  box-shadow:0 3px 10px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+  z-index:26;pointer-events:none;user-select:none;}
 #g-turn-badge.visible{display:inline-block;}
 #g-turn-badge b{color:#fff;}
 #g-turn-badge .sep{color:#4a6a80;margin:0 6px;}
@@ -589,11 +612,14 @@ body.web-build .g-recruit-modal{display:none!important;}
 /* Old free-floating metrics strip — superseded by the in-panel layout below.
    Kept in DOM (so any code paths that touch it don't crash) but hidden. */
 #g-metrics-panel{display:none!important;}
-/* Top metrics row: AURA bar on the LEFT (above the T+M vertical bars in
-   the row below) and the RECORD/GOALS stats on the RIGHT, filling the rest. */
+/* Top metrics row: RECORD/GOALS on the LEFT (fills the rest of the row),
+   AURA pill on the RIGHT. Reordered per Gürkan's polish feedback — reading
+   left-to-right now goes STATS → AURA, matching the natural eye path.
+   Achieved via flex `order` so the DOM stays untouched. */
 .g-top-row{display:none;align-items:center;gap:14px;padding:8px 14px 6px;}
 #game-panel.open.conquest-mode .g-top-row{display:flex;}
-.g-top-row .g-conquest-stats{flex:1;margin:0;}
+.g-top-row .g-conquest-stats{flex:1;margin:0;order:1;text-align:left;}
+.g-top-row .g-aura-hbar{order:2;}
 /* AURA pill — same unified design as before, but now sized for the left
    slot of the top row (was full width). */
 .g-aura-hbar{position:relative;display:none;margin:0;width:210px;flex:0 0 auto;
@@ -722,6 +748,44 @@ body.web-build #fc-menu-hide-ui{display:none!important;}
    pulsing red at 2/3, since the player needs continuous awareness of how
    close they are to elimination by this specific opponent. Visibility
    driven entirely by JS via style.display so it can vanish cleanly. */
+/* Latest-event toast — appears below the Events dropdown, shows the most
+   recent gLog entry, fades out after ~3.5s. Purely informational and
+   non-blocking. Centered horizontally, sits at top:80px (below the loss
+   warning at top:44px if that's visible, otherwise still below the panels). */
+#g-event-toast{position:absolute;top:100px;left:50%;transform:translateX(-50%);
+  max-width:calc(100% - 24px);
+  display:none;opacity:0;z-index:26;pointer-events:none;user-select:none;
+  padding:6px 14px;border-radius:8px;
+  background:linear-gradient(180deg,rgba(20,34,54,.96) 0%,rgba(10,20,34,.96) 100%);
+  border:1px solid #3a5a80;
+  color:#cfdaea;font-size:12px;font-weight:600;letter-spacing:.3px;
+  text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  box-shadow:0 4px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+  transition:opacity .35s ease;}
+#g-event-toast.showing{display:block;opacity:1;}
+#g-event-toast.fading{opacity:0;}
+/* Emphasized styling when the toast is a match result (contains ⚽ or similar). */
+#g-event-toast b{color:#fff;font-weight:800;}
+
+/* Floating loss warning pill — Gürkan v34 polish moved this OUT of the
+   game panel (was making the panel too tall) into a floating position just
+   below the Continents/Events dropdowns. Warn = amber, danger (2+ losses)
+   = red with pulse. Centered horizontally, positioned absolute. */
+#g-loss-float{position:absolute;top:58px;left:50%;transform:translateX(-50%);
+  display:none;z-index:26;pointer-events:none;user-select:none;
+  padding:6px 14px;border-radius:8px;
+  font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+  white-space:nowrap;
+  box-shadow:0 4px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.08);}
+#g-loss-float.visible{display:inline-block;}
+#g-loss-float.warn{background:linear-gradient(180deg,#5a4515 0%,#382b0d 100%);
+  border:1.5px solid #ffd54a;color:#ffd54a;}
+#g-loss-float.danger{background:linear-gradient(180deg,#5a1a1a 0%,#2f0e0e 100%);
+  border:1.5px solid #ff8a8a;color:#ff8a8a;
+  animation:g-hud-pulse 1s ease-in-out infinite;}
+#g-loss-float b{color:#fff;}
+/* In-panel loss strip hidden — replaced by the floating pill above. */
+#g-conquest-loss{display:none!important;}
 .g-conquest-loss{font-size:15px;font-weight:700;letter-spacing:.4px;
   text-align:center;padding:7px 14px 0;line-height:1.4;}
 .g-conquest-loss b{font-weight:800;}
@@ -733,8 +797,12 @@ body.web-build #fc-menu-hide-ui{display:none!important;}
    GF–GA (±GD)". Hidden until the player has played their first match. */
 .g-conquest-stats{font-size:15px;font-weight:700;letter-spacing:1px;
   line-height:30px;
-  color:#7a9bb5;text-transform:uppercase;text-align:center;
+  color:#7a9bb5;text-transform:uppercase;text-align:left;
   padding:6px 14px 0;line-height:1.4;}
+/* Two-line format per Gürkan v28 polish: RECORD on line 1, GOALS on line 2.
+   Both left-aligned via block display + parent text-align:left. */
+.g-conquest-stats .gcs-record{display:block;line-height:1.2;}
+.g-conquest-stats .gcs-goals{display:block;line-height:1.2;margin-top:1px;}
 .g-conquest-stats b{color:#fff;font-weight:800;}
 .g-conquest-stats b.w{color:#6dd86d;}
 .g-conquest-stats b.l{color:#ff8a8a;}
@@ -854,10 +922,21 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 #g-leaderboard-clear{padding:7px 13px;font-size:11px;color:#ff8a8a;
   border:1px solid rgba(255,138,138,.3);background:transparent;}
 #g-leaderboard-clear:hover{background:rgba(255,138,138,.1);}
-#g-startup-modal, #g-result-modal, #g-username-modal{position:absolute;top:0;left:0;width:100%;height:100%;
+#g-startup-modal, #g-result-modal, #g-username-modal{position:fixed;top:0;left:0;
+  width:100vw;height:100vh;
   background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:50;
-  display:none;align-items:center;justify-content:center;}
-#g-startup-modal.open, #g-result-modal.open, #g-username-modal.open{display:flex;}
+  display:none;
+  /* Explicit 100vw/100vh instead of 100% so the modal ALWAYS matches the
+     viewport regardless of any ancestor sizing. position:fixed anchors to
+     the viewport (not the parent), and vw/vh nail the dimensions. */
+  overflow-y:auto;padding:16px;}
+/* Flex centering with margin:auto on the card — the combination handles
+   BOTH tall-content scrolling AND short-content centering across browsers.
+   Grid + place-items was clipping in some Android WebView versions and,
+   in landscape on tablets, was pulling the card off to the left. */
+#g-startup-modal.open, #g-result-modal.open, #g-username-modal.open{
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+}
 #g-username-modal{z-index:52;}
 .g-username-card{max-width:380px;text-align:center;}
 .g-username-icon{font-size:40px;margin-bottom:10px;}
@@ -867,7 +946,12 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-username-error.show{visibility:visible;}
 .g-username-card .g-btn.primary{width:100%;padding:11px;font-size:14px;}
 .g-start-card, .g-result-card{background:#0a1624;border:1px solid #2a3f55;border-radius:12px;
-  padding:28px;max-width:520px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,.7);}
+  padding:20px;max-width:520px;width:min(100%, 520px);
+  box-shadow:0 12px 40px rgba(0,0,0,.7);
+  /* margin:auto centers the card in the flex column both when there's
+     extra vertical space (short content) AND when content overflows and
+     the modal scrolls. */
+  margin:auto;flex-shrink:0;}
 .g-start-title, .g-result-title{font-size:18px;font-weight:600;color:#7ab8e8;
   letter-spacing:.5px;margin-bottom:18px;text-align:center;}
 .g-start-modes{display:flex;gap:14px;flex-direction:column;}
@@ -914,22 +998,37 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
   background-size:cover;background-position:center;flex-shrink:0;}
 #g-start-conquest{width:100%;padding:10px;font-size:13px;}
 #g-start-conquest:disabled{opacity:0.4;cursor:not-allowed;}
+/* Random team picker — sits between the search field and the team list.
+   Same width as Start Conquest, distinct amber accent to signal "surprise
+   me" energy vs the primary red Start button. */
+#g-random-team{width:100%;padding:10px;font-size:13px;margin:6px 0 10px;
+  background:linear-gradient(180deg,#3a3020 0%,#1c1610 100%);
+  border:1px solid #d4a936;color:#f4d77a;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  text-transform:uppercase;letter-spacing:.8px;font-weight:700;}
+#g-random-team:hover:not(:disabled){background:linear-gradient(180deg,#4a3d28 0%,#241d13 100%);}
 
 /* Result Modal — flags on the sides, score inputs in the center, name + label
    stacked under each flag. Hero on the left, opponent on the right. */
 .g-result-matchup{display:flex;align-items:center;justify-content:space-between;
-  background:#0e2034;border-radius:8px;padding:18px 16px;margin-bottom:14px;gap:14px;}
-.g-result-team{display:flex;flex-direction:column;align-items:center;gap:7px;
-  width:112px;flex-shrink:0;text-align:center;}
-.g-result-flag{width:80px;height:54px;background-size:cover;background-position:center;
-  border:1px solid rgba(255,255,255,0.2);border-radius:4px;}
+  background:#0e2034;border-radius:8px;padding:16px 14px;margin-bottom:10px;gap:14px;}
+.g-result-team{display:flex;flex-direction:column;align-items:center;gap:6px;
+  width:126px;flex-shrink:0;text-align:center;}
+/* Flag: originally 80x54, then 130x87 (too big per Gürkan's re-check),
+   now 104x70 (~20% smaller) — hero-of-the-row but not dominant. */
+.g-result-flag{width:104px;height:70px;background-size:cover;background-position:center;
+  border:1px solid rgba(255,255,255,0.25);border-radius:5px;
+  box-shadow:0 4px 10px rgba(0,0,0,.35);}
 .g-result-flag.empty{background:#1a2f40;border-style:dashed;}
-.g-result-team-name{font-size:16px;font-weight:600;color:#fff;line-height:1.15;margin:0;}
-.g-result-team-label{font-size:11px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;margin:0;}
+.g-result-team-name{font-size:16px;font-weight:700;color:#fff;line-height:1.15;margin:0;}
+/* YOU / OPPONENT label — de-emphasized (was 11px, now 9px + lighter alpha)
+   so it stops competing with the enlarged flag for visual weight. */
+.g-result-team-label{font-size:9px;color:#6a8598;text-transform:uppercase;letter-spacing:.8px;margin:0;font-weight:600;}
 /* Country playstyle chip — colour-coded so the player can read the matchup
-   at a glance. Populated by updateResultPreview from teamPlaystyle(). */
-.g-result-style{font-size:12px;font-weight:700;letter-spacing:.3px;
-  padding:2px 7px;border-radius:10px;text-transform:uppercase;margin-top:2px;
+   at a glance. Populated by updateResultPreview from teamPlaystyle().
+   Shrunk to a smaller, less prominent pill so the flag stays hero of the row. */
+.g-result-style{font-size:10px;font-weight:700;letter-spacing:.3px;
+  padding:2px 8px;border-radius:9px;text-transform:uppercase;margin-top:1px;
   border:1px solid transparent;}
 .g-result-style[data-style="defensive"]{background:rgba(122,184,232,.15);color:#7ab8e8;border-color:rgba(122,184,232,.4);}
 .g-result-style[data-style="balanced"] {background:rgba(207,218,234,.10);color:#cfdaea;border-color:rgba(207,218,234,.3);}
@@ -986,21 +1085,84 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-recap-val{font-size:14px;font-weight:800;color:#f4ead5;font-variant-numeric:tabular-nums;}
 .g-recap-lbl{font-size:8px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
   color:#7a9bb5;text-align:center;line-height:1.2;}
-/* ── Aura boosts panel inside the result modal ── */
-.g-result-boosts{background:#0a1624;border:1px solid #1a2f40;border-radius:8px;padding:12px 14px;margin-bottom:14px;}
+/* ── Aura boosts panel inside the result modal ──
+   v12 (2026-07-15) proportion pass: tighter section rhythm to match the
+   Gemini reference. Boost cards are slightly taller with bigger icon wells
+   and consistent spacing between the icon, label, and price row.
+   Colour-coded per boost: silver (defensive), orange (offensive), green
+   (reinforcement). Matches Gürkan's Gemini reference. Pure CSS — no images. */
+.g-result-boosts{background:#0a1624;border:1px solid #1a2f40;border-radius:10px;padding:10px 12px 12px;margin-bottom:10px;}
 .g-boost-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;
   font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#7a9bb5;}
 .g-boost-bal{color:#f4d77a;font-size:14px;font-weight:800;letter-spacing:0;}
-.g-boost-btns{display:flex;gap:8px;}
-.g-boost-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
-  background:#0e2034;border:1px solid #2a3f55;border-radius:7px;padding:9px 6px;cursor:pointer;
-  color:#cfdaea;transition:all .12s;-webkit-tap-highlight-color:transparent;}
-.g-boost-btn:hover:not(:disabled){border-color:#7ab8e8;background:#13283e;}
-.g-boost-btn.active{border-color:#f4d77a;background:#1d2438;box-shadow:inset 0 0 0 1px #f4d77a;}
-.g-boost-btn:disabled{opacity:.4;cursor:not-allowed;}
-.g-boost-ic{font-size:20px;line-height:1;}
-.g-boost-nm{font-size:12px;font-weight:600;text-align:center;line-height:1.2;}
-.g-boost-cost{font-size:12px;font-weight:800;color:#f4d77a;}
+.g-boost-btns{display:flex;gap:7px;}
+.g-boost-btn{flex:1;position:relative;display:flex;flex-direction:column;
+  align-items:center;justify-content:space-between;gap:6px;
+  padding:12px 6px 10px;cursor:pointer;min-height:118px;
+  color:#cfdaea;transition:transform .12s ease, box-shadow .18s ease, border-color .12s;
+  -webkit-tap-highlight-color:transparent;overflow:hidden;
+  border-radius:10px;border:1px solid #2a3f55;
+  background:linear-gradient(180deg,#152a40 0%,#0b1a2c 100%);}
+.g-boost-btn:hover:not(:disabled){transform:translateY(-1px);border-color:#7ab8e8;}
+.g-boost-btn.active{border-color:#f4d77a;box-shadow:0 0 0 1px #f4d77a inset,0 6px 18px rgba(244,215,122,.25);}
+.g-boost-btn:disabled{opacity:.35;cursor:not-allowed;filter:grayscale(.4);}
+/* Free-eligible: player can't afford this boost but a rewarded ad is
+   preloaded AND they haven't used their per-match free boost yet.
+   Rendered as visually "dimmed but tappable" — subtler than :disabled,
+   with a bright amber pill in the corner advertising the ad path. */
+.g-boost-btn.free-eligible{opacity:.6;cursor:pointer;filter:grayscale(.2);
+  border-color:rgba(212,169,54,.5) !important;}
+.g-boost-btn.free-eligible:hover{opacity:.85;border-color:#d4a936 !important;}
+.g-boost-btn.free-eligible::after{
+  content:'▶ FREE';
+  position:absolute;top:4px;right:4px;
+  font-size:9px;font-weight:800;letter-spacing:.5px;
+  padding:2px 6px;border-radius:6px;
+  background:linear-gradient(180deg,#d4a936 0%,#8a6d1e 100%);
+  color:#0a0a0a;
+  box-shadow:0 2px 6px rgba(0,0,0,.4), 0 0 8px rgba(212,169,54,.5);
+  pointer-events:none;
+  animation:g-free-pulse 1.6s ease-in-out infinite;
+}
+@keyframes g-free-pulse{
+  0%,100%{transform:scale(1);box-shadow:0 2px 6px rgba(0,0,0,.4),0 0 8px rgba(212,169,54,.5);}
+  50%{transform:scale(1.08);box-shadow:0 2px 6px rgba(0,0,0,.4),0 0 14px rgba(212,169,54,.9);}
+}
+/* Icon well — big circular disc with a colour-coded radial gradient.
+   Each boost's specific colour is set on data-boost variants below.
+   Bumped from 52 → 58px per Gemini reference proportion pass. */
+.g-boost-ic{
+  width:58px;height:58px;line-height:58px;text-align:center;
+  border-radius:50%;
+  font-size:27px;
+  display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.35) 0%,rgba(255,255,255,.05) 40%,transparent 70%),
+             radial-gradient(circle at 50% 60%,#3a5670 0%,#1a2a3f 90%);
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.08),
+             inset 0 -6px 12px rgba(0,0,0,.35),
+             0 4px 10px rgba(0,0,0,.4);}
+/* Boost variants — override the icon well's gradient per boost identity.
+   HTML uses data-boost="bus|attack|reinforce" for each button. */
+.g-boost-btn[data-boost="bus"] .g-boost-ic{
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.45) 0%,rgba(255,255,255,.06) 40%,transparent 70%),
+             radial-gradient(circle at 50% 60%,#c9d3dc 0%,#5a6a7c 55%,#2c3a4a 100%);
+  color:#0a1220;}
+.g-boost-btn[data-boost="attack"] .g-boost-ic{
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.45) 0%,rgba(255,220,140,.08) 40%,transparent 70%),
+             radial-gradient(circle at 50% 60%,#ffb84a 0%,#e67e22 55%,#8a3c14 100%);
+  color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.4);}
+.g-boost-btn[data-boost="reinforce"] .g-boost-ic{
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.4) 0%,rgba(255,255,255,.05) 40%,transparent 70%),
+             radial-gradient(circle at 50% 60%,#4ecb7a 0%,#2a8a4a 55%,#0f4022 100%);
+  color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.4);}
+/* Matching card-tint (subtle) — boost variant colour bleeds into the card
+   background so the whole card reads as owned by that boost, not just the
+   icon. Alpha kept low so text stays legible. */
+.g-boost-btn[data-boost="bus"]{background:linear-gradient(180deg,#1a2c40 0%,#0b1826 100%);}
+.g-boost-btn[data-boost="attack"]{background:linear-gradient(180deg,#3a2612 0%,#180d05 100%);border-color:#5a3a1a;}
+.g-boost-btn[data-boost="reinforce"]{background:linear-gradient(180deg,#0f2a1a 0%,#050f08 100%);border-color:#1c4a2c;}
+.g-boost-nm{font-size:12px;font-weight:700;text-align:center;line-height:1.2;color:#e8eef5;}
+.g-boost-cost{font-size:11px;font-weight:800;color:#f4d77a;letter-spacing:.4px;}
 .g-boost-don{display:flex;align-items:center;gap:8px;margin-top:11px;cursor:pointer;
   font-size:11px;color:#9fb4c8;-webkit-tap-highlight-color:transparent;}
 .g-boost-don input{width:15px;height:15px;accent-color:#c8102e;cursor:pointer;flex-shrink:0;}
@@ -1009,7 +1171,7 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
    Sits between the matchup row and the Simulate CTA. Values update on tactic
    change (no Simulate needed) so the player sees how each choice tilts odds. */
 .g-result-preview{background:#0a1624;border:1px solid #1a2f40;border-radius:8px;
-  padding:14px 16px;margin-bottom:14px;}
+  padding:12px 14px;margin-bottom:10px;}
 .g-result-prob-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
 .g-result-prob-label{font-size:12px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
 .g-result-prob-value{font-size:22px;font-weight:700;color:#6dd86d;font-variant-numeric:tabular-nums;
@@ -1054,8 +1216,15 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
   font-size:13px;font-weight:600;cursor:pointer;border-radius:6px;transition:all .15s ease;
   white-space:nowrap;}
 .g-tactic-btn:hover{background:#1d3550;border-color:#3a5570;}
-.g-tactic-btn.active{background:#1e3a5c;border-color:#7ab8e8;color:#fff;
-  box-shadow:0 0 0 1px rgba(122,184,232,.3);}
+/* Active tactic gets a bold gradient fill per Gürkan's polish reference.
+   Colour tinted to the tactic identity: defensive → red-brown, balanced →
+   steel-blue, attacking → deep amber. */
+.g-tactic-btn.active{color:#fff;border-color:transparent;
+  box-shadow:0 4px 14px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.12);
+  background:linear-gradient(180deg,#3a5570 0%,#1e3a5c 100%);}
+.g-tactic-btn.active[data-tactic="defensive"]{background:linear-gradient(180deg,#c8102e 0%,#7a0e1e 100%);}
+.g-tactic-btn.active[data-tactic="balanced"]{background:linear-gradient(180deg,#3a80c8 0%,#1e4870 100%);}
+.g-tactic-btn.active[data-tactic="attacking"]{background:linear-gradient(180deg,#e67e22 0%,#8a3c14 100%);}
 .g-result-finish{display:flex;justify-content:center;gap:14px;margin-bottom:14px;color:#cfdaea;font-size:14px;}
 .g-result-finish label{cursor:pointer;display:flex;align-items:center;gap:5px;}
 #g-result-pens-row{text-align:center;color:#cfdaea;font-size:14px;margin-bottom:14px;}
@@ -1064,14 +1233,53 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-result-actions .g-btn{min-width:110px;padding:11px 18px;font-size:14px;}
 /* Simulate match — prominent CTA above the manual score-entry block.
    Same red as the splash Play button so the "instant resolve" semantic carries through. */
-.g-sim-btn{width:100%;padding:12px 16px;border-radius:8px;border:1px solid #c8102e;
-  background:#c8102e;color:#fff;font-size:13px;font-weight:600;letter-spacing:0.6px;
-  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:9px;
-  font-family:inherit;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .12s;
-  margin-bottom:10px;}
-.g-sim-btn:hover{background:#d92133;}
+.g-sim-btn{width:100%;padding:14px 18px;border-radius:8px;border:1px solid #c8102e;
+  background:linear-gradient(180deg,#e02040 0%,#a80c26 100%);color:#fff;
+  font-size:17px;font-weight:700;letter-spacing:0.6px;
+  min-height:56px;
+  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:11px;
+  font-family:inherit;-webkit-tap-highlight-color:transparent;
+  transition:background .15s,transform .12s;
+  box-shadow:0 3px 10px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.15);
+  margin-bottom:8px;}
+.g-sim-btn:hover{background:linear-gradient(180deg,#ee2c4c 0%,#b8142e 100%);}
 .g-sim-btn:active{transform:translateY(1px);}
-.g-sim-btn .g-sim-icon{font-size:17px;}
+.g-sim-btn .g-sim-icon{font-size:20px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));}
+/* Two-button Simulate row: regular Simulate + Double or Nothing STACKED,
+   full-width each. Reference has both as full-width buttons in a vertical
+   stack — feels more premium than side-by-side and matches Cancel width
+   below for a clean 3-button symmetric column. */
+.g-sim-btn-row{display:flex;flex-direction:column;gap:8px;margin-bottom:8px;}
+.g-sim-btn-row .g-sim-btn{width:100%;margin-bottom:0;}
+.g-sim-btn-row .g-sim-btn .g-sim-label{white-space:nowrap;}
+.g-sim-btn-row .g-sim-btn .g-sim-sub{display:none;}  /* only DoN shows the sub */
+/* Double or Nothing button — amber/gold background with warning-gradient
+   stripes, thicker border, sub-label spelling out the risk. Icon + main
+   label sit INLINE on row 1; sub-caption wraps to row 2 via width:100%
+   (keeps the button roughly the same height as regular Simulate instead
+   of the column-stacked variant Gürkan flagged as too tall). Deliberately
+   heavier visual weight than regular Simulate so misclicks skew SAFE. */
+.g-sim-btn-row .g-sim-btn-don{
+  background:linear-gradient(180deg,#ffdc4a 0%,#f5b823 55%,#c07020 100%);
+  border-color:#e6b41a;color:#2a1a05;
+  box-shadow:0 3px 12px rgba(255,220,74,0.35), inset 0 1px 0 rgba(255,255,255,.35);
+  flex-wrap:wrap;
+  row-gap:2px;column-gap:8px;
+  padding:10px 14px;
+  min-height:56px;  /* slightly taller than regular Sim to accommodate sub-caption */
+  line-height:1.15;
+  text-shadow:0 1px 0 rgba(255,255,255,.15);}
+.g-sim-btn-row .g-sim-btn-don:hover{background:linear-gradient(180deg,#ffe86a 0%,#ffc73a 55%,#d17f28 100%);}
+.g-sim-btn-row .g-sim-btn-don .g-sim-label{font-weight:800;letter-spacing:1px;text-transform:uppercase;}
+.g-sim-btn-row .g-sim-btn-don .g-sim-icon{font-size:16px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35));}
+/* Sub-caption forced to its own row via width:100% within the flex-wrap
+   container — keeps icon + label perfectly inline above it. Shrunk from
+   10px → 9px per polish pass (fits neatly below the main label without
+   pushing the button too tall). */
+.g-sim-btn-row .g-sim-btn-don .g-sim-sub{
+  display:block;width:100%;text-align:center;
+  font-size:9px;font-weight:600;letter-spacing:0.6px;
+  text-transform:uppercase;opacity:.75;line-height:1;color:#4a2f10;}
 .g-result-or{display:flex;align-items:center;gap:10px;color:#7a9bb5;font-size:11px;
   letter-spacing:2px;text-transform:uppercase;margin:0 0 14px;}
 .g-result-or::before,.g-result-or::after{content:"";flex:1;height:1px;background:#1a2f40;}
@@ -1154,18 +1362,29 @@ body.fc-spinning #g-hero-glow{opacity:0;}
   z-index:60;display:none;align-items:center;justify-content:center;
   backdrop-filter:blur(6px);}
 #g-over-overlay.open{display:flex;}
-/* Center-top New Game button — shown after the game-over overlay is
-   dismissed so the player can start fresh while viewing the final map. */
-#g-final-newgame{position:absolute;top:18px;left:50%;transform:translateX(-50%);
-  display:none;z-index:55;padding:13px 32px;background:#c8102e;color:#fff;
-  border:1px solid #c8102e;border-radius:8px;font-family:inherit;
-  font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+/* Center-screen New Game button — shown after the game-over overlay is
+   dismissed via "View final map" so the player can study the final board
+   and still start a fresh run. Gürkan's app-polish feedback: this button
+   was too small and easily missed at top-center. Moved to true screen
+   center, made larger, added a soft pulse and a dim vignette backdrop so
+   attention is drawn to it while the map behind stays visible. */
+#g-final-newgame{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  display:none;z-index:55;padding:22px 54px;background:#c8102e;color:#fff;
+  border:2px solid #c8102e;border-radius:12px;font-family:inherit;
+  font-size:20px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
   cursor:pointer;-webkit-tap-highlight-color:transparent;
-  box-shadow:0 6px 22px rgba(0,0,0,.6);align-items:center;gap:9px;
-  transition:background .15s,transform .12s;}
+  box-shadow:0 0 0 9999px rgba(0,0,0,0.35), 0 12px 40px rgba(0,0,0,.7),
+             0 0 60px rgba(200,16,46,0.6);
+  align-items:center;gap:12px;
+  transition:background .15s,transform .12s;
+  animation:g-final-pulse 2.2s ease-in-out infinite;}
 #g-final-newgame.show{display:inline-flex;}
 #g-final-newgame:hover{background:#d92133;}
-#g-final-newgame:active{transform:translateX(-50%) translateY(1px);}
+#g-final-newgame:active{transform:translate(-50%,-50%) translateY(1px);}
+@keyframes g-final-pulse{
+  0%,100%{box-shadow:0 0 0 9999px rgba(0,0,0,0.35),0 12px 40px rgba(0,0,0,.7),0 0 60px rgba(200,16,46,0.6);}
+  50%{box-shadow:0 0 0 9999px rgba(0,0,0,0.40),0 12px 40px rgba(0,0,0,.7),0 0 90px rgba(200,16,46,0.85);}
+}
 .g-over-card{text-align:center;animation:g-over-in 0.6s cubic-bezier(0.16,1,0.3,1);max-width:600px;padding:40px;}
 @keyframes g-over-in{
   0%{opacity:0;transform:scale(0.7);}
@@ -1188,12 +1407,66 @@ body.fc-spinning #g-hero-glow{opacity:0;}
 .g-over-sub b{color:#fff;}
 /* Action row: New Game primary CTA + a quiet "view final map" dismiss. */
 .g-over-actions{display:flex;gap:14px;justify-content:center;align-items:center;flex-wrap:wrap;}
-#g-over-newgame{padding:15px 40px;font-size:15px;letter-spacing:1px;text-transform:uppercase;
-  display:inline-flex;align-items:center;gap:9px;background:#c8102e;border:1px solid #c8102e;color:#fff;}
+/* Primary CTA on game-over: made larger + pulse per Gürkan's polish pass
+   — the point of this screen is to funnel the player into another run, so
+   New Game should be visually dominant vs the quiet "view map" dismiss. */
+#g-over-newgame{padding:22px 56px;font-size:19px;letter-spacing:2px;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:12px;background:#c8102e;border:2px solid #c8102e;color:#fff;
+  border-radius:10px;font-weight:800;
+  box-shadow:0 10px 30px rgba(0,0,0,.55),0 0 50px rgba(200,16,46,0.4);
+  animation:g-over-cta-pulse 2.2s ease-in-out infinite;}
 #g-over-newgame:hover{background:#d92133;}
 #g-over-newgame:active{transform:translateY(1px);}
-#g-over-dismiss{padding:13px 26px;font-size:12px;letter-spacing:1px;text-transform:uppercase;opacity:.7;}
-#g-over-dismiss:hover{opacity:1;}
+@keyframes g-over-cta-pulse{
+  0%,100%{box-shadow:0 10px 30px rgba(0,0,0,.55),0 0 50px rgba(200,16,46,0.40);}
+  50%{box-shadow:0 10px 30px rgba(0,0,0,.55),0 0 80px rgba(200,16,46,0.75);}
+}
+#g-over-dismiss{padding:11px 22px;font-size:11px;letter-spacing:1px;text-transform:uppercase;opacity:.55;}
+#g-over-dismiss:hover{opacity:.85;}
+
+/* ── "One More Chance" overlay (Reward #1, v1 mobile monetization) ──
+   Sits at higher z-index than #g-over-overlay so it can intercept the
+   game-over moment cleanly. Same dimmed-backdrop treatment as the game
+   over overlay for visual consistency, but with a narrower card and a
+   warm-amber "opportunity" color palette (vs. game-over's red palette)
+   to reinforce that this is a chance, not a punishment. */
+#g-onemore-overlay{position:absolute;top:0;left:0;width:100%;height:100%;
+  background:radial-gradient(ellipse at center,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.95) 100%);
+  z-index:70;display:none;align-items:center;justify-content:center;
+  backdrop-filter:blur(6px);}
+#g-onemore-overlay.open{display:flex;}
+.g-onemore-card{text-align:center;animation:g-over-in 0.5s cubic-bezier(0.16,1,0.3,1);
+  max-width:440px;padding:36px 32px;
+  background:linear-gradient(180deg,#1a1610 0%,#0f0d08 100%);
+  border:1.5px solid #d4a936;border-radius:14px;
+  box-shadow:0 20px 60px rgba(0,0,0,.75),0 0 60px rgba(212,169,54,.15);}
+.g-onemore-icon{font-size:52px;line-height:1;margin-bottom:14px;
+  filter:drop-shadow(0 0 20px rgba(212,169,54,.4));}
+.g-onemore-title{font-size:30px;font-weight:900;letter-spacing:1.5px;
+  color:#f4d77a;margin-bottom:10px;text-transform:uppercase;
+  text-shadow:0 0 40px rgba(212,169,54,.4);}
+.g-onemore-sub{font-size:15px;color:#cdb88a;margin-bottom:24px;line-height:1.5;}
+.g-onemore-sub b{color:#fff;font-weight:700;}
+.g-onemore-actions{display:flex;flex-direction:column;gap:10px;align-items:stretch;}
+.g-onemore-watch{padding:14px 22px !important;font-size:14px !important;
+  font-weight:800 !important;letter-spacing:1.2px !important;text-transform:uppercase !important;
+  display:inline-flex !important;align-items:center;justify-content:center;gap:10px;
+  background:linear-gradient(180deg,#d4a936 0%,#8a6d1e 100%) !important;
+  border:1.5px solid #f4d77a !important;color:#0a0a0a !important;
+  border-radius:9px !important;
+  box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 30px rgba(212,169,54,.35) !important;
+  animation:g-onemore-cta-pulse 1.8s ease-in-out infinite;}
+.g-onemore-watch:hover:not(:disabled){background:linear-gradient(180deg,#e8bd44 0%,#9a7924 100%) !important;}
+.g-onemore-watch:disabled{opacity:.5;cursor:wait;animation:none;}
+@keyframes g-onemore-cta-pulse{
+  0%,100%{box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 30px rgba(212,169,54,.30);}
+  50%{box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 55px rgba(212,169,54,.65);}
+}
+#g-onemore-decline{padding:9px 16px !important;font-size:11px !important;
+  letter-spacing:.8px !important;text-transform:uppercase !important;opacity:.55 !important;}
+#g-onemore-decline:hover{opacity:.9 !important;}
+.g-onemore-note{margin-top:16px;font-size:10px;color:#7a6a4a;
+  letter-spacing:.8px;text-transform:uppercase;}
 
 
 /* Light-map theme: pale ocean + adjusted contrast.
@@ -1266,7 +1539,17 @@ body.fc-splash-active #btn-history{display:none;}
 .fc-logo{display:inline-flex;align-items:center;justify-content:center;
   width:26px;height:26px;background:#0a1929;border:1px solid #1a2f40;border-radius:4px;
   font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;font-weight:bold;
-  color:#c8102e;font-size:15px;line-height:1;letter-spacing:-0.5px;margin-right:4px;}
+  color:#c8102e;font-size:15px;line-height:1;letter-spacing:-0.5px;margin-right:6px;}
+/* Wordmark next to the FC badge — gives the app a branded strip identity
+   inside the WebView (Gemini polish reference). Two-line stack keeps the
+   header the same height as the toolbar buttons. Hidden on very narrow
+   phones (< 400px CSS) to preserve room for the Report bug + hamburger
+   buttons on the right. */
+.fc-wordmark{display:inline-block;font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+  font-weight:bold;font-size:10px;line-height:1.05;letter-spacing:1.2px;
+  color:#e6d199;text-transform:uppercase;margin-right:10px;
+  text-shadow:0 1px 0 rgba(0,0,0,.4);}
+@media (max-width: 400px) { .fc-wordmark { display: none; } }
 /* Splash card */
 .fc-splash-card{position:relative;width:300px;height:300px;background:#0a1929;
   border:1px solid rgba(212,169,54,0.35);border-radius:12px;overflow:hidden;
@@ -1392,15 +1675,45 @@ body.web-build .g-result-actions{justify-content:center;}
    (above a small Cancel) so the flow reads: title → matchup → preview →
    tactic → SIMULATE → cancel. Offline build keeps source order (Simulate
    stays near the top adjacent to the manual-entry inputs). */
-body.web-build .g-result-card{display:flex;flex-direction:column;}
+/* Stretch the modal to ~88% of viewport height per Gürkan's polish requests
+   (v19 = 78vh, then +10 to 88vh). justify-content:space-between distributes
+   the internal sections so top clusters (title/matchup/preview) stay at the
+   top and the bottom cluster (sim buttons / actions) sinks to the bottom —
+   no awkward pile-up at the top with dead space below.
+   NOTE: this height ONLY applies to the pre-simulate state. Once the result
+   is revealed (.simulated class) the card has way less content and should
+   shrink back to natural height — otherwise it becomes a mostly-empty box. */
+body.web-build .g-result-card{display:flex;flex-direction:column;
+  min-height:88vh;justify-content:space-between;}
+body.web-build .g-result-card.simulated{
+  min-height:0;justify-content:center;}
 body.web-build .g-result-card > *{order:5;}
-body.web-build .g-result-card .g-result-title{order:1;}
+body.web-build .g-result-card .g-result-title{order:1;display:none;}
+/* Show "Match Result" title only AFTER Simulate/DoN fires — pre-sim the
+   card is really a matchup preview, not a result yet, so the title is
+   misleading. Once .simulated hits the card (score is being revealed) the
+   title makes sense and appears. Creator Build (offline) skips this rule
+   because it uses manual score entry throughout and the title is
+   informative from the start. */
+body.web-build .g-result-card.simulated .g-result-title{display:block;}
 body.web-build .g-result-card .g-result-matchup{order:2;}
 body.web-build .g-result-card .g-result-preview{order:3;}
-body.web-build .g-result-card .g-sim-btn{order:9;margin-top:14px;margin-bottom:6px;}
-body.web-build .g-result-card .g-result-actions{order:10;margin-top:2px;}
-/* Cancel is now a small de-emphasized "back out" sitting under the main
-   CTA — shrink it and lower its visual weight. */
+/* Aura Boosts moved BEFORE the Simulate row per Gürkan's polish pass —
+   players want to consider spending Aura first, then decide safe/risky sim. */
+body.web-build .g-result-card .g-result-boosts{order:4;}
+body.web-build .g-result-card .g-sim-btn{order:9;margin-top:2px;margin-bottom:0;}
+/* The two-button Simulate row (regular + DoN) — sits directly above the
+   Cancel/Confirm actions and below Aura Boosts. Zero margin-top so it
+   aligns cleanly with the boosts panel above. */
+body.web-build .g-result-card .g-sim-btn-row{order:9;margin-top:2px;margin-bottom:0;}
+/* Explicit 14px gap between the sim buttons row and Cancel so Cancel
+   doesn't visually crowd DoN's bottom edge (Gürkan's polish feedback). */
+body.web-build .g-result-card .g-result-actions{order:10;margin-top:14px;}
+/* Cancel — reverted to a small ghost text button per Gürkan's v16 feedback.
+   Full-width Cancel was pushing the modal past viewport bounds and reading
+   as a competing CTA when it's really just a "back out" affordance. Small
+   dim text below the Simulate row is enough; Simulate + DoN carry the
+   primary visual weight. */
 body.web-build .g-result-actions .g-btn.ghost{
   font-size:11px;padding:6px 18px;opacity:.65;letter-spacing:.6px;
 }
@@ -1664,7 +1977,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
   /* Reposition the left-stack to top-left, just below the turn badge */
   #g-left-stack {
     bottom: auto !important;
-    top: 40px !important;
+    top: 2px !important;
     left: 6px !important;
     right: auto !important;
     z-index: 26;
@@ -1685,16 +1998,19 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     max-height: 50vh !important;
   }
 
-  /* ── Match Result modal — shrink ~40% ── */
-  /* Flag size: 80x54 → 48x32 */
-  .g-result-flag { width: 48px !important; height: 32px !important; }
-  /* Team name: 16px → 11px */
-  .g-result-team-name { font-size: 11px !important; line-height: 1.1 !important; }
-  /* YOU/OPPONENT subtitle */
-  .g-result-team-label { font-size: 9px !important; letter-spacing: 0 !important; }
+  /* ── Match Result modal — mobile scaling (~40% desktop) ──
+     Flag sizes bumped 2× per Gürkan's Gemini polish pass so the country
+     identity anchors the row instead of being an afterthought. */
+  /* Flag: 100x67 → 80x54 (20% smaller per Gürkan's follow-up feedback). */
+  .g-result-flag { width: 80px !important; height: 54px !important; box-shadow: 0 3px 8px rgba(0,0,0,.3); }
+  /* Team column widened to fit the flag */
+  .g-result-team { width: 96px !important; gap: 4px !important; }
+  /* Team name: 11px → 14px (bigger flag deserves bigger name) */
+  .g-result-team-name { font-size: 14px !important; line-height: 1.15 !important; }
+  /* YOU/OPPONENT subtitle — de-emphasized muted colour */
+  .g-result-team-label { font-size: 9px !important; letter-spacing: 0.5px !important; color: #6a8598 !important; }
   /* Matchup gap tightening */
-  .g-result-matchup { gap: 6px !important; }
-  .g-result-team { gap: 4px !important; }
+  .g-result-matchup { gap: 8px !important; padding: 10px 8px !important; }
   /* Win probability */
   .g-result-prob-label { font-size: 10px !important; letter-spacing: 0 !important; }
   .g-result-prob-value { font-size: 14px !important; }
@@ -1735,13 +2051,16 @@ body.web-build .g-result-card.revealed .g-sim-btn{
    3. RECORD/GOALS strip → smaller font so it doesn't wrap mid-word
    4. Match Result modal → another 50% shrink, especially the big score reveal */
 @media (max-width: 700px) {
-  /* (1) Panels move to top-right */
+  /* (1) Panels sit just below the top bar as a HORIZONTAL ROW. */
   #g-left-stack {
     bottom: auto !important;
-    top: 40px !important;
-    left: auto !important;
+    top: 2px !important;
+    left: 6px !important;
     right: 6px !important;
     z-index: 26;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
   }
 
   /* (2) Two-column grid for the conquest action group:
@@ -1788,16 +2107,17 @@ body.web-build .g-result-card.revealed .g-sim-btn{
   #g-conquest-stats b { font-size: 11px !important; }
   #g-conquest-stats .sep { margin: 0 4px !important; }
 
-  /* (4) Match Result modal — another 50% shrink */
+  /* (4) Match Result modal — narrow-phone breakpoint (~380px CSS width).
+     Flags stay prominent per Gürkan's polish pass; other elements shrink. */
   /* Card padding */
-  .g-result-card { padding: 8px !important; }
-  /* Matchup row: tighter padding, narrower team columns so opponent fits */
-  .g-result-matchup { padding: 6px 8px !important; margin-bottom: 8px !important; gap: 4px !important; }
-  .g-result-team { width: 64px !important; gap: 3px !important; }
-  /* Flag: 48x32 → 36x24 */
-  .g-result-flag { width: 36px !important; height: 24px !important; }
-  /* Team name 11 → 10 */
-  .g-result-team-name { font-size: 10px !important; }
+  .g-result-card { padding: 12px !important; }
+  /* Matchup row: tighter padding, moderate gap */
+  .g-result-matchup { padding: 8px 6px !important; margin-bottom: 8px !important; gap: 6px !important; }
+  .g-result-team { width: 84px !important; gap: 3px !important; }
+  /* Flag on narrow phones: 90x60 → 72x48 (20% smaller per polish feedback). */
+  .g-result-flag { width: 72px !important; height: 48px !important; }
+  /* Team name 14 → 12 (narrow phones only) */
+  .g-result-team-name { font-size: 12px !important; }
   /* Stance pill */
   .g-result-style { font-size: 8px !important; padding: 1px 5px !important; }
   /* The huge score reveal "0 - 1": 48px → 24px font */
@@ -1823,16 +2143,22 @@ body.web-build .g-result-card.revealed .g-sim-btn{
       bar widths tightened, vertical heights capped so they don't dominate.
    4. The +/- zoom controls (.zc) hidden — pinch-zoom is the native gesture. */
 @media (max-width: 700px) {
-  /* (1) Panels horizontal, inline with Turn badge */
+  /* (1) Panels — horizontal row below top bar, side-by-side (v25 polish). */
   #g-left-stack {
-    top: 8px !important;
+    top: 2px !important;
+    left: 6px !important;
     right: 6px !important;
-    left: auto !important;
     flex-direction: row !important;
-    gap: 4px !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
   }
   #g-campaign-panel, #g-events-panel, #g-squad-panel {
-    width: 88px !important;
+    /* v43: reverted to full-width split-row layout since Continents +
+       Events are separate again. Each takes 50% of the row. */
+    width: auto !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    max-width: none !important;
   }
   #g-campaign-header, #g-events-header, #g-squad-header {
     padding: 4px 6px !important;
@@ -1848,10 +2174,11 @@ body.web-build .g-result-card.revealed .g-sim-btn{
   #g-campaign-toggle, #g-events-toggle, #g-squad-toggle {
     font-size: 9px !important;
   }
-  /* Turn badge also slightly smaller so the row fits on narrow viewports */
+  /* Turn badge — v25+ moved to floating pill above game panel (not top-left
+     of map). Leave positioning to the base rule + JS; only override typography
+     for narrow viewports. Removing the top/left !important overrides that were
+     conflicting with base `left:50%;transform:translateX(-50%)` centering. */
   #g-turn-badge {
-    top: 8px !important;
-    left: 6px !important;
     font-size: 10px !important;
     padding: 4px 8px !important;
   }
@@ -1866,19 +2193,19 @@ body.web-build .g-result-card.revealed .g-sim-btn{
   #g-conquest-stats {
     font-size: 9px !important;
     line-height: 1.3 !important;
-    text-align: right !important;
+    text-align: left !important;
     padding: 0 4px !important;
     letter-spacing: 0 !important;
-    flex: 0 0 auto !important;
+    flex: 1 1 auto !important;
   }
   #g-conquest-stats b { font-size: 10px !important; }
-  /* Force the "·" separator to act as a line break — RECORD line, GOALS line */
+  /* Separator stays inline so TURN X · Y LEFT and RECORD · GOALS both flow
+     on their own single lines. Was display:block which made every field
+     stack vertically — messy 4-line layout Gürkan flagged in v27 polish. */
   #g-conquest-stats .sep {
-    display: block !important;
-    font-size: 0 !important;
-    line-height: 0 !important;
-    height: 0 !important;
-    margin: 0 !important;
+    display: inline !important;
+    margin: 0 6px !important;
+    color: #4a6a80 !important;
   }
 
   /* (3) Territory + Momentum bars: T / M abbreviated labels, slimmer bars */
@@ -1920,17 +2247,23 @@ body.web-build .g-result-card.revealed .g-sim-btn{
    aligned to the same vertical level as the Turn badge. Width also restored
    so the labels and icons read cleanly. */
 @media (max-width: 700px) {
+  /* v25 override — horizontal row below top bar, side-by-side. */
   #g-left-stack {
-    top: 8px !important;
+    top: 2px !important;
+    left: 6px !important;
     right: 6px !important;
-    left: auto !important;
-    flex-direction: column !important;
-    gap: 4px !important;
-    align-items: stretch !important;
+    flex-direction: row !important;
+    gap: 6px !important;
+    align-items: flex-start !important;
   }
-  /* Restore readable width — about 180px so labels + icons fit comfortably */
+  /* Each panel takes half the row via flex:1 */
   #g-campaign-panel, #g-events-panel, #g-squad-panel {
-    width: 180px !important;
+    /* v43: reverted to full-width split-row layout since Continents +
+       Events are separate again. Each takes 50% of the row. */
+    width: auto !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    max-width: none !important;
   }
   /* Restore header padding + font to a comfortable touch size */
   #g-campaign-header, #g-events-header, #g-squad-header {
@@ -1957,6 +2290,259 @@ body.web-build .g-result-card.revealed .g-sim-btn{
   max-height: calc(100dvh - 32px);
   max-height: calc(100vh - 32px); /* fallback for browsers without dvh */
   overflow-y: auto;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   LANDSCAPE-TABLET LAYOUT (Gürkan v38 polish)
+   Targets: orientation:landscape AND min-width:900px
+   Effect: tablet-in-landscape + desktop only. Phone portrait AND
+   phone landscape (typically < 900px width) both stay on the base
+   mobile rules that everything above assumes.
+   ───────────────────────────────────────────────────────────── */
+@media (orientation: landscape) and (min-width: 900px) {
+  /* Continents + Events dropdowns → top-right, VERTICALLY STACKED with
+     Events ON TOP and Continents underneath per Gürkan v43 polish. Flex
+     order property flips them: HTML source is Continents-then-Events but
+     Events gets order:1 (first visually) and Continents gets order:2.
+     When Events is expanded, Continents pushes down naturally via flex
+     column flow. Pulled up to top:6 (tight to header, was 60). */
+  #g-left-stack {
+    top: 6px !important;
+    left: auto !important;
+    right: 20px !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    align-items: flex-end !important;
+  }
+  #g-events-panel  { order: 1 !important; }
+  #g-campaign-panel{ order: 2 !important; }
+  #g-squad-panel   { order: 3 !important; }
+  #g-campaign-panel, #g-events-panel, #g-squad-panel {
+    width: 280px !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    max-width: 280px !important;
+  }
+  /* Loss warning — v55 polish: shifted up another 20% (18vh → 14.4vh).
+     Font/padding unchanged. Event toast follows at +54 px below the pill. */
+  #g-loss-float {
+    top: 14.4vh !important;
+    font-size: 18px !important;
+    padding: 9px 20px !important;
+    border-radius: 11px !important;
+  }
+  #g-event-toast {
+    top: calc(14.4vh + 54px) !important;
+    font-size: 14px !important;
+    padding: 8px 18px !important;
+  }
+  /* Modal size on landscape: originally 0.75 (25% shrink), bumped +10% per
+     Gürkan v46 polish → 0.825 (final shrink is 17.5% from full size). CSS
+     `zoom` scales dimensions AND text AND padding proportionally in one
+     property — well-supported on all Chromium/WebKit WebViews. Scoped
+     inside this media query so portrait keeps full-size modals. */
+  .g-start-card, .g-result-card { zoom: 0.825; }
+
+  /* ── Horizontal slot layout (v49) ──────────────────────────────────────
+     Default conquest .g-slot stacks flag → name → OVR → stars vertically,
+     which makes each slot ~75 px tall and pushes the whole bottom UI up.
+     On landscape tablet we flip it: 3-column grid — flag on the left, a
+     centre column with team name + OVR stacked, and a vertical column of
+     stars on the right. Net effect: each slot is wider (~180 px) and much
+     shorter (~55 px), so the game panel can be widened + trimmed vertically
+     without losing any information. */
+  #game-panel.conquest-mode .g-slot {
+    display: grid !important;
+    grid-template-columns: auto 1fr auto !important;
+    grid-template-rows: auto auto !important;
+    grid-template-areas:
+      "flag name stars"
+      "flag ovr  stars" !important;
+    column-gap: 12px !important;
+    row-gap: 0 !important;
+    align-items: center !important;
+    justify-items: start !important;
+    min-width: 180px !important;
+    padding: 5px 14px !important;
+  }
+  #game-panel.conquest-mode .g-slot-flag {
+    grid-area: flag !important;
+    width: 56px !important;
+    height: 38px !important;
+    margin: 0 !important;
+    align-self: center !important;
+  }
+  #game-panel.conquest-mode .g-slot-val {
+    grid-area: name !important;
+    margin: 0 !important;
+    text-align: left !important;
+    align-self: end !important;
+    font-size: 13px !important;
+    line-height: 1.1 !important;
+  }
+  #game-panel.conquest-mode .g-slot-overall {
+    grid-area: ovr !important;
+    margin: 0 !important;
+    text-align: left !important;
+    align-self: start !important;
+    font-size: 14px !important;
+    line-height: 1.1 !important;
+  }
+  #game-panel.conquest-mode .g-slot-stars {
+    grid-area: stars !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-self: center !important;
+    margin: 0 !important;
+    gap: 0 !important;
+    font-size: 12px !important;
+    line-height: 1 !important;
+    letter-spacing: 0 !important;
+    white-space: normal !important;
+  }
+  /* Slightly bigger gap between the two team slots so the wider cards breathe */
+  #game-panel.conquest-mode .g-slots { gap: 16px !important; }
+  /* Trim vertical body padding now that slots are shorter */
+  #game-panel.conquest-mode .g-body { padding: 8px 16px 10px !important; gap: 8px !important; }
+
+  /* ── Match sim modal compact (v50) ─────────────────────────────────────
+     With a Match Twist card present, the modal grew tall enough that the
+     Simulate / Double-or-Nothing buttons fell below the viewport. Two big
+     wins: (a) flatten the team header from a 4-row column into a 2-column
+     "flag + info stack" so the whole matchup row is ~half as tall; (b)
+     turn each Aura Boost card from a 118 px vertical slab into a short
+     horizontal chip. Combined they claw back ~130 px of vertical space. */
+
+  /* Team header (v52 revision): back to vertical stack — flag on top, name
+     below, and YOU + BALANCED chip on the SAME row underneath so we don't
+     waste a whole vertical line on the small YOU/OPPONENT label. Flag also
+     doubled from 62×42 → 124×84 per user request. Uses grid so the flag +
+     name span both columns, then label + style share row 3 side-by-side. */
+  .g-result-matchup .g-result-team {
+    display: grid !important;
+    grid-template-columns: auto auto !important;
+    justify-content: center !important;
+    justify-items: center !important;
+    align-items: center !important;
+    column-gap: 8px !important;
+    row-gap: 4px !important;
+    width: auto !important;
+    text-align: center !important;
+  }
+  .g-result-matchup .g-result-team .g-result-flag {
+    grid-column: 1 / -1 !important;
+    width: 124px !important;
+    height: 84px !important;
+    margin: 0 !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,.35) !important;
+  }
+  .g-result-matchup .g-result-team-name {
+    grid-column: 1 / -1 !important;
+    margin: 0 !important;
+    text-align: center !important;
+    font-size: 15px !important;
+    line-height: 1.1 !important;
+  }
+  .g-result-matchup .g-result-team-label {
+    margin: 0 !important;
+    font-size: 9px !important;
+    line-height: 1 !important;
+    align-self: center !important;
+  }
+  .g-result-matchup .g-result-style {
+    margin: 0 !important;
+    font-size: 9px !important;
+    padding: 1px 6px !important;
+    align-self: center !important;
+  }
+  .g-result-matchup { padding: 12px 14px !important; margin-bottom: 8px !important; }
+
+  /* Aura Boosts: keep the horizontal look but rebuild each card as a 2×2
+     grid so the cost text ALWAYS renders (was clipping under "Reinforcements"
+     because the flex row let the name push it off-canvas). Icon on the left
+     spans both rows; name on top-right; cost bottom-right, both left-aligned. */
+  .g-result-boosts { padding: 8px 10px !important; margin-bottom: 8px !important; }
+  .g-boost-head { margin-bottom: 6px !important; }
+  .g-boost-btns { gap: 6px !important; }
+  .g-boost-btn {
+    display: grid !important;
+    grid-template-columns: auto 1fr !important;
+    grid-template-rows: auto auto !important;
+    grid-template-areas:
+      "icon name"
+      "icon cost" !important;
+    column-gap: 8px !important;
+    row-gap: 1px !important;
+    align-items: center !important;
+    justify-items: start !important;
+    min-height: 0 !important;
+    padding: 6px 8px !important;
+    overflow: hidden !important;
+  }
+  .g-boost-ic {
+    grid-area: icon !important;
+    align-self: center !important;
+    width: 40px !important;
+    height: 40px !important;
+    line-height: 40px !important;
+    font-size: 20px !important;
+    flex-shrink: 0 !important;
+  }
+  .g-boost-nm {
+    grid-area: name !important;
+    align-self: end !important;
+    font-size: 11px !important;
+    line-height: 1.15 !important;
+    text-align: left !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+  .g-boost-cost {
+    grid-area: cost !important;
+    align-self: start !important;
+    font-size: 10px !important;
+    text-align: left !important;
+    margin: 0 !important;
+  }
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   TABLET PORTRAIT LAYOUT (Gürkan v51)
+   Targets: orientation:portrait AND min-width:700px
+   Effect: bumps LOSSES-to pill and Events/Continents panels 25%
+   larger so they read comfortably on a tablet held vertically.
+   Phone portrait (< 700 px) keeps the aggressive mobile shrink
+   and desktop portrait windows are rare enough to ignore.
+   ───────────────────────────────────────────────────────────── */
+@media (orientation: portrait) and (min-width: 700px) {
+  /* LOSSES pill: base 12 px → 15 px (+25%), padding scaled to match */
+  #g-loss-float {
+    font-size: 15px !important;
+    padding: 8px 18px !important;
+    border-radius: 10px !important;
+  }
+  /* Events + Continents dropdown panels: base 300 px → 375 px (+25%),
+     header font +25% for consistency */
+  #g-campaign-panel, #g-events-panel, #g-squad-panel {
+    width: 375px !important;
+    max-width: calc(100vw - 12px) !important;
+  }
+  #g-campaign-header, #g-events-header, #g-squad-header {
+    font-size: 15px !important;
+    padding: 8px 13px !important;
+  }
+  /* Header collapsed height needs to grow too so the ▼ chevron stays centred */
+  #g-campaign-panel.collapsed,
+  #g-events-panel.collapsed,
+  #g-squad-panel.collapsed {
+    max-height: 48px !important;
+  }
 }
 
 
@@ -2054,7 +2640,12 @@ body.fc-splash-active #fc-bug-link { display: none; }
      the inset is 0, so the panel sits ~70px from the edge — still tappable.
      On home-indicator phones the inset adds another ~34px on top. */
   #game-panel {
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 70px) !important;
+    /* Lift above the phone's gesture bar / home indicator so buttons stay
+       tappable. Was 70px pre-v33; dropped to 56px (~20% lower) per Gürkan
+       polish — panel sits closer to the bottom edge, gives more map real
+       estate above it. Turn badge above the panel auto-follows via the
+       ResizeObserver. */
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 56px) !important;
   }
   body { padding-bottom: env(safe-area-inset-bottom, 0px); }
 }
@@ -2210,6 +2801,7 @@ body.fc-splash-active #fc-bug-link { display: none; }
 <div id="app">
   <div id="hdr">
     <span class="fc-logo" aria-label="Football Conquest">FC</span>
+    <span class="fc-wordmark" aria-hidden="true">FOOTBALL<br>CONQUEST</span>
     <div class="modes">
       <button class="mbtn active" id="btn-view">👁 <span data-i18n="sim.tb.view">View</span><span class="kbadge">V</span></button>
       <button class="mbtn" id="btn-erase">✏ <span data-i18n="sim.tb.erase">Erase</span><span class="kbadge">E</span></button>
@@ -2291,6 +2883,13 @@ body.fc-splash-active #fc-bug-link { display: none; }
     <div id="flag-handles" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;"></div>
     <div id="hint" data-i18n="sim.map.hint">Scroll/pinch to zoom · Drag to pan</div>
     <div id="g-turn-badge"></div>
+    <!-- Floating loss warning pill — sits below the Continents/Events dropdowns
+         at the top of the map. Was previously a strip inside the game panel,
+         but that made the panel too tall vertically per Gürkan v34 polish. -->
+    <div id="g-loss-float"></div>
+    <!-- Latest-event toast: floats below Events dropdown, shows the most recent
+         gLog line, fades out after ~3.5s. Non-blocking, purely informational. -->
+    <div id="g-event-toast"></div>
     <div class="tip" id="tip"></div>
 
     <!-- ── Splash launcher: front door when no game is active ─────────────── -->
@@ -2356,6 +2955,10 @@ body.fc-splash-active #fc-bug-link { display: none; }
         <div id="g-conquest-team-picker" style="display:none;">
           <div class="g-pick-label" data-i18n="sim.mode.pick">Choose your team:</div>
           <input type="text" id="g-team-search" placeholder="Search teams..." data-i18n-attr="placeholder:sim.mode.search" class="g-team-search">
+          <!-- Random team picker: rolls a random team from the full list,
+               respecting the current search filter. Useful for players who
+               want a challenge without deliberating. -->
+          <button id="g-random-team" class="g-btn" type="button" data-i18n="sim.mode.random">🎲 Random Team</button>
           <div id="g-team-list" class="g-team-list"></div>
           <button id="g-start-conquest" class="g-btn primary" disabled data-i18n="sim.mode.start">Start Conquest</button>
         </div>
@@ -2419,10 +3022,25 @@ body.fc-splash-active #fc-bug-link { display: none; }
     <div id="g-result-modal" style="display:none;">
       <div class="g-result-card">
         <div class="g-result-title" data-i18n="sim.res.title">Match Result</div>
-        <button class="g-sim-btn" id="g-result-sim" type="button">
-          <span class="g-sim-icon">🎲</span>
-          <span data-i18n="sim.res.simulate">Simulate Match</span>
-        </button>
+        <!--
+          Two-button Simulate row. Regular Simulate = safe. Double or Nothing =
+          spend/gamble your Aura bank in a single high-risk shot (win 2× Aura,
+          lose all Aura). Both use the SAME underlying simulation — only
+          GAME.doubleOrNothing is toggled first. Replaces the older opt-in
+          checkbox inside Aura Boosts (the checkbox itself is still in the DOM
+          below but hidden via CSS so save/load payloads stay compatible).
+        -->
+        <div class="g-sim-btn-row">
+          <button class="g-sim-btn" id="g-result-sim" type="button">
+            <span class="g-sim-icon">🎲</span>
+            <span class="g-sim-label" data-i18n="sim.res.simulate">Simulate Match</span>
+          </button>
+          <button class="g-sim-btn g-sim-btn-don" id="g-result-sim-don" type="button">
+            <span class="g-sim-icon">⚠️</span>
+            <span class="g-sim-label" data-i18n="sim.res.don.btn">Double or Nothing</span>
+            <span class="g-sim-sub" data-i18n="sim.res.don.sub">2x Aura or lose it all</span>
+          </button>
+        </div>
         <div class="g-result-or"><span data-i18n="sim.res.ormanual">or enter manually</span></div>
         <div class="g-result-matchup">
           <div class="g-result-team">
@@ -2530,7 +3148,14 @@ body.fc-splash-active #fc-bug-link { display: none; }
               <span class="g-boost-cost">3⭐</span>
             </button>
           </div>
-          <label class="g-boost-don">
+          <!--
+            Legacy Double or Nothing opt-in checkbox — kept in the DOM (with
+            display:none via CSS) so existing save-game payloads that mention
+            it still deserialize cleanly. Live UX moved to the two-button
+            Simulate row at the top of this modal. Do NOT remove this element
+            without a save-format version bump.
+          -->
+          <label class="g-boost-don" id="g-boost-don-legacy" style="display:none;">
             <input type="checkbox" id="g-boost-don-check">
             <span class="g-boost-don-txt">🎲 <b data-i18n="sim.boost.don">Double or Nothing</b> <span data-i18n="sim.boost.don.sub">— win for 2× Aura, lose and forfeit it all</span></span>
           </label>
@@ -2567,6 +3192,27 @@ body.fc-splash-active #fc-bug-link { display: none; }
           <button class="g-btn primary" id="g-over-newgame"><span>🎲</span><span data-i18n="sim.over.newgame">New Game</span></button>
           <button class="g-btn ghost" id="g-over-dismiss" data-i18n="sim.over.viewmap">View final map</button>
         </div>
+      </div>
+    </div>
+
+    <!-- ── "One More Chance" modal (Reward #1, v1 monetization) ──
+         Intercepts the 3rd loss to the same opponent BEFORE the game-over
+         overlay fires. If the player watches a rewarded video, we drop their
+         loss counter against this opponent from 3 → 2 and the run continues.
+         Capped at 1 continue per campaign via GAME.continuesUsed. Rendered
+         inert until fcTryOneMoreChance opens it — display:none by default. -->
+    <div id="g-onemore-overlay" style="display:none;">
+      <div class="g-onemore-card">
+        <div class="g-onemore-icon">💔</div>
+        <div class="g-onemore-title" data-i18n="sim.onemore.title">One More Chance?</div>
+        <div class="g-onemore-sub" id="g-onemore-sub"></div>
+        <div class="g-onemore-actions">
+          <button class="g-btn primary g-onemore-watch" id="g-onemore-watch" type="button">
+            <span>▶</span><span data-i18n="sim.onemore.watch">Watch ad to keep going</span>
+          </button>
+          <button class="g-btn ghost" id="g-onemore-decline" type="button" data-i18n="sim.onemore.decline">No thanks — end run</button>
+        </div>
+        <div class="g-onemore-note" data-i18n="sim.onemore.note">One save per campaign.</div>
       </div>
     </div>
 
@@ -2739,6 +3385,10 @@ body.fc-splash-active #fc-bug-link { display: none; }
              the ID won't NPE. The visible turn/remaining now lives in the
              top-left floating #g-turn-badge. -->
         <span class="g-events-turn-summary" id="g-events-turn-summary" style="display:none;"></span>
+        <!-- 🌍 button: consolidated Continents view. Toggles the panel body
+             between the events log and the continent progress bars. Standalone
+             #g-campaign-panel hidden per v39 polish. -->
+        <button type="button" id="g-events-mode-continents" class="g-events-filter" data-i18n-attr="title:sim.cont.title" title="🌍 Continents">🌍</button>
         <button type="button" id="g-events-search-btn" class="g-events-filter" data-i18n-attr="title:sim.ev.search" title="Search events">🔍</button>
         <button type="button" id="g-events-filter" class="g-events-filter" data-i18n-attr="title:sim.ev.filter" title="Match results only">⚽</button>
         <span id="g-events-toggle">▼</span>
@@ -2748,6 +3398,9 @@ body.fc-splash-active #fc-bug-link { display: none; }
         <button type="button" id="g-events-search-clear" title="Clear">✕</button>
       </div>
       <div id="g-log"><div class="g-log-empty" data-i18n="sim.ev.empty">Click Pick attacker to begin.</div></div>
+      <!-- Continents view — populated by renderCampaignPanel, hidden by default,
+           shown when the 🌍 button in the header is toggled active. -->
+      <div id="g-events-continents-view" style="display:none;"></div>
     </div>
     </div>
     <div id="history-panel">
@@ -4177,10 +4830,39 @@ function drawBadge(parent,team,cx,cy){
     });
   }
 }
+// Precomputed at init: iso string → default flag scale of that iso's original owner.
+// Enables O(1) lookup during getScale's conquest-boost calculation instead of
+// linear teams.find() per iso per render frame.
+const _isoDefaultScale = {};
+function _buildIsoDefaultScaleLookup() {
+  if (typeof teams === 'undefined') return;
+  teams.forEach(t => { _isoDefaultScale[String(t.iso)] = defaultFlagScaleById[t.id] || 1.0; });
+}
+
 function getScale(id){
-  const v=flagScales[id]!=null?flagScales[id]:(defaultFlagScaleById[id]||1.0);
+  const base = flagScales[id]!=null?flagScales[id]:(defaultFlagScaleById[id]||1.0);
+  // ── Conquest boost ──
+  // Gürkan reported that Luxembourg's flag stays tiny after conquering
+  // Germany. Root cause: getScale returned the HOME country's flag scale
+  // regardless of what the team currently owns.
+  // Fix: if the team owns territory whose original owner had a bigger flag
+  // scale than theirs, blend the two so the flag visually matches the
+  // conquered territory. 60% weight on the largest conquered scale, 40% on
+  // home — a Luxembourg controlling Germany ends up ~1.0 (mid-country size),
+  // not 0.25 (Luxembourg's default).
+  const team = (typeof GAME !== 'undefined' && GAME.state) ? GAME.state[id] : null;
+  if (team && team.ownedIsos && team.ownedIsos.size > 1) {
+    if (Object.keys(_isoDefaultScale).length === 0) _buildIsoDefaultScaleLookup();
+    let maxOwnedScale = base;
+    team.ownedIsos.forEach(iso => {
+      const s = _isoDefaultScale[iso];
+      if (s && s > maxOwnedScale) maxOwnedScale = s;
+    });
+    const blended = base * 0.4 + maxOwnedScale * 0.6;
+    return blended < 0.3 ? 1.0 : blended;
+  }
   // Sanity: never let a flag be tinier than 0.3 (prevents broken defaults from creating invisible flags)
-  return v<0.3?1.0:v;
+  return base<0.3?1.0:base;
 }
 
 // Compute per-team neighbor density: number of OTHER team flag positions within RADIUS
@@ -4224,15 +4906,18 @@ function effS(s,k){
     const damp=Math.pow(k/REF_K,0.45); // damping at low zoom
     natural*=damp;
   } else {
-    // Past REF_K: (REF_K/k)^1.0 — constant-screen-size behavior.
-    // On-screen pixel size of a flag = scale * k = s*FLAG_SCALE*REF_K, independent of k.
-    // At k=REF_K: natural = s*FLAG_SCALE*1.0     (continuous with the k<=REF branch)
-    // At k=5:     natural = s*FLAG_SCALE*0.50
-    // At k=10:    natural = s*FLAG_SCALE*0.25
-    // At k=20:    natural = s*FLAG_SCALE*0.125
-    natural=s*FLAG_SCALE*Math.pow(REF_K/k,1.0);
+    // Past REF_K: (REF_K/k)^0.7 — flags GROW on screen at higher zoom levels.
+    // Gürkan reported flags too small at max mobile zoom. Exponent 0.7 gives
+    // moderate on-screen growth:
+    //   At k=REF_K: on-screen size = s*FLAG_SCALE*REF_K = 1.55s
+    //   At k=5:     on-screen size = s*FLAG_SCALE*Math.pow(0.5,0.7)*5 = 1.91s (+23%)
+    //   At k=10:    on-screen size = s*FLAG_SCALE*Math.pow(0.25,0.7)*10 = 2.36s (+52%)
+    //   At k=20:    on-screen size = s*FLAG_SCALE*Math.pow(0.125,0.7)*20 = 2.90s (+87%)
+    // If flags grow too much, bump exponent up (0.75, 0.8). If still too
+    // small, drop it further (0.65). Constant-screen-size = 1.0 (original).
+    natural=s*FLAG_SCALE*Math.pow(REF_K/k,0.7);
   }
-  const floor=0.3/k; // ~9px minimum screen width (reduced from 16px — flags can stay small when zoomed in)
+  const floor=0.6/k; // ~18px minimum screen width (was 0.3/k / ~9px — bumped for mobile readability)
   return Math.max(natural,floor);
 }
 // Inverse: given a desired on-screen scale (es) at zoom k, return world-space s
@@ -5540,6 +6225,33 @@ function gLog(msg,isResult){
   GAME.log.unshift({h:msg,r:!!isResult});
   if(GAME.log.length > GAME_LOG_MAX) GAME.log.length = GAME_LOG_MAX;
   renderGameLog();
+  // Fire a floating toast with the same content — appears below the Events
+  // dropdown for ~3.5s then fades. Non-blocking, purely informational.
+  if(typeof _showEventToast === 'function') _showEventToast(msg);
+}
+// ── Event toast (v35 polish) ──
+// Small floating pill that echoes the most recent gLog() line. Timer
+// coalesces rapid-fire logs so we don't spam-flash the toast.
+let _eventToastTimer = null;
+let _eventToastFadeTimer = null;
+function _showEventToast(msgHtml){
+  const el = document.getElementById('g-event-toast');
+  if(!el) return;
+  // Only show if a conquest game is active — no need for toasts on the
+  // startup / picker screens.
+  if(typeof GAME === 'undefined' || !GAME.active) return;
+  if(_eventToastTimer) clearTimeout(_eventToastTimer);
+  if(_eventToastFadeTimer) clearTimeout(_eventToastFadeTimer);
+  el.innerHTML = msgHtml;
+  el.classList.remove('fading');
+  el.classList.add('showing');
+  // Hold for 3.5s, then fade over the 350ms CSS transition, then hide.
+  _eventToastTimer = setTimeout(function(){
+    el.classList.add('fading');
+    _eventToastFadeTimer = setTimeout(function(){
+      el.classList.remove('showing','fading');
+    }, 400);
+  }, 3500);
 }
 // Render the Events log. Each entry is {h:html, r:isMatchResult}; the r flag
 // drives the "match results only" filter (CSS hides non-result entries).
@@ -7329,6 +8041,27 @@ function wireStartupModal(){
     startGameInMode('conquest',_selectedConquestTeamId);
     closeConquestStartup();
   });
+  // Random team picker — respects the current search filter (so if the
+  // player has typed "asia" and hit random, they get a random Asian team).
+  // Selects the team + scrolls it into view + enables the Start button, but
+  // does NOT auto-start the run — the player still confirms via Start.
+  const randomBtn=document.getElementById('g-random-team');
+  if(randomBtn) randomBtn.addEventListener('click',()=>{
+    const f=(search && search.value ? search.value : '').toLowerCase().trim();
+    const pool=teams.filter(t=>!f||t.name.toLowerCase().includes(f)||teamDisplayName(t.name).toLowerCase().includes(f));
+    if(pool.length===0) return;
+    const pick=pool[Math.floor(Math.random()*pool.length)];
+    _selectedConquestTeamId=pick.id;
+    // Re-render so the selection highlight visually updates, then scroll
+    // the picked row into view + enable Start.
+    renderTeamList(search ? search.value : '');
+    const list=document.getElementById('g-team-list');
+    if(list){
+      const row=list.querySelector('.g-team-item.selected');
+      if(row && row.scrollIntoView) row.scrollIntoView({block:'center', behavior:'smooth'});
+    }
+    if(startBtn) startBtn.disabled=false;
+  });
 }
 
 function startGameInMode(mode,heroId){
@@ -7376,6 +8109,9 @@ function startGameInMode(mode,heroId){
   GAME.momentumProgress=0;
   GAME.aura=0; GAME.matchBoost=null; GAME.doubleOrNothing=false; GAME.biggestWin=null;
   GAME.continentsMilestoned={}; GAME.matchEvent=null; GAME._matchEventKey=null;
+  // v1 monetization: reset the one-per-run rewarded-ad continue AND the
+  // one-per-match free-boost flag whenever a fresh conquest starts.
+  GAME.continuesUsed=0; GAME._matchFreeBoostUsed=false;
   // The specific iso (territory) the arrow hit on the last spin. Captured
   // in gameSpinArrow's animation-end callback. Used by handleConquestWin to
   // move the hero's flag onto the targeted territory rather than the
@@ -7414,9 +8150,14 @@ function startGameInMode(mode,heroId){
     GAME.phase='picked-att';
     gSlots();
     gameRender();
-    // Pan to hero
+    // Pan to hero — zoom floor bumped from 6 → 9 per Gürkan's polish pass.
+    // On small phone screens the old 6x zoom left the chosen country tiny
+    // and lost among neighbours. 9x fills the visible area (portion above
+    // bottom UI) with the hero's region so the player immediately sees
+    // themselves and their surroundings. panTo already offsets the target
+    // upward via VIEWPORT_VISUAL_CY_FRAC so the flag isn't behind the panel.
     const c=teamCentroid(heroId);
-    if(c) panTo([c[0],c[1]],Math.max(6,currentK()));
+    if(c) panTo([c[0],c[1]],Math.max(9,currentK()));
     updateHeroGlow();
     refreshConquestHud();
     gLog(FCLang.t('sim.log.wcstarted',{hero:teamDisplayName(GAME.attacker.name)}));
@@ -8165,6 +8906,9 @@ function rollMatchEvent(){
   if(GAME._matchEventKey===key) return;
   GAME._matchEventKey=key;
   GAME.matchBoost=null; GAME.doubleOrNothing=false;
+  // v1 monetization: reset per-match rewarded-ad "free boost" cap so each
+  // fresh matchup gets exactly one free-boost opportunity via Reward #2.
+  GAME._matchFreeBoostUsed=false;
   // Boss match: facing a continental champion (or the final boss) overrides
   // the random twist. The champion defends at a rating boost, and beating one
   // banks bonus momentum (winBonusMomentum, applied in computeWinValue).
@@ -8305,10 +9049,8 @@ function showMilestoneToast(contKey){
 }
 // Refresh the six-continent progress panel.
 function renderCampaignPanel(){
-  const body=document.getElementById('g-campaign-body');
-  if(!body) return;
   const prog=computeContinentProgress();
-  body.innerHTML=CONTINENTS.map(c=>{
+  const html=CONTINENTS.map(c=>{
     const p=prog[c.key]||{owned:0,total:0};
     const pct=p.total?Math.round(100*p.owned/p.total):0;
     const done=p.total>0&&p.owned>=p.total;
@@ -8317,12 +9059,59 @@ function renderCampaignPanel(){
       +'<span class="g-cont-bar"><span class="g-cont-fill" style="width:'+pct+'%"></span></span>'
       +'<span class="g-cont-count">'+p.owned+'/'+p.total+(done?' ✓':'')+'</span></div>';
   }).join('');
+  // Populate BOTH the legacy standalone campaign panel body (hidden via CSS,
+  // kept in DOM so no code paths break) AND the new inline continents view
+  // inside the events panel that the 🌍 toggle exposes.
+  const legacyBody=document.getElementById('g-campaign-body');
+  if(legacyBody) legacyBody.innerHTML=html;
+  const inlineBody=document.getElementById('g-events-continents-view');
+  if(inlineBody) inlineBody.innerHTML=html;
 }
 // Campaign panel collapse toggle.
 (function(){
   const hdr=document.getElementById('g-campaign-header');
   const panel=document.getElementById('g-campaign-panel');
   if(hdr&&panel) hdr.addEventListener('click',()=>panel.classList.toggle('collapsed'));
+})();
+// Events-panel mode switcher: 🌍 Continents, 🔍 Search, ⚽ Results-only.
+// v40 polish: all three buttons stay visible in every mode. Tapping any of
+// them cleanly switches TO that mode — no toggle-back required. If you're in
+// Continents view and tap 🔍, it flips to Events + opens the search bar.
+// Tap ⚽ from Continents → Events with results-filter active. Tap 🌍 from
+// Events → Continents. The 🌍 button's "active" class shows which view is
+// live so it doesn't feel invisible when Continents is selected.
+(function(){
+  const contBtn=document.getElementById('g-events-mode-continents');
+  const searchBtn=document.getElementById('g-events-search-btn');
+  const filterBtn=document.getElementById('g-events-filter');
+  const log=document.getElementById('g-log');
+  const cont=document.getElementById('g-events-continents-view');
+  if(!log||!cont) return;
+  function showEventsView(){
+    cont.style.display='none';
+    log.style.display='';
+    if(contBtn) contBtn.classList.remove('active');
+  }
+  function showContinentsView(){
+    cont.style.display='';
+    log.style.display='none';
+    if(contBtn) contBtn.classList.add('active');
+  }
+  if(contBtn) contBtn.addEventListener('click',function(e){
+    e.stopPropagation();  // don't collapse the panel header
+    const showingContinents = cont.style.display !== 'none';
+    if(showingContinents) showEventsView(); else showContinentsView();
+  });
+  // Search + Filter buttons pull the panel back to Events view when clicked
+  // from Continents view — their existing click handlers will still fire
+  // (open search bar / toggle filter class) via event bubbling, but the mode
+  // needs to flip first so those handlers act on a visible list.
+  if(searchBtn) searchBtn.addEventListener('click',function(){
+    if(cont.style.display !== 'none') showEventsView();
+  }, true);  // capture phase so we flip BEFORE the existing search handler
+  if(filterBtn) filterBtn.addEventListener('click',function(){
+    if(cont.style.display !== 'none') showEventsView();
+  }, true);
 })();
 // ── Aura: spendable agency resource ──────────────────────────────────────
 // Earned by winning (handleConquestWin) and by clearing continents. Spent in
@@ -8352,6 +9141,11 @@ function applyBoost(key){
   if(typeof updateResultPreview==='function') updateResultPreview();
 }
 // Refresh the Aura balance + boost-button states in the result modal.
+// v1 monetization Reward #2: unaffordable boosts flip into "free-eligible"
+// mode when a rewarded ad is preloaded AND the player hasn't already used
+// their per-match free boost. Free-eligible buttons are NOT `disabled` (so
+// they receive clicks) but wear a `.g-boost-btn.free-eligible` class that
+// paints the greyed styling + adds the "▶ Watch ad free" overlay pill.
 function renderBoostPanel(){
   const panel=document.getElementById('g-result-boosts');
   if(!panel) return;
@@ -8359,13 +9153,22 @@ function renderBoostPanel(){
   const bal=document.getElementById('g-boost-bal');
   if(bal) bal.textContent=aura+' ⭐';
   const cur=GAME&&GAME.matchBoost;
+  const freeAvail = (typeof window._fcRewardedAvailable === 'function' && window._fcRewardedAvailable())
+                    && !(GAME && GAME._matchFreeBoostUsed);
   panel.querySelectorAll('.g-boost-btn').forEach(function(btn){
     const key=btn.getAttribute('data-boost');
     const b=BOOSTS[key]; if(!b) return;
     const active=!!(cur&&cur.key===key);
     btn.classList.toggle('active',active);
     const refund=cur&&BOOSTS[cur.key]?BOOSTS[cur.key].cost:0;
-    btn.disabled=!active&&((aura+refund)<b.cost);
+    const cannotAfford = !active && ((aura+refund) < b.cost);
+    if (cannotAfford && freeAvail) {
+      btn.disabled = false;
+      btn.classList.add('free-eligible');
+    } else {
+      btn.disabled = cannotAfford;
+      btn.classList.remove('free-eligible');
+    }
   });
   const donChk=document.getElementById('g-boost-don-check');
   if(donChk) donChk.checked=!!(GAME&&GAME.doubleOrNothing);
@@ -8375,13 +9178,51 @@ function renderBoostPanel(){
   const btns=document.getElementById('g-boost-btns');
   if(btns) btns.addEventListener('click',function(e){
     const btn=e.target.closest('.g-boost-btn');
-    if(btn&&!btn.disabled) applyBoost(btn.getAttribute('data-boost'));
+    if(!btn) return;
+    // Free-eligible click path — trigger rewarded ad, on earn apply boost
+    // bypassing the Aura cost, mark this match's free-boost cap consumed.
+    if (btn.classList.contains('free-eligible') && typeof window.fcShowRewardedAd === 'function') {
+      const key = btn.getAttribute('data-boost');
+      btn.disabled = true;
+      window.fcShowRewardedAd().then(function(earned){
+        btn.disabled = false;
+        if (earned && typeof window.fcApplyBoostFree === 'function') {
+          window.fcApplyBoostFree(key);
+        } else {
+          // Re-render so free-eligible state re-evaluates (ad may have consumed
+          // its preload without earning; renderBoostPanel will flip back to disabled).
+          renderBoostPanel();
+        }
+      });
+      return;
+    }
+    if (!btn.disabled) applyBoost(btn.getAttribute('data-boost'));
   });
   const don=document.getElementById('g-boost-don-check');
   if(don) don.addEventListener('change',function(){
     if(GAME) GAME.doubleOrNothing=don.checked;
   });
 })();
+
+// Apply a boost as "free" — same effect as applyBoost() but bypasses the
+// Aura affordability check and does NOT deduct Aura. Called only by the
+// rewarded-ad free-boost path. Refunds any currently-active boost's cost
+// so the Aura economy stays consistent. Marks GAME._matchFreeBoostUsed to
+// cap this at one free boost per match.
+function fcApplyBoostFree(key){
+  if(!GAME||GAME.mode!=='conquest') return;
+  const b=BOOSTS[key]; if(!b) return;
+  const cur=GAME.matchBoost;
+  const refund=cur&&BOOSTS[cur.key]?BOOSTS[cur.key].cost:0;
+  if(refund) GAME.aura=(GAME.aura||0)+refund;
+  GAME.matchBoost={key:key,heroEffDelta:b.heroEffDelta||0,oppEffDelta:b.oppEffDelta||0,
+    heroLambdaMult:b.heroLambdaMult||1,oppLambdaMult:b.oppLambdaMult||1,_free:true};
+  GAME._matchFreeBoostUsed=true;
+  try { if(typeof gLog==='function') gLog('▶ Free boost: ' + b.name + ' (via ad).'); } catch(e){}
+  renderBoostPanel();
+  if(typeof updateResultPreview==='function') updateResultPreview();
+}
+window.fcApplyBoostFree = fcApplyBoostFree;
 // Compute the full per-match Poisson model for the current matchup + tactic.
 // Returns {heroEff, oppEff, heroLambda, oppLambda, pHeroWin, oppStyle, heroStyle}
 // — used by both the live preview render and the actual score simulation, so
@@ -8600,6 +9441,34 @@ function updateResultPreview(){
   });
 }
 function wireResultModal(){
+  // ── Tap-to-skip on revealed result ──
+  // Once the result is revealed (card has .simulated class), a tap on the
+  // modal's empty space skips the auto-confirm wait and commits the result.
+  // Uses the same "click Confirm" pathway as the Esc key so the anti-cheat
+  // rule stays enforced.
+  //
+  // CRITICAL: exclude every interactive child element. Without this the
+  // Simulate button click bubbles to us, we check .simulated (which was
+  // just added by Simulate's own handler), match, and fire Confirm INSTANTLY
+  // — the reveal is skipped entirely. That was Gürkan's "match result has
+  // completely disappeared" bug. The interactive exclusions cover:
+  //   - Simulate / Cancel / Confirm buttons
+  //   - Tactic-choice buttons + boost buttons
+  //   - Manual score inputs + finish-type radio buttons (offline build)
+  //   - Any anchor / label the modal might grow later
+  var resultModalEl = document.getElementById('g-result-modal');
+  if (resultModalEl) {
+    resultModalEl.addEventListener('click', function(e){
+      var card = resultModalEl.querySelector('.g-result-card');
+      if (!card || !card.classList.contains('simulated')) return;
+      if (e.target && e.target.closest) {
+        if (e.target.closest('button, input, select, textarea, a, label')) return;
+      }
+      if (_simAutoConfirmTimer) { clearTimeout(_simAutoConfirmTimer); _simAutoConfirmTimer = null; }
+      var confirmBtn = document.getElementById('g-result-confirm');
+      if (confirmBtn) confirmBtn.click();
+    });
+  }
   // Esc handling — cheat-safe.
   // Before Simulate is clicked: Esc closes the modal normally (user backed out
   // of the matchup before seeing anything, so there's nothing to preserve).
@@ -8643,11 +9512,40 @@ function wireResultModal(){
       if(typeof updateResultPreview==='function') updateResultPreview();
     });
   });
+  // Double or Nothing button — sets the DoN flag on GAME, then dispatches a
+  // click on the regular Simulate button so all downstream logic (fill inputs,
+  // reveal, auto-confirm, applyAuraChange) picks up the flag and doubles /
+  // wipes the Aura bank per the outcome. Replaces the older opt-in checkbox
+  // in the Aura Boosts section (which is now hidden via CSS but kept in the
+  // DOM for save-format compatibility).
+  const simDonBtn=document.getElementById('g-result-sim-don');
+  if(simDonBtn) simDonBtn.addEventListener('click',()=>{
+    if(typeof GAME !== 'undefined') GAME.doubleOrNothing = true;
+    // Keep the hidden legacy checkbox in sync so any code that still reads
+    // its .checked value gets the correct answer.
+    const legacyChk=document.getElementById('g-boost-don-check');
+    if(legacyChk) legacyChk.checked = true;
+    // Marker so the regular Sim handler (below) doesn't reset DoN to false
+    // when we synthesize its click. Cleared inside that handler on first read.
+    window._fcDonClickInFlight = true;
+    const simBtnEl=document.getElementById('g-result-sim');
+    if(simBtnEl) simBtnEl.click();
+  });
   // Simulate match button — fills the score inputs from the FIFA-weighted Poisson model
   // and auto-confirms after a short reveal pause. Respects the existing "click to reveal"
   // setting: when on, the sim only fills the inputs and waits for the user to confirm.
   const simBtn=document.getElementById('g-result-sim');
   if(simBtn) simBtn.addEventListener('click',()=>{
+    // Regular Simulate is the SAFE path — always clear DoN before running.
+    // The DoN button pathway sets the flag to true then dispatches a click
+    // that re-enters this handler, so we need to be careful: only reset if
+    // the click didn't originate from the DoN button. Use a per-call marker.
+    if(typeof GAME !== 'undefined' && !window._fcDonClickInFlight) {
+      GAME.doubleOrNothing = false;
+      const legacyChk=document.getElementById('g-boost-don-check');
+      if(legacyChk) legacyChk.checked = false;
+    }
+    window._fcDonClickInFlight = false;  // reset for next click
     const result=simulateConquestScores();
     if(!result) return;
     document.getElementById('g-result-hero-score').value=result.heroGoals;
@@ -9188,15 +10086,25 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
     }
   }
   if(losses>=3){
-    gLog(FCLang.t('sim.log.gameover',{opp:teamDisplayName(opp.name),hero:teamDisplayName(hero.name)}));
-    refreshConquestHud({lastResult:{type:'loss',hero:hero.name,opp:opp.name,score:`${heroScore}–${oppScore}`,gameOver:true}});
-    showGameOverOverlay({victory:false,hero:hero.name,opp:opp.name,score:`${heroScore}–${oppScore}`});
-    // Persist this run to the Hall of Fame before flipping GAME.active off,
-    // since recordCampaignResult reads from GAME state.
-    if(typeof recordCampaignResult==='function') recordCampaignResult('eliminated',{eliminatedBy:opp.name});
-    GAME.phase='idle';
-    GAME.active=false;
-    gameRender();
+    // Encapsulated game-over sequence so both the normal path AND the
+    // rewarded-ad "One More Chance" fallback can invoke it. Moved into a
+    // local closure to avoid duplicating the 6-line teardown.
+    var runGameOver = function(){
+      gLog(FCLang.t('sim.log.gameover',{opp:teamDisplayName(opp.name),hero:teamDisplayName(hero.name)}));
+      refreshConquestHud({lastResult:{type:'loss',hero:hero.name,opp:opp.name,score:`${heroScore}–${oppScore}`,gameOver:true}});
+      showGameOverOverlay({victory:false,hero:hero.name,opp:opp.name,score:`${heroScore}–${oppScore}`});
+      if(typeof recordCampaignResult==='function') recordCampaignResult('eliminated',{eliminatedBy:opp.name});
+      GAME.phase='idle';
+      GAME.active=false;
+      gameRender();
+    };
+    // Give the player ONE rewarded-ad continue per run (v1 monetization).
+    // fcTryOneMoreChance returns true if it hijacked the flow (modal shown,
+    // will call runGameOver itself on decline / on ad failure); false if
+    // ineligible (no ad ready, already used, etc.) in which case we run
+    // game-over inline as before.
+    if (typeof window.fcTryOneMoreChance === 'function' && window.fcTryOneMoreChance(opp, runGameOver)) return;
+    runGameOver();
     return;
   }
   // Retreat: pop the most recent conquest. That country becomes independent again,
@@ -9624,6 +10532,40 @@ function hideGameOverOverlay(){
 
 // ── Floating Conquest HUD ──
 let _hudFadeTimer=null;
+
+// Reposition the #g-turn-badge so it floats 6px above the current top edge
+// of the #game-panel. Called both on HUD updates AND whenever the panel
+// resizes (via ResizeObserver below). Standalone so the observer callback
+// and the updateConquestHud caller share one implementation.
+function positionTurnBadgeAbovePanel(){
+  try {
+    const badge = document.getElementById('g-turn-badge');
+    const panel = document.getElementById('game-panel');
+    if (!badge || !panel || !panel.classList.contains('open') || !badge.offsetParent) return;
+    const pRect = panel.getBoundingClientRect();
+    const parentRect = badge.offsetParent.getBoundingClientRect();
+    const bottomPx = Math.max(10, parentRect.bottom - pRect.top + 6);
+    badge.style.bottom = bottomPx + 'px';
+  } catch (e) { /* silent — falls back to whatever CSS default is */ }
+}
+
+// One-time ResizeObserver setup: any time the game panel changes size (e.g.,
+// losses warning strip appears, opponent slot fills after a spin, etc.), the
+// badge re-anchors above it. Guarded to run once, and no-op if the browser
+// lacks ResizeObserver support (very old WebViews).
+(function setupTurnBadgeAutoRepositioner(){
+  if (typeof ResizeObserver === 'undefined') return;
+  function attach(){
+    const panel = document.getElementById('game-panel');
+    if (!panel) { setTimeout(attach, 100); return; }
+    const ro = new ResizeObserver(function(){ positionTurnBadgeAbovePanel(); });
+    ro.observe(panel);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attach);
+  } else { attach(); }
+})();
+
 function updateConquestHud(state){
   // state: {turn, remaining, lossOpponent, lossCount, lastResult: {type, hero, opp, score, gameOver}}
   const hud=document.getElementById('g-hud');
@@ -9661,8 +10603,11 @@ function updateConquestHud(state){
   if(turnSummaryEl){ turnSummaryEl.innerHTML=summaryHtml; }
   const turnBadgeEl=document.getElementById('g-turn-badge');
   if(turnBadgeEl){
-    turnBadgeEl.innerHTML=summaryHtml;
+    turnBadgeEl.innerHTML = summaryHtml;
     turnBadgeEl.classList.toggle('visible', !!GAME.active);
+    // Reposition after next frame so the DOM has committed any changes from
+    // this update cycle (e.g., losses warning strip that increases panel height).
+    requestAnimationFrame(positionTurnBadgeAbovePanel);
   }
   if(turnEl) turnEl.style.display='none';
   // Campaign stats strip above the flags — RECORD W–L · GOALS GF–GA (±GD).
@@ -9676,7 +10621,16 @@ function updateConquestHud(state){
     const gdClass=gd>0?'gd-pos':(gd<0?'gd-neg':'gd-zero');
     const gdStr=(gd>0?'+':'')+gd;
     conquestStatsEl.style.display='block';
-    conquestStatsEl.innerHTML=FCLang.t('sim.hud.record')+' <b class="w">'+s.wins+'</b>–<b class="l">'+s.losses+'</b><span class="sep">·</span>'+FCLang.t('sim.hud.goals')+' <b>'+s.gf+'</b>–<b>'+s.ga+'</b> (<b class="'+gdClass+'">'+gdStr+'</b>)';
+    // Two stacked lines per Gürkan v28 polish: RECORD on line 1, GOALS on
+    // line 2, both left-aligned inside the game panel. Turn info moved OUT
+    // to its own floating pill above the game panel (via #g-turn-badge).
+    conquestStatsEl.innerHTML =
+      '<span class="gcs-record">' +
+        FCLang.t('sim.hud.record') + ' <b class="w">' + s.wins + '</b>–<b class="l">' + s.losses + '</b>' +
+      '</span>' +
+      '<span class="gcs-goals">' +
+        FCLang.t('sim.hud.goals') + ' <b>' + s.gf + '</b>–<b>' + s.ga + '</b> (<b class="' + gdClass + '">' + gdStr + '</b>)' +
+      '</span>';
   }
   if(statsEl) statsEl.style.display='none';
   // Loss warning — relocated from the floating HUD to the strip ABOVE the
@@ -9693,6 +10647,23 @@ function updateConquestHud(state){
       conquestLossEl.innerHTML=FCLang.t('sim.hud.losses',{opp:teamDisplayName(state.lossOpponent),n:state.lossCount});
     } else {
       conquestLossEl.style.display='none';
+    }
+  }
+  // ── Floating loss warning pill (v34 polish) ──
+  // Mirror the loss warning to the floating #g-loss-float element that sits
+  // below the Continents/Events dropdowns. Keeps the game panel compact by
+  // moving this threat indicator to the top of the map. Same content, same
+  // warn/danger tiers as the in-panel version above.
+  const lossFloatEl=document.getElementById('g-loss-float');
+  if(lossFloatEl){
+    if(state&&state.lossOpponent&&state.lossCount>0){
+      lossFloatEl.classList.remove('warn','danger');
+      if(state.lossCount===1) lossFloatEl.classList.add('warn');
+      if(state.lossCount>=2) lossFloatEl.classList.add('danger');
+      lossFloatEl.classList.add('visible');
+      lossFloatEl.innerHTML='⚠ '+FCLang.t('sim.hud.losses',{opp:teamDisplayName(state.lossOpponent),n:state.lossCount});
+    } else {
+      lossFloatEl.classList.remove('visible','warn','danger');
     }
   }
   if(lossEl) lossEl.style.display='none';
@@ -11552,14 +12523,22 @@ function openUsernameGate(onDone){
 </script>
 
 <script>
-/* ── Auto-collapse continent/events/squad panels on mobile ──
+/* ── Auto-collapse continent/events/squad panels on mobile & Capacitor ──
    The panels open in their expanded state by default (sized for desktop's
-   bottom-left corner). On mobile portrait, that means they fill half the
-   screen. Force the .collapsed class on load so only the header shows;
-   user can tap to expand. */
+   bottom-left corner). On mobile portrait AND inside the Capacitor tablet
+   app that means they fill a big chunk of the screen and obscure the map.
+   Force the .collapsed class on load in those contexts so only the header
+   shows; user can tap to expand. Real desktop (Capacitor absent, width
+   > 700 px) keeps the panels open — plenty of room there. */
 (function autoCollapsePanelsOnMobile(){
+  function isCapacitor(){
+    try { return !!(window.Capacitor && (window.Capacitor.isNativePlatform ? window.Capacitor.isNativePlatform() : window.Capacitor.platform && window.Capacitor.platform !== 'web')); }
+    catch(e){ return false; }
+  }
   function go(){
-    if (window.innerWidth > 700) return;
+    var narrow = window.innerWidth <= 700;
+    var cap    = isCapacitor();
+    if (!narrow && !cap) return;
     ['g-squad-panel', 'g-campaign-panel', 'g-events-panel'].forEach(function(id){
       var el = document.getElementById(id);
       if (el && !el.classList.contains('collapsed')) {
@@ -11592,9 +12571,491 @@ function openUsernameGate(onDone){
       }
     } catch (e) {}
     var qs = params.toString();
-    var url = '/report-bug.html' + (qs ? '?' + qs : '');
-    window.open(url, '_blank', 'noopener');
+    // Inside the Capacitor mobile app, the WebView only serves the bundled
+    // simulator — /report-bug.html isn't in the app bundle, so the relative
+    // URL resolves to capacitor://localhost/report-bug.html which 404s. Route
+    // the app's Report Bug clicks to the live site URL and open in the device's
+    // default browser via window.open(url, '_system'). On the web build,
+    // window.Capacitor is undefined and we keep the original new-tab behaviour.
+    var inApp = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
+    if (inApp) {
+      var url = 'https://footballconquest.com/report-bug.html' + (qs ? '?' + qs : '');
+      window.open(url, '_system');
+    } else {
+      var url = '/report-bug.html' + (qs ? '?' + qs : '');
+      window.open(url, '_blank', 'noopener');
+    }
   };
+})();
+</script>
+
+
+<!-- Capacitor mobile-app tweaks. Runs only when the simulator is loaded inside
+     the native iOS/Android WebView (window.Capacitor is undefined on the web
+     build, so this block is a harmless no-op there). Hides features that are
+     Creator-Build-oriented and don't fit the casual mobile app use case. -->
+<script>
+(function applyCapacitorAppTweaks(){
+  var isApp = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
+  if (!isApp) return;
+  document.documentElement.classList.add('fc-capacitor-app');
+  function hideForApp(){
+    // Hide UI is a "clean map, no chrome" storytelling toggle designed for
+    // creators recording video. In the app, a casual player who taps it loses
+    // all their controls with no obvious way to un-hide (the H hotkey isn't
+    // discoverable and there's no keyboard on mobile anyway).
+    ['drawer-hideui','fc-menu-hide-ui'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hideForApp);
+  } else {
+    hideForApp();
+  }
+
+  // ── Phase 3 mobile runtime wiring ─────────────────────────────────────
+  // Uses the three Capacitor plugins installed in Phase 1:
+  //   @capacitor/app              — hardware back button, app state events
+  //   @capacitor-community/keep-awake — prevent screen sleep while in a game
+  //   (@capacitor/status-bar is auto-configured via capacitor.config.json)
+  // All three access their APIs via window.Capacitor.Plugins.<Name> when
+  // registered. If the plugin failed to register for some reason we no-op
+  // silently — the app still works, it just falls back to default behaviour.
+
+  var plugins = (window.Capacitor && window.Capacitor.Plugins) || {};
+  var CapApp = plugins.App;
+  var KeepAwake = plugins.KeepAwake;
+  var StatusBar = plugins.StatusBar;
+
+  // ── (0) Immersive fullscreen — hide the tablet's status/nav bars ──
+  // The Android theme + MainActivity already request fullscreen +
+  // BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE, but calling the StatusBar plugin
+  // here as belt-and-braces catches the edge case where the theme is
+  // overridden mid-session (e.g. by a WebView keyboard) and the status bar
+  // reappears. All calls are noop-safe if the plugin isn't registered.
+  if (StatusBar) {
+    try { if (StatusBar.hide) StatusBar.hide().catch(function(){}); } catch(e){}
+    try { if (StatusBar.setOverlaysWebView) StatusBar.setOverlaysWebView({ overlay: true }).catch(function(){}); } catch(e){}
+  }
+
+  // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
+  // is true in capacitor.config.json. Confirms the wrapper ran, and reports
+  // which plugins actually made it into window.Capacitor.Plugins at runtime.
+  window._FC_CAP_VERSION = 'v57-rewarded-continue-freeboost-2026-07-16';
+  try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
+
+  // ── (1) Android hardware back button ──
+  // Default Capacitor behaviour is to quit the app. Instead: if a modal is
+  // open, close it. If the game panel is expanded, collapse it (matching the
+  // X button we shipped earlier). If we're at the map with no game active,
+  // let the default happen (exit the app cleanly). Capacitor 6 plugin methods
+  // are Proxy-wrapped and don't type-report as 'function', so we check truthy
+  // instead of typeof — matching what the plugin actually exposes at runtime.
+  if (CapApp && CapApp.addListener) {
+    CapApp.addListener('backButton', function(evt){
+      try { console.log('[FC-CAP] backButton fired, canGoBack=', evt && evt.canGoBack); } catch(e){}
+      // 1. Any modal open → close it (reuses the Esc pathway so the anti-cheat
+      //    Esc-as-Confirm rule in wireResultModal still applies).
+      var openModal = document.querySelector('#g-result-modal.open, #g-startup-modal.open, #g-username-modal.open, #history-panel.open');
+      if (openModal) {
+        var esc = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
+        document.dispatchEvent(esc);
+        try { console.log('[FC-CAP] back → closed modal'); } catch(e){}
+        return;
+      }
+      // 2. Sim toolbar hamburger drawer open → close it.
+      var drawerOpen = document.querySelector('.acts.sim-menu-open');
+      if (drawerOpen) {
+        drawerOpen.classList.remove('sim-menu-open');
+        try { console.log('[FC-CAP] back → closed sim drawer'); } catch(e){}
+        return;
+      }
+      // 3. Nothing to close → exit the app cleanly. Removed the "collapse
+      //    game panel first" branch that lived here in v4 — Gürkan flagged it
+      //    as a UX trap: users hit back, panel collapses, and there's no
+      //    discoverable way to re-open (the header tap-to-expand isn't
+      //    signposted). Following the Android convention of back = one level
+      //    up, and when there's no up, back = exit. The X button in the game
+      //    panel is still available for anyone who wants to collapse manually
+      //    (creator storytelling, screen recording), and the appStateChange
+      //    handler above auto-saves game state before the exit fires.
+      try { console.log('[FC-CAP] back → exiting app'); } catch(e){}
+      if (CapApp.exitApp) CapApp.exitApp();
+    });
+  }
+
+  // ── (2) Keep-awake during play — belt-and-braces ──
+  // Two parallel strategies, both toggled together based on GAME.active:
+  //   a) @capacitor-community/keep-awake — the Capacitor plugin. Testing on
+  //      Samsung S25 Ultra showed the plugin call SUCCEEDED but the screen
+  //      still dimmed → confirmed bug in v5.0.1's Android impl.
+  //   b) navigator.wakeLock (web standard, Chromium-native) — Capacitor's
+  //      WebView is Chromium and supports this out of the box on capacitor://
+  //      origins (counts as secure context). More reliable in practice.
+  // Both run in parallel; either succeeding is enough to keep the screen on.
+  var awakeOn = false;
+  var wakeLockSentinel = null;
+  function acquireKeepAwake() {
+    // (a) Plugin path.
+    if (KeepAwake && KeepAwake.keepAwake) {
+      KeepAwake.keepAwake().then(function(){
+        try { console.log('[FC-CAP] keepAwake ON (plugin)'); } catch(e){}
+      }).catch(function(err){ try { console.warn('[FC-CAP] plugin keepAwake failed:', err); } catch(e){} });
+    }
+    // (b) Web wakeLock path.
+    if (navigator.wakeLock && typeof navigator.wakeLock.request === 'function' && !wakeLockSentinel) {
+      navigator.wakeLock.request('screen').then(function(sentinel){
+        wakeLockSentinel = sentinel;
+        try { console.log('[FC-CAP] keepAwake ON (web wakeLock)'); } catch(e){}
+        // Chrome auto-releases the wake lock when the page becomes hidden
+        // (backgrounded). We re-request on visibility restore via the handler
+        // below, but null out our reference immediately so we know to retry.
+        sentinel.addEventListener('release', function(){
+          wakeLockSentinel = null;
+          try { console.log('[FC-CAP] web wakeLock released (page hidden or manual)'); } catch(e){}
+        });
+      }).catch(function(err){ try { console.warn('[FC-CAP] web wakeLock request failed:', err); } catch(e){} });
+    }
+  }
+  function releaseKeepAwake() {
+    if (KeepAwake && KeepAwake.allowSleep) {
+      KeepAwake.allowSleep().then(function(){
+        try { console.log('[FC-CAP] keepAwake OFF (plugin)'); } catch(e){}
+      }).catch(function(){});
+    }
+    if (wakeLockSentinel) {
+      wakeLockSentinel.release().catch(function(){});
+      wakeLockSentinel = null;
+    }
+  }
+  // Poll every 5s and toggle based on active-game state.
+  setInterval(function(){
+    // GAME is declared with `const GAME = ...` at file scope, so it's NOT
+    // attached to window (only var + function decls become window properties).
+    // Access it directly via typeof — trying `window.GAME` returns undefined
+    // and silently disables the whole keep-awake path.
+    var shouldBeAwake = !!(typeof GAME !== 'undefined' && GAME.active);
+    if (shouldBeAwake && !awakeOn) { awakeOn = true; acquireKeepAwake(); }
+    else if (!shouldBeAwake && awakeOn) { awakeOn = false; releaseKeepAwake(); }
+  }, 5000);
+  // Re-acquire the web wakeLock when the app comes back to foreground —
+  // Chrome auto-releases it on backgrounding, so we need this recovery hook.
+  document.addEventListener('visibilitychange', function(){
+    if (!document.hidden && awakeOn && !wakeLockSentinel && navigator.wakeLock && navigator.wakeLock.request) {
+      navigator.wakeLock.request('screen').then(function(sentinel){
+        wakeLockSentinel = sentinel;
+        try { console.log('[FC-CAP] web wakeLock re-acquired on resume'); } catch(e){}
+      }).catch(function(){});
+    }
+  });
+
+  // ── (3) Save-on-pause + auto-restore-on-launch ──
+  // Uses captureState() / restoreState() directly (both are file-scope
+  // function declarations, accessible from here). Writes to a DEDICATED
+  // key 'fc-app-autosave' so we don't clobber the user's explicit save
+  // slot 'fc-map-autosave' that doSave() populates.
+  //
+  // Save-on-pause fires when Android backgrounds the app; the OS may kill
+  // us at any time from that state. Auto-restore-on-launch fires once per
+  // fresh app boot: if there's a recent (< 24h) autosave and no game is
+  // active yet, silently restore. This gives the mobile-app experience of
+  // "pick up right where I left off."
+  if (CapApp && CapApp.addListener) {
+    CapApp.addListener('appStateChange', function(state){
+      if (state && state.isActive === false && typeof GAME !== 'undefined' && GAME.active) {
+        try {
+          if (typeof captureState === 'function') {
+            var payload = {
+              version: 2,
+              saved: new Date().toISOString(),
+              state: captureState(),
+              autoSave: true
+            };
+            localStorage.setItem('fc-app-autosave', JSON.stringify(payload));
+            try { console.log('[FC-CAP] auto-saved game state on background'); } catch(e){}
+          }
+        } catch (e) { try { console.warn('[FC-CAP] auto-save failed:', e); } catch(_){} }
+      }
+    });
+  }
+
+  // Auto-restore prereqs: GAME must be defined, restoreState must be a
+  // callable function, and the topojson-built map (isoPaths) must be
+  // populated — otherwise restoreState will try to paint countries that
+  // haven't been rendered yet and no-op silently. Poll every 200ms up to
+  // 10s to find that ready state, then fire once.
+  var autoRestored = false;
+  function tryAutoRestore(attempt) {
+    if (autoRestored) return;
+    attempt = attempt || 0;
+    var ready = (typeof GAME !== 'undefined')
+             && (typeof restoreState === 'function')
+             && (typeof isoPaths !== 'undefined')
+             && Object.keys(isoPaths).length > 100;  // arbitrary threshold — map has ~200 paths
+    if (!ready) {
+      if (attempt < 50) return setTimeout(function(){ tryAutoRestore(attempt + 1); }, 200);
+      return;  // gave up after 10s; probably slow network on the topojson fetch
+    }
+    // If a game is already active (user beat us to it by tapping through the
+    // startup modal), don't clobber their state.
+    if (GAME.active) return;
+    try {
+      var raw = localStorage.getItem('fc-app-autosave');
+      if (!raw) return;
+      var payload = JSON.parse(raw);
+      if (!payload || !payload.state) return;
+      var ageMs = Date.now() - new Date(payload.saved).getTime();
+      if (ageMs > 24 * 60 * 60 * 1000) return;  // too old, ignore
+      restoreState(payload.state);
+      autoRestored = true;
+      try {
+        var ageMin = Math.round(ageMs / 60000);
+        console.log('[FC-CAP] auto-restored game (age:', ageMin, 'min, turn:', GAME.turn, ')');
+        // Also log inside the game if the app's logger exists.
+        if (typeof gLog === 'function') gLog('▶ Resumed your game from ' + ageMin + ' min ago.');
+      } catch(e){}
+      // Close the startup modal if it's showing (auto-restore replaces
+      // whatever the startup flow was going to do).
+      var startupModal = document.getElementById('g-startup-modal');
+      if (startupModal) { startupModal.classList.remove('open'); startupModal.style.display = 'none'; }
+    } catch (e) { try { console.warn('[FC-CAP] auto-restore failed:', e); } catch(_){} }
+  }
+  setTimeout(function(){ tryAutoRestore(0); }, 400);
+
+  // ── (4) AdMob interstitial — Football Conquest v1 monetization ────────
+  // Fires ONCE after Game Over → New Game transition, with a 3-minute
+  // cooldown so a user who rage-quits and immediately starts another game
+  // isn't hit with back-to-back ads. During dev keep AD_IS_TESTING=true so
+  // that tapping through the ad in QA doesn't get the account flagged for
+  // clickfraud (Google's automated systems flag repeated self-clicks on
+  // real inventory). Flip AD_IS_TESTING to false right before we cut the
+  // Play Store release build.
+  //
+  // Real IDs live in AndroidManifest.xml (App ID) and below (Ad Unit ID).
+  // Payload sequence per session:
+  //   1. AdMob.initialize() on Capacitor boot
+  //   2. preloadInterstitial() → first ad warms in the background
+  //   3. showGameOverOverlay() sets gameOverPendingAd flag
+  //   4. startNewGameFlow() consumes the flag → showInterstitial() → new game
+  //   5. On dismissal (or 1.5s later) preload the NEXT interstitial
+  var AdMob = plugins.AdMob;
+  var AD_UNIT_INTERSTITIAL_ID = 'ca-app-pub-2248373411425621/5974877791';
+  var AD_IS_TESTING = true; // FLIP TO false BEFORE PLAY STORE SUBMISSION
+  var INTERSTITIAL_COOLDOWN_MS = 3 * 60 * 1000;
+  var interstitialLoaded = false;
+  var lastInterstitialShownAt = 0;
+  var gameOverPendingAd = false;
+
+  function preloadInterstitial() {
+    if (!AdMob || !AdMob.prepareInterstitial) return;
+    AdMob.prepareInterstitial({
+      adId: AD_UNIT_INTERSTITIAL_ID,
+      isTesting: AD_IS_TESTING
+    }).then(function(){
+      interstitialLoaded = true;
+      try { console.log('[FC-CAP] interstitial preloaded'); } catch(e){}
+    }).catch(function(err){
+      interstitialLoaded = false;
+      try { console.warn('[FC-CAP] interstitial preload failed:', err); } catch(e){}
+      // Transient network failure — retry once after 30s
+      setTimeout(preloadInterstitial, 30000);
+    });
+  }
+
+  function fcMaybeShowInterstitial() {
+    if (!AdMob || !AdMob.showInterstitial) return;
+    var now = Date.now();
+    if (now - lastInterstitialShownAt < INTERSTITIAL_COOLDOWN_MS) {
+      try { console.log('[FC-CAP] interstitial suppressed (cooldown active)'); } catch(e){}
+      return;
+    }
+    if (!interstitialLoaded) {
+      try { console.log('[FC-CAP] interstitial not ready — kicking preload for next time'); } catch(e){}
+      preloadInterstitial();
+      return;
+    }
+    AdMob.showInterstitial().then(function(){
+      lastInterstitialShownAt = Date.now();
+      interstitialLoaded = false;
+      try { console.log('[FC-CAP] interstitial shown'); } catch(e){}
+      // Preload the next interstitial in the background. Delay 1.5s so we
+      // don't race with the current one still finishing its dismiss animation.
+      setTimeout(preloadInterstitial, 1500);
+    }).catch(function(err){
+      try { console.warn('[FC-CAP] showInterstitial failed:', err); } catch(e){}
+      interstitialLoaded = false;
+      setTimeout(preloadInterstitial, 5000);
+    });
+  }
+  window.fcMaybeShowInterstitial = fcMaybeShowInterstitial;
+
+  // ── (5) AdMob rewarded video — v1 launch monetization anchor ─────────
+  // Two triggers use this same ad unit:
+  //   • Reward #1 — "One More Chance" modal on 3rd loss to same opponent
+  //     (drops the opponent's loss counter from 3 → 2 so the run continues)
+  //   • Reward #2 — "Free Boost" overlay on disabled boost buttons in the
+  //     match sim modal (uses a boost without paying its Aura cost)
+  // Both are capped: continue is 1/run (GAME.continuesUsed), free boost is
+  // 1/match (GAME._matchFreeBoostUsed). Reset points live in the game logic
+  // — this file just exposes fcShowRewardedAd() as a Promise<boolean> where
+  // true = user watched to completion, false = dismissed/failed.
+  var REWARDED_AD_UNIT_ID = 'ca-app-pub-2248373411425621/8323507836';
+  var rewardedLoaded = false;
+
+  function preloadRewarded() {
+    if (!AdMob || !AdMob.prepareRewardVideoAd) return;
+    AdMob.prepareRewardVideoAd({
+      adId: REWARDED_AD_UNIT_ID,
+      isTesting: AD_IS_TESTING
+    }).then(function(){
+      rewardedLoaded = true;
+      try { console.log('[FC-CAP] rewarded preloaded'); } catch(e){}
+    }).catch(function(err){
+      rewardedLoaded = false;
+      try { console.warn('[FC-CAP] rewarded preload failed:', err); } catch(e){}
+      setTimeout(preloadRewarded, 30000);
+    });
+  }
+
+  // Returns Promise<boolean>: true if user completed the video AND earned the
+  // reward, false if dismissed early / plugin errored / not preloaded.
+  function fcShowRewardedAd() {
+    return new Promise(function(resolve){
+      if (!AdMob || !AdMob.showRewardVideoAd) { resolve(false); return; }
+      if (!rewardedLoaded) {
+        try { console.log('[FC-CAP] rewarded not ready — kicking preload'); } catch(e){}
+        preloadRewarded();
+        resolve(false);
+        return;
+      }
+      AdMob.showRewardVideoAd().then(function(reward){
+        // v6 API: resolves with reward item if user earned it, null/undefined
+        // if dismissed early. Treat any truthy resolution as earned.
+        var earned = !!reward;
+        try { console.log('[FC-CAP] rewarded finished — earned=', earned); } catch(e){}
+        rewardedLoaded = false;
+        setTimeout(preloadRewarded, 1500);
+        resolve(earned);
+      }).catch(function(err){
+        try { console.warn('[FC-CAP] showRewarded failed:', err); } catch(e){}
+        rewardedLoaded = false;
+        setTimeout(preloadRewarded, 5000);
+        resolve(false);
+      });
+    });
+  }
+  window.fcShowRewardedAd = fcShowRewardedAd;
+
+  // Cheap boolean the game UI can poll to decide whether to render "watch ad"
+  // affordances. Only true when the ad is preloaded AND we're inside Capacitor.
+  window._fcRewardedAvailable = function(){ return !!rewardedLoaded; };
+
+  // ── Reward #1: "One More Chance" modal on 3rd loss ────────────────────
+  // Called from the losses>=3 branch of handleConquestLoss. Returns true if
+  // we're taking over the flow (modal is showing, we'll invoke runGameOver
+  // ourselves on decline or ad failure). Returns false if we're not eligible
+  // (already used continue, ad not loaded, not in Capacitor) so the caller
+  // proceeds with normal game-over immediately.
+  window.fcTryOneMoreChance = function(opp, runGameOver) {
+    try {
+      if (!AdMob || !rewardedLoaded) return false;
+      if (typeof GAME === 'undefined' || GAME.continuesUsed) return false;
+      var overlay = document.getElementById('g-onemore-overlay');
+      var sub     = document.getElementById('g-onemore-sub');
+      var watch   = document.getElementById('g-onemore-watch');
+      var decline = document.getElementById('g-onemore-decline');
+      if (!overlay || !watch || !decline) return false;
+
+      // Populate copy — subtitle names the opponent so the stakes read clean
+      var oppName = (typeof teamDisplayName === 'function') ? teamDisplayName(opp.name) : opp.name;
+      if (sub) {
+        var line = (window.FCLang && FCLang.t)
+          ? FCLang.t('sim.onemore.sub', { opp: '<b>' + oppName + '</b>' })
+          : 'Reduce your losses vs <b>' + oppName + '</b> from 3 → 2 and keep your run alive.';
+        sub.innerHTML = line;
+      }
+
+      // Prevent double-firing runGameOver if the user rapid-taps both buttons
+      var settled = false;
+      function settle(cb) {
+        if (settled) return;
+        settled = true;
+        overlay.classList.remove('open');
+        overlay.style.display = 'none';
+        cb();
+      }
+
+      decline.onclick = function(){ settle(function(){ runGameOver(); }); };
+      watch.onclick = function(){
+        watch.disabled = true;
+        fcShowRewardedAd().then(function(earned){
+          watch.disabled = false;
+          if (earned) {
+            // Grant the continue: drop the opp's loss counter from 3 → 2,
+            // mark this run's continue as used, refresh HUD, notify player.
+            settle(function(){
+              try { GAME.lossCounts[opp.id] = Math.max(0, (GAME.lossCounts[opp.id]||0) - 1); } catch(e){}
+              GAME.continuesUsed = 1;
+              try { if (typeof refreshConquestHud === 'function') refreshConquestHud(); } catch(e){}
+              try { if (typeof gLog === 'function') gLog('▶ +1 chance vs ' + oppName + '. Losses now ' + (GAME.lossCounts[opp.id]||0) + '/3.'); } catch(e){}
+            });
+          } else {
+            // User bailed out of the ad OR the video failed to complete.
+            // Fall through to normal game-over so we don't leave them stuck.
+            settle(function(){ runGameOver(); });
+          }
+        });
+      };
+
+      overlay.style.display = 'flex';
+      overlay.classList.add('open');
+      return true;
+    } catch (err) {
+      try { console.warn('[FC-CAP] fcTryOneMoreChance error, falling back to game over:', err); } catch(e){}
+      return false;
+    }
+  };
+
+  // Init AdMob and preload first interstitial + first rewarded video. iOS
+  // requires requestTrackingAuthorization to display the ATT prompt on
+  // first launch — harmless on Android.
+  if (AdMob && AdMob.initialize) {
+    AdMob.initialize({
+      requestTrackingAuthorization: true,
+      initializeForTesting: false,
+      testingDevices: []
+    }).then(function(){
+      try { console.log('[FC-CAP] AdMob initialized (isTesting=' + AD_IS_TESTING + ')'); } catch(e){}
+      preloadInterstitial();
+      preloadRewarded();
+    }).catch(function(err){
+      try { console.warn('[FC-CAP] AdMob init failed:', err); } catch(e){}
+    });
+  }
+
+  // Hook Game Over → New Game transition. showGameOverOverlay sets a pending
+  // flag; startNewGameFlow consumes it. This scoping ensures the ad ONLY
+  // fires on the game-over → new-game path, not on mid-game "Reset" from the
+  // settings gear or the hamburger drawer's "New game" relay.
+  if (typeof window.showGameOverOverlay === 'function') {
+    var _origShowGameOverForAd = window.showGameOverOverlay;
+    window.showGameOverOverlay = function() {
+      gameOverPendingAd = true;
+      return _origShowGameOverForAd.apply(this, arguments);
+    };
+  }
+  if (typeof window.startNewGameFlow === 'function') {
+    var _origStartNewGameForAd = window.startNewGameFlow;
+    window.startNewGameFlow = function() {
+      if (gameOverPendingAd) {
+        gameOverPendingAd = false;
+        try { fcMaybeShowInterstitial(); } catch(e){}
+      }
+      return _origStartNewGameForAd.apply(this, arguments);
+    };
+  }
 })();
 </script>
 

@@ -418,6 +418,7 @@ window.FC_TRANSLATIONS = {
     "sim.mode.ri.desc": "All 212 nations battle randomly. AI-driven attackers, FIFA-rated results.",
     "sim.mode.pick": "Choose your team:",
     "sim.mode.search": "Search teams...",
+    "sim.mode.random": "🎲 Random Team",
     "sim.mode.start": "Start Conquest",
     "sim.mode.resume.btn": "↻ Resume Saved Game",
     /* E — leaderboards */
@@ -462,6 +463,8 @@ window.FC_TRANSLATIONS = {
     /* F — match result modal */
     "sim.res.title": "Match Result",
     "sim.res.simulate": "Simulate Match",
+    "sim.res.don.btn": "Double or Nothing",
+    "sim.res.don.sub": "2x Aura or lose it all",
     "sim.res.ormanual": "or enter manually",
     "sim.res.you": "YOU",
     "sim.res.opp": "OPPONENT",
