@@ -38,7 +38,15 @@
 html { scroll-behavior: smooth; }
 
 body {
-  background: var(--paper);
+  /* v-green: cream base + a faint tiled green FC-arrow watermark so the
+     marketing pages share the same backdrop identity as the game map and
+     the app icon. The PNG is pre-faded to ~7% alpha and baked airy, so it
+     whispers behind text without hurting readability. The cream shows
+     through as the background-color beneath the tiled image. */
+  background-color: var(--paper);
+  background-image: url(/assets/fc-watermark-cream.png?v=green);
+  background-size: 300px auto;
+  background-repeat: repeat;
   color: var(--ink);
   font-family: var(--serif);
   font-weight: 400;
