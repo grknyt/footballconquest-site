@@ -50,9 +50,10 @@ html,body{height:100%;background:#070e17;-webkit-user-select:none;user-select:no
 #msvg{display:block;width:100%;height:100%;position:relative;z-index:1;}
 /* Scattered FC logos behind the map — fills the dead navy negative space. */
 #fc-bg-pattern{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
-/* Light mode: keep the pattern visible but recolour from red → dark navy and ease the
-   opacity so it reads as a watermark on the light blue background instead of competing. */
-body.map-light #fc-bg-pattern text{fill:#1a3550;opacity:0.13;}
+/* Light mode: the watermark is now the green FC-arrow logo image (v-green).
+   On the pale ocean the bright green can read a touch strong, so knock it
+   back with a filter that deepens + softens it, and ease overall opacity. */
+body.map-light #fc-bg-pattern image{filter:brightness(0.7) saturate(0.85);opacity:0.6;}
 #erase-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;}
 #hint{position:absolute;top:8px;left:10px;font-size:10px;color:rgba(255,255,255,.28);pointer-events:none;z-index:4;line-height:1.5;}
 .tip{position:absolute;background:rgba(8,16,28,.95);border:1px solid #2a3f55;border-radius:6px;padding:4px 9px;font-size:11px;color:#fff;pointer-events:none;display:none;white-space:nowrap;z-index:30;}
@@ -3099,11 +3100,16 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
         <filter id="fc-checker-blur" x="-10%" y="-10%" width="120%" height="120%">
           <feGaussianBlur stdDeviation="3.5"/>
         </filter>
+        <!-- v-green: the tiled watermark now uses the actual FC-arrow LOGO
+             mark (green on transparent, /assets/fc-mark-green.png) instead
+             of plain "FC" text, so the map backdrop echoes the app icon.
+             Two sizes per 200×200 tile in a checker layout, each at low
+             opacity so it stays a watermark and never competes with flags. -->
         <pattern id="fc-checker-pat" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
-          <text x="50"  y="50"  text-anchor="middle" dy="0.35em" font-family="Impact, 'Arial Black', Haettenschweiler, sans-serif" font-weight="900" font-size="54" fill="#c8102e" opacity="0.22">FC</text>
-          <text x="150" y="50"  text-anchor="middle" dy="0.35em" font-family="Impact, 'Arial Black', Haettenschweiler, sans-serif" font-weight="900" font-size="28" fill="#c8102e" opacity="0.16">FC</text>
-          <text x="50"  y="150" text-anchor="middle" dy="0.35em" font-family="Impact, 'Arial Black', Haettenschweiler, sans-serif" font-weight="900" font-size="28" fill="#c8102e" opacity="0.16">FC</text>
-          <text x="150" y="150" text-anchor="middle" dy="0.35em" font-family="Impact, 'Arial Black', Haettenschweiler, sans-serif" font-weight="900" font-size="54" fill="#c8102e" opacity="0.22">FC</text>
+          <image href="/assets/fc-mark-green.png" x="14"  y="20"  width="72" height="72" opacity="0.22"/>
+          <image href="/assets/fc-mark-green.png" x="128" y="34"  width="44" height="44" opacity="0.15"/>
+          <image href="/assets/fc-mark-green.png" x="24"  y="132" width="44" height="44" opacity="0.15"/>
+          <image href="/assets/fc-mark-green.png" x="118" y="122" width="72" height="72" opacity="0.22"/>
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#fc-checker-pat)" filter="url(#fc-checker-blur)"/>
@@ -12973,7 +12979,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v80-mini-arrow-right-of-card-2026-07-16';
+  window._FC_CAP_VERSION = 'v81-green-fc-arrow-watermark-2026-07-17';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
