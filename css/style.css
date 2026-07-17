@@ -9,6 +9,14 @@
   --navy-3: #1a3b5c;
   --paper: #f4ead5;
   --paper-2: #e8dcc4;
+  /* v-green rebrand (2026-07-17): green promoted to the PRIMARY accent to
+     match the mobile app's FC-arrow launcher icon (#18bf2f). Red is kept
+     defined for the in-game loss/danger semantics and any legacy refs, but
+     the marketing site's accent, CTAs, links, dividers, and brand mark now
+     use green. Black (--ink) sits on green for max contrast, mirroring the
+     black-FC-on-green app icon. */
+  --green: #18bf2f;
+  --green-dark: #0f9a24;
   --red: #c8102e;
   --red-dark: #8a0a1f;
   --gold: #d4a936;
@@ -45,7 +53,7 @@ a { color: inherit; text-decoration: none; }
 img, svg { display: block; max-width: 100%; height: auto; }
 
 /* ── Selection ── */
-::selection { background: var(--red); color: var(--paper); }
+::selection { background: var(--green); color: var(--ink); }
 
 /* ─────────────────────────────────────────────────────────────
    NAVIGATION
@@ -61,7 +69,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 3px solid var(--red);
+  border-bottom: 3px solid var(--green);
   font-family: var(--display);
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -79,8 +87,9 @@ img, svg { display: block; max-width: 100%; height: auto; }
   justify-content: center;
   width: 38px;
   height: 38px;
-  background: var(--red);
-  color: var(--paper);
+  background: var(--green);
+  /* Black FC on green — mirrors the app launcher icon exactly (v-green). */
+  color: var(--ink);
   font-family: var(--display);
   font-size: 18px;
   letter-spacing: 0;
@@ -125,7 +134,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   position: absolute;
   bottom: -4px; left: 0; right: 0;
   height: 2px;
-  background: var(--red);
+  background: var(--green);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.2s;
@@ -156,7 +165,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
 .lang-btn:hover { opacity: 0.85; }
 .lang-btn.active {
   opacity: 1;
-  color: var(--red);
+  color: var(--green);
 }
 .lang-sep { color: var(--muted); font-size: 11px; }
 
@@ -195,7 +204,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   transition: background 0.1s, color 0.1s;
 }
 .nav-lang-menu button:hover { background: var(--navy-3); color: var(--paper); }
-.nav-lang-menu button.active { color: var(--red); font-weight: 700; }
+.nav-lang-menu button.active { color: var(--green); font-weight: 700; }
 .nav-lang-menu button.active::before { content: "● "; font-size: 10px; }
 
 /* ── Mobile hamburger menu ──
@@ -356,7 +365,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   font-family: var(--mono);
   font-size: 12px;
   letter-spacing: 4px;
-  color: var(--red);
+  color: var(--green);
   margin-bottom: 24px;
   display: flex;
   align-items: center;
@@ -367,7 +376,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   content: '';
   width: 36px;
   height: 2px;
-  background: var(--red);
+  background: var(--green);
 }
 
 .hero-title {
@@ -411,7 +420,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   font-family: var(--serif);
   font-style: italic;
   font-size: clamp(18px, 1.8vw, 26px);
-  color: var(--red);
+  color: var(--green);
   margin-bottom: 24px;
   letter-spacing: 0.3px;
   line-height: 1.2;
@@ -430,7 +439,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   font-family: var(--serif);
   font-style: italic;
   font-weight: 400;
-  color: var(--red);
+  color: var(--green);
   letter-spacing: -4px;
 }
 
@@ -464,8 +473,9 @@ img, svg { display: block; max-width: 100%; height: auto; }
 }
 
 .btn-primary:hover {
-  background: var(--red);
-  border-color: var(--red);
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--ink);
   transform: translate(-2px, -2px);
   box-shadow: 4px 4px 0 var(--navy);
 }
@@ -496,15 +506,15 @@ img, svg { display: block; max-width: 100%; height: auto; }
    sections (modes-grid, big-cta footer) still use the navy-on-cream styling
    defined above. */
 .hero .btn-primary {
-  background: var(--red);
-  color: var(--paper);
-  border-color: var(--red);
+  background: var(--green);
+  color: var(--ink);
+  border-color: var(--green);
 }
 .hero .btn-primary:hover {
   background: var(--paper);
   color: var(--navy);
   border-color: var(--paper);
-  box-shadow: 4px 4px 0 var(--red);
+  box-shadow: 4px 4px 0 var(--green);
 }
 .hero .btn-secondary {
   color: var(--paper);
@@ -569,7 +579,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   overflow: hidden;
   box-shadow:
     0 1px 0 rgba(255,255,255,0.05) inset,
-    12px 12px 0 var(--red);
+    12px 12px 0 var(--green);
 }
 
 /* Live-preview link + iframe + hover overlay. The iframe loads the simulator
@@ -616,8 +626,8 @@ img, svg { display: block; max-width: 100%; height: auto; }
   font-size: 18px;
   font-weight: 800;
   letter-spacing: 1px;
-  color: var(--paper);
-  background: var(--red);
+  color: var(--ink);
+  background: var(--green);
   padding: 14px 32px;
   border-radius: 4px;
   opacity: 0;
@@ -664,8 +674,8 @@ img, svg { display: block; max-width: 100%; height: auto; }
   background: var(--navy);
   color: var(--paper);
   overflow: hidden;
-  border-top: 3px solid var(--red);
-  border-bottom: 3px solid var(--red);
+  border-top: 3px solid var(--green);
+  border-bottom: 3px solid var(--green);
 }
 
 .marquee-track {
@@ -721,7 +731,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   font-family: var(--mono);
   font-size: 14px;
   letter-spacing: 3px;
-  color: var(--red);
+  color: var(--green);
   font-weight: 600;
 }
 
@@ -818,8 +828,8 @@ img, svg { display: block; max-width: 100%; height: auto; }
   position: absolute;
   top: 10px;
   right: 14px;
-  background: var(--red);
-  color: var(--paper);
+  background: var(--green);
+  color: var(--ink);
   font-family: var(--display);
   font-size: 10px;
   font-weight: 800;
@@ -855,7 +865,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 6px;
-  background: var(--red);
+  background: var(--green);
 }
 
 .mode-conquest::before { background: var(--gold); }
@@ -869,7 +879,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   font-family: var(--mono);
   font-size: 11px;
   letter-spacing: 3px;
-  color: var(--red);
+  color: var(--green);
   margin-bottom: 16px;
   font-weight: 600;
 }
@@ -908,7 +918,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
 
 .mode-features li::before {
   content: '→';
-  color: var(--red);
+  color: var(--green);
 }
 
 .mode-conquest .mode-features li::before { color: var(--gold); }
@@ -919,12 +929,12 @@ img, svg { display: block; max-width: 100%; height: auto; }
   font-weight: 800;
   letter-spacing: 1px;
   color: var(--paper);
-  border-bottom: 2px solid var(--red);
+  border-bottom: 2px solid var(--green);
   padding-bottom: 4px;
   transition: color 0.2s;
 }
 
-.mode-link:hover { color: var(--red); }
+.mode-link:hover { color: var(--green); }
 
 .mode-conquest .mode-link { border-bottom-color: var(--gold); }
 .mode-conquest .mode-link:hover { color: var(--gold); }
@@ -937,8 +947,8 @@ img, svg { display: block; max-width: 100%; height: auto; }
   background: var(--navy);
   color: var(--paper);
   padding: 64px 36px;
-  border-top: 4px solid var(--red);
-  border-bottom: 4px solid var(--red);
+  border-top: 4px solid var(--green);
+  border-bottom: 4px solid var(--green);
 }
 
 .how-strip-inner {
@@ -961,7 +971,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   font-size: 56px;
   font-weight: 800;
   line-height: 1;
-  color: var(--red);
+  color: var(--green);
 }
 
 .how-text {
@@ -1080,16 +1090,16 @@ img, svg { display: block; max-width: 100%; height: auto; }
 }
 
 .big-cta .btn-primary {
-  background: var(--red);
-  border-color: var(--red);
-  color: var(--paper);
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--ink);
 }
 
 .big-cta .btn-primary:hover {
   background: var(--paper);
   color: var(--navy);
   border-color: var(--paper);
-  box-shadow: 4px 4px 0 var(--red);
+  box-shadow: 4px 4px 0 var(--green);
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -1142,7 +1152,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   font-family: var(--mono);
   font-size: 12px;
   letter-spacing: 3px;
-  color: var(--red);
+  color: var(--green);
   margin-bottom: 8px;
 }
 
@@ -1177,7 +1187,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   font-family: var(--mono);
   font-size: 12px;
   letter-spacing: 4px;
-  color: var(--red);
+  color: var(--green);
   margin-bottom: 24px;
 }
 
@@ -1217,7 +1227,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
   font-size: 26px;
   font-weight: 700;
   letter-spacing: 0;
-  color: var(--red);
+  color: var(--green);
   margin: 32px 0 12px;
 }
 
@@ -1245,7 +1255,7 @@ img, svg { display: block; max-width: 100%; height: auto; }
 }
 
 .page blockquote {
-  border-left: 4px solid var(--red);
+  border-left: 4px solid var(--green);
   padding: 12px 24px;
   margin: 32px 0;
   font-style: italic;
