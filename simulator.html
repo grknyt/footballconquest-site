@@ -74,12 +74,12 @@ transform:translateX(-50%);width:calc(100% - 6px);max-width:calc(100% - 6px);
    Three stops: brighter navy top-left, mid-tone through, deep navy bottom-right.
    Kept in the same blue family so it doesn't clash with brand colours. */
 background:linear-gradient(135deg,#1e3452 0%,#0e1a2c 50%,#050c17 100%);
-/* Brighter/thicker border per Gürkan v27 polish — matches the outline
-   presence of the Play Match button so the whole panel reads as one
-   deliberate container instead of blending into the map. */
-border:1.5px solid #3a5a80;border-radius:12px;
+/* Border + outer glow recoloured to brand green (v-green) so the panel
+   frame ties to the app identity. Interior gradient stays navy so the
+   flags, semantic win/loss colours, and gold Aura still read cleanly. */
+border:1.5px solid #2a7a3a;border-radius:12px;
 display:none;flex-direction:column;z-index:25;overflow:hidden;
-box-shadow:0 8px 24px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08), 0 0 20px rgba(58,90,128,.15);}
+box-shadow:0 8px 24px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08), 0 0 20px rgba(24,191,47,.18);}
 #game-panel.open{display:flex;}
 .g-head{padding:7px 16px;background:#0a1624;border-bottom:1px solid #1a2f40;
 display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:6px;}
@@ -172,8 +172,12 @@ box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 2px 6px rgba(0,0,0,.25);}
 .g-btn{min-width:110px;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;
 font-size:11px;font-weight:600;-webkit-tap-highlight-color:transparent;transition:all .15s;white-space:nowrap;
 box-shadow:0 2px 6px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12);}
-.g-btn.primary{background:linear-gradient(180deg,#2b7cbd 0%,#154870 100%);color:#fff;border:1px solid #2b7cbd;}
-.g-btn.primary:hover:not(:disabled){background:linear-gradient(180deg,#3690d5 0%,#1a5680 100%);}
+/* v-green: secondary in-game action buttons (Spin arrow, Conquest Strike,
+   Pick attacker) recoloured blue → brand green, black text. Tactic buttons
+   keep their own semantic colours (defensive-red / balanced-blue /
+   attacking-orange) via more specific rules below. */
+.g-btn.primary{background:linear-gradient(180deg,#22d63c 0%,#0f9a24 100%);color:#062a0d;border:1px solid #18bf2f;}
+.g-btn.primary:hover:not(:disabled){background:linear-gradient(180deg,#2ee84a 0%,#12ad29 100%);}
 .g-btn.danger{background:linear-gradient(180deg,#c72a2a 0%,#6e1414 100%);color:#fff;border:1px solid #c72a2a;}
 .g-btn.danger:hover:not(:disabled){background:linear-gradient(180deg,#e03535 0%,#821818 100%);}
 .g-btn.ghost{background:linear-gradient(180deg,#1a2f40 0%,#0e1a26 100%);color:#7ab8e8;border:1px solid #2a4f6a;}
@@ -289,13 +293,17 @@ box-shadow:0 2px 6px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12);}
   min-width:150px;padding:11px 20px;font-size:13px;font-weight:600;
   border-radius:8px;letter-spacing:.4px;
 }
+/* v-green: both action-button glow pulses recoloured to brand green so they
+   match the now-green button fills (were blue for Spin, red for Play Match).
+   Kept as two near-identical keyframes so the existing animation hooks below
+   don't need renaming. */
 @keyframes g-action-glow-blue{
-  0%,100%{box-shadow:0 0 0 0 rgba(116,196,255,.50),0 0 0 0 rgba(116,196,255,0);}
-  50%{box-shadow:0 0 18px 4px rgba(116,196,255,.40),0 0 0 2px rgba(116,196,255,.30);}
+  0%,100%{box-shadow:0 0 0 0 rgba(46,232,74,.50),0 0 0 0 rgba(46,232,74,0);}
+  50%{box-shadow:0 0 18px 4px rgba(46,232,74,.42),0 0 0 2px rgba(46,232,74,.32);}
 }
 @keyframes g-action-glow-red{
-  0%,100%{box-shadow:0 0 0 0 rgba(255,90,90,.55),0 0 0 0 rgba(255,90,90,0);}
-  50%{box-shadow:0 0 20px 5px rgba(255,90,90,.45),0 0 0 2px rgba(255,90,90,.35);}
+  0%,100%{box-shadow:0 0 0 0 rgba(46,232,74,.55),0 0 0 0 rgba(46,232,74,0);}
+  50%{box-shadow:0 0 20px 5px rgba(46,232,74,.45),0 0 0 2px rgba(46,232,74,.35);}
 }
 #game-panel.conquest-mode #g-spin-team:not(:disabled){animation:g-action-glow-blue 1.6s ease-in-out infinite;}
 #game-panel.conquest-mode #g-resolve:not(:disabled){animation:g-action-glow-red 1.4s ease-in-out infinite;}
@@ -1373,16 +1381,19 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-result-actions .g-btn{min-width:110px;padding:11px 18px;font-size:14px;}
 /* Simulate match — prominent CTA above the manual score-entry block.
    Same red as the splash Play button so the "instant resolve" semantic carries through. */
-.g-sim-btn{width:100%;padding:14px 18px;border-radius:8px;border:1px solid #c8102e;
-  background:linear-gradient(180deg,#e02040 0%,#a80c26 100%);color:#fff;
-  font-size:17px;font-weight:700;letter-spacing:0.6px;
+/* v-green: primary "Play Match / Simulate" CTA recoloured red → brand green
+   to match the app icon + site. Black text on green (like the icon) for max
+   contrast. Loss-red / win-green result states elsewhere are untouched. */
+.g-sim-btn{width:100%;padding:14px 18px;border-radius:8px;border:1px solid #18bf2f;
+  background:linear-gradient(180deg,#22d63c 0%,#0f9a24 100%);color:#062a0d;
+  font-size:17px;font-weight:800;letter-spacing:0.6px;
   min-height:56px;
   cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:11px;
   font-family:inherit;-webkit-tap-highlight-color:transparent;
   transition:background .15s,transform .12s;
-  box-shadow:0 3px 10px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.15);
+  box-shadow:0 3px 10px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.2);
   margin-bottom:8px;}
-.g-sim-btn:hover{background:linear-gradient(180deg,#ee2c4c 0%,#b8142e 100%);}
+.g-sim-btn:hover{background:linear-gradient(180deg,#2ee84a 0%,#12ad29 100%);}
 .g-sim-btn:active{transform:translateY(1px);}
 .g-sim-btn .g-sim-icon{font-size:20px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));}
 /* Two-button Simulate row: regular Simulate + Double or Nothing STACKED,
@@ -12979,7 +12990,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v81-green-fc-arrow-watermark-2026-07-17';
+  window._FC_CAP_VERSION = 'v82-green-ingame-buttons-2026-07-17';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
