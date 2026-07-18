@@ -553,6 +553,7 @@ window.FC_TRANSLATIONS = {
     "sim.hud.record": "Record",
     "sim.hud.goals": "Goals",
     "sim.hud.losses": "⚠️ Losses to <b>{opp}</b>: <b>{n}/3</b>",
+    "sim.home.confirm": "Go to the home screen? Your game will be saved automatically.",
     /* K2 — "One More Chance" rewarded-ad continue modal (mobile app) */
     "sim.onemore.title": "One More Chance?",
     "sim.onemore.sub": "Watch a short ad to reduce your losses vs {opp} from 3 → 2 and keep your run alive.",
@@ -1120,6 +1121,7 @@ window.FC_TRANSLATIONS = {
     "sim.hist.original": "Ba\u015flang\u0131\u00e7 durumu",
     "sim.hist.title": "Ge\u00e7mi\u015f",
     "sim.hud.losses": "\u26a0\ufe0f <b>{opp}</b> yenilgileri: <b>{n}/3</b>",
+    "sim.home.confirm": "Ana ekrana d\u00f6n\u00fcls\u00fcn m\u00fc? Oyunun otomatik olarak kaydedilecek.",
     "sim.onemore.title": "Bir \u015eans Daha?",
     "sim.onemore.sub": "K\u0131sa bir reklam izleyerek {opp} kar\u015f\u0131s\u0131ndaki yenilgilerini 3 \u2192 2'ye d\u00fc\u015f\u00fcr ve seferine devam et.",
     "sim.onemore.watch": "Reklam izle, devam et",

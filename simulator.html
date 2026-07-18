@@ -62,7 +62,11 @@ body.map-light #fc-bg-pattern image{filter:brightness(0.7) saturate(0.85);opacit
    pinch both zoom, so they're redundant everywhere. Only the ⟳ reset-view
    button (#zr) remains, and the play.html fullscreen button stacks above it. */
 #zi, #zo { display:none !important; }
-.zb{width:38px;height:38px;background:rgba(7,14,23,.92);border:1px solid #2a3f55;color:#7ab8e8;border-radius:8px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+.zb{width:40px;height:40px;background:rgba(7,14,23,.92);border:1px solid #2a3f55;color:#7ab8e8;border-radius:8px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
+/* v-green: reset-view arrow bolder + larger so it reads clearly next to the
+   Fullscreen button on play.html. */
+#zr{font-size:21px;font-weight:700;color:#9fd0f0;}
+#zr:hover{color:#fff;}
 .zb:hover{background:#1a2f40;}
 /* Horizontal strip across the bottom, full-width */
 /* Default panel: centered horizontally, width hugs its content (with a max so
@@ -3069,8 +3073,11 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
 </script>
 <div id="app">
   <div id="hdr">
-    <span class="fc-logo" aria-label="Football Conquest">FC</span>
-    <span class="fc-wordmark" aria-hidden="true">FOOTBALL CONQUEST</span>
+    <!-- v91: logo + wordmark are a HOME button — tap returns to the splash
+         launcher. Mid-game taps confirm first, then auto-save the run so
+         Resume picks it right back up. Wired in wireLogoHome(). -->
+    <span class="fc-logo" id="fc-logo-home" role="button" tabindex="0" aria-label="Football Conquest — home" style="cursor:pointer;">FC</span>
+    <span class="fc-wordmark" id="fc-wordmark-home" aria-hidden="true" style="cursor:pointer;">FOOTBALL CONQUEST</span>
     <div class="modes">
       <button class="mbtn active" id="btn-view">👁 <span data-i18n="sim.tb.view">View</span><span class="kbadge">V</span></button>
       <button class="mbtn" id="btn-erase">✏ <span data-i18n="sim.tb.erase">Erase</span><span class="kbadge">E</span></button>
@@ -4158,6 +4165,17 @@ const EXTRA_TEAM_ISOS={
 };
 
 const VW=10000,VH=5000,BW=300,BH=195;
+/* ── v90 FLAG SIZING — single screen-space rule ─────────────────────────
+   flagPx = clamp(FLAG_MIN_PX, territoryScreenLinear × FLAG_FILL, FLAG_MAX_PX)
+   where territoryScreenLinear = sqrt(Σ owned iso areas) × zoom × pxPerSvgUnit.
+   This REPLACES the old five-mechanism stack (area default × conquest blend
+   × piecewise effS × wvBoost/boostWeight × density dampener) whose composed
+   behaviour was untunable. All tuning now lives in these three numbers:   */
+const FLAG_MIN_PX = 15;   // readability floor — no flag renders narrower
+const FLAG_MAX_PX = 58;   // dominance cap — no flag renders wider
+const FLAG_FILL   = 0.34; // flag width as a fraction of territory's linear size
+/* Legacy constants kept — REF_K/FLAG_SCALE still referenced by unrelated
+   overlay code paths (roulette, dial). Flag badges no longer use them. */
 const REF_K=2.5; // flags scale with map up to this zoom, then stay constant screen size
 const FLAG_SCALE=0.62; // global size multiplier (was 0.7). Big countries are
 // largely unaffected because of the wvBoost mechanism (Russia/Canada/USA/etc.
@@ -5128,30 +5146,45 @@ function _buildIsoDefaultScaleLookup() {
   teams.forEach(t => { _isoDefaultScale[String(t.iso)] = defaultFlagScaleById[t.id] || 1.0; });
 }
 
+/* ── v90 getScale: returns the team's LINEAR TERRITORY FOOTPRINT in SVG
+   units (sqrt of summed projected areas of every iso the team owns),
+   multiplied by any manual creator resize. This feeds effS(), which
+   converts it to a clamped on-screen size. Empires grow naturally because
+   footprint = owned land — replaces the old 0.4/0.6 conquest blend hack.
+   Cached per team; invalidated when the owned-territory count changes. */
+const _fpCache = {};
+const _teamIsoById = {};
 function getScale(id){
-  const base = flagScales[id]!=null?flagScales[id]:(defaultFlagScaleById[id]||1.0);
-  // ── Conquest boost ──
-  // Gürkan reported that Luxembourg's flag stays tiny after conquering
-  // Germany. Root cause: getScale returned the HOME country's flag scale
-  // regardless of what the team currently owns.
-  // Fix: if the team owns territory whose original owner had a bigger flag
-  // scale than theirs, blend the two so the flag visually matches the
-  // conquered territory. 60% weight on the largest conquered scale, 40% on
-  // home — a Luxembourg controlling Germany ends up ~1.0 (mid-country size),
-  // not 0.25 (Luxembourg's default).
-  const team = (typeof GAME !== 'undefined' && GAME.state) ? GAME.state[id] : null;
-  if (team && team.ownedIsos && team.ownedIsos.size > 1) {
-    if (Object.keys(_isoDefaultScale).length === 0) _buildIsoDefaultScaleLookup();
-    let maxOwnedScale = base;
-    team.ownedIsos.forEach(iso => {
-      const s = _isoDefaultScale[iso];
-      if (s && s > maxOwnedScale) maxOwnedScale = s;
-    });
-    const blended = base * 0.4 + maxOwnedScale * 0.6;
-    return blended < 0.3 ? 1.0 : blended;
+  const lin = window._isoLinear || {};
+  const med = window._isoLinearMedian || 200;
+  if (_teamIsoById[id] === undefined && typeof teams !== 'undefined') {
+    const t = teams.find(x => x.id === id);
+    _teamIsoById[id] = t ? String(t.iso) : null;
   }
-  // Sanity: never let a flag be tinier than 0.3 (prevents broken defaults from creating invisible flags)
-  return base<0.3?1.0:base;
+  const team = (typeof GAME !== 'undefined' && GAME.state) ? GAME.state[id] : null;
+  let L;
+  if (team && team.ownedIsos && team.ownedIsos.size > 0) {
+    const n = team.ownedIsos.size;
+    const c = _fpCache[id];
+    if (c && c.n === n) {
+      L = c.L;
+    } else {
+      let areaSum = 0;
+      team.ownedIsos.forEach(i => {
+        const l = lin[String(i)];
+        areaSum += (l ? l*l : med*med*0.04); // small fallback for missing isos
+      });
+      L = Math.sqrt(areaSum);
+      _fpCache[id] = { n: n, L: L };
+    }
+  } else {
+    const iso = _teamIsoById[id];
+    L = (iso && lin[iso]) ? lin[iso] : med;
+  }
+  // Manual creator resize (drag handles / offline build) — a multiplier on
+  // the natural footprint. 1.0 = untouched.
+  const m = flagScales[id]!=null ? flagScales[id] : 1.0;
+  return L * Math.max(0.2, Math.min(5, m));
 }
 
 // Compute per-team neighbor density: number of OTHER team flag positions within RADIUS
@@ -5184,38 +5217,36 @@ function densityScale(id){
   return Math.max(0.45, 1.0/(1+n*0.07));
 }
 
-// Dynamic scale: grow with map up to REF_K zoom, then hold constant screen size
-function effS(s,k){
-  // At k <= REF_K: natural scale grows with the map (flag keeps proportional size to map)
-  // At k >  REF_K: flag stays at constant pixel size on screen (exponent = 1.0).
-  //               Cleaner than aggressive shrink (overshot small) or sub-1 grow (overshot big).
-  let natural;
-  if(k<=REF_K){
-    natural=s*FLAG_SCALE*k/REF_K; // simple proportional growth up to REF_K
-    const damp=Math.pow(k/REF_K,0.45); // damping at low zoom
-    natural*=damp;
-  } else {
-    // Past REF_K: (REF_K/k)^0.7 — flags GROW on screen at higher zoom levels.
-    // Gürkan reported flags too small at max mobile zoom. Exponent 0.7 gives
-    // moderate on-screen growth:
-    //   At k=REF_K: on-screen size = s*FLAG_SCALE*REF_K = 1.55s
-    //   At k=5:     on-screen size = s*FLAG_SCALE*Math.pow(0.5,0.7)*5 = 1.91s (+23%)
-    //   At k=10:    on-screen size = s*FLAG_SCALE*Math.pow(0.25,0.7)*10 = 2.36s (+52%)
-    //   At k=20:    on-screen size = s*FLAG_SCALE*Math.pow(0.125,0.7)*20 = 2.90s (+87%)
-    // If flags grow too much, bump exponent up (0.75, 0.8). If still too
-    // small, drop it further (0.65). Constant-screen-size = 1.0 (original).
-    natural=s*FLAG_SCALE*Math.pow(REF_K/k,0.7);
-  }
-  const floor=0.6/k; // ~18px minimum screen width (was 0.3/k / ~9px — bumped for mobile readability)
-  return Math.max(natural,floor);
+/* ── v90 effS: THE flag sizing rule. `s` is the team's linear territory
+   footprint in SVG units (from getScale). Convert to on-screen pixels,
+   clamp between the readability floor and dominance cap, and return the
+   world-space scale for the badge transform. One formula, all zooms:
+
+     flagPx = clamp(FLAG_MIN_PX, s × k × V × FLAG_FILL, FLAG_MAX_PX)
+     scale  = flagPx / (BW × k × V)
+
+   Between the clamps a flag is proportional to its territory's on-screen
+   size — the most intuitive mapping. Below/above, it's pinned. */
+let _pxPerSvg = null;
+function _pxPerSvgUnit(){
+  if (_pxPerSvg) return _pxPerSvg;
+  const el = document.getElementById('msvg');
+  const w = el ? (el.clientWidth || el.getBoundingClientRect().width) : 0;
+  _pxPerSvg = (w > 0 ? w : 1000) / VW;
+  return _pxPerSvg;
 }
-// Inverse: given a desired on-screen scale (es) at zoom k, return world-space s
+window.addEventListener('resize', function(){ _pxPerSvg = null; });
+function effS(s,k){
+  const V = _pxPerSvgUnit();
+  const targetPx = Math.max(FLAG_MIN_PX, Math.min(FLAG_MAX_PX, s * k * V * FLAG_FILL));
+  return targetPx / (BW * k * V);
+}
+// Inverse: given a desired world scale (es) at zoom k, return the footprint
+// value s that effS would map back to it (used by the drag-resize handles).
 function invEffS(es,k){
-  if(k<REF_K){
-    const damp=Math.pow(k/REF_K,0.45);
-    return es/(FLAG_SCALE*damp);
-  }
-  return es*k/(FLAG_SCALE*REF_K);
+  const V = _pxPerSvgUnit();
+  const targetPx = es * BW * k * V;
+  return targetPx / (k * V * FLAG_FILL);
 }
 function currentK(){return svgSel?d3.zoomTransform(svgSel.node()).k:1;}
 
@@ -5296,59 +5327,17 @@ function refreshLabels(k){
   });
 }
 
+/* ── v90 scaleBadges: ONE formula per badge, no zoom-piecewise weights.
+   getScale(id) → territory footprint; effS(footprint, k) → clamped screen
+   size. The old boostWeight / wvFade / density composition is deleted —
+   their jobs (bounded world-view sizes, no mid-zoom blowups, readable
+   minimums) all fall out of the clamp naturally. */
 function scaleBadges(k){
   if(typeof rescaleGameOverlay==='function') rescaleGameOverlay();
-  // Density-based shrink kicks in stronger at HIGHER zoom levels where the user is looking
-  // closely at crowded regions. At world view, density barely matters because flags are 
-  // already shrunken proportionally.
-  const REF=typeof REF_K!=='undefined'?REF_K:2.5;
-  // densityWeight: 0 at world view → ramps up to 1.0 at REF_K (zoomed regional view) → 
-  // then RAMPS BACK DOWN at higher zooms (since flags are physically spread out on screen)
-  let densityWeight;
-  if(k<REF){
-    densityWeight=k/REF; // 0→1
-  } else {
-    // Above REF_K, taper density effect back toward 0. At k=2*REF (~5), weight is 0.5. At k=10, near 0.
-    densityWeight=Math.max(0, 1 - (k-REF)/(REF*2));
-  }
-  // boostWeight: how much of the area-based size boost (s_raw above 1.0) to apply at this zoom.
-  // Designed to fix mid-zoom oversize on huge countries (Russia, Canada, USA, China, Australia):
-  //   k = 1     (world view): full boost → big countries dramatically larger
-  //   k = REF_K (~2.5):       minimum boost → big flags shrink back toward median behavior
-  //   k > REF_K (zoomed in):  partial recovery (effS already shrinks aggressively)
-  let boostWeight;
-  if(k<=1){
-    boostWeight=1.0;
-  } else if(k<=REF){
-    const t=(k-1)/(REF-1); // 0 → 1
-    boostWeight=1.0-0.6*t; // 1.0 at k=1 → 0.4 at REF_K
-  } else {
-    const t=Math.min(1,(k-REF)/(REF*1.5)); // 0 → 1 over k=REF..2.5*REF
-    boostWeight=0.4+0.2*t; // 0.4 at REF_K → 0.6 at high zoom
-  }
-  // wvFade: world-view bbox-based multiplicative boost.
-  //   k = 1     → full boost (huge countries fill ~50% of their bbox)
-  //   k = REF_K → no boost (returns to area-based + mid-zoom-corrected behavior)
-  // Cubic falloff so the boost vanishes faster than effS grows, preventing any peak between
-  // world view and mid-zoom.
-  let wvFade;
-  if(k<=1) wvFade=1.0;
-  else if(k>=REF) wvFade=0.0;
-  else wvFade=Math.pow(1-(k-1)/(REF-1),3);
   d3.select('#badge-layer').selectAll('.fbadge').attr('transform',function(){
     const id=parseInt(this.getAttribute('data-badge-id'));
-    const s_raw=getScale(id);
-    // Apply boost-weight only to the EXCESS above 1.0 (i.e., oversized flags from area-based sizing).
-    // Flags at or below the median (s_raw <= 1.0) pass through unchanged.
-    const s_bw=s_raw>1.0?(1.0+(s_raw-1.0)*boostWeight):s_raw;
-    // Apply world-view bbox boost as a multiplier on top, fading to 1.0 by REF_K
-    const wvB=wvBoost[id]||1.0;
-    const wvMult=1.0+(wvB-1.0)*wvFade;
-    const s=s_bw*wvMult;
-    // Blend density dampener with zoom: full effect at zoomed-in views, less at world view
-    const d=densityScale(id);
-    const blended=1-(1-d)*densityWeight;
-    return`translate(${this.getAttribute('data-cx')},${this.getAttribute('data-cy')}) scale(${effS(s,k)*blended})`;
+    const s=getScale(id);
+    return`translate(${this.getAttribute('data-cx')},${this.getAttribute('data-cy')}) scale(${effS(s,k)})`;
   });
   rescaleGameOverlay(k);
   renderHandles();
@@ -5379,7 +5368,9 @@ function doUndo(){
   else if(op.type==='resize'){
     flagScales[op.id]=op.prev;
     const badge=document.querySelector(`.fbadge[data-badge-id="${op.id}"]`);
-    if(badge){const _k=currentK();badge.setAttribute('transform',`translate(${badge.getAttribute('data-cx')},${badge.getAttribute('data-cy')}) scale(${effS(op.prev,_k)})`);}
+    // v90: op.prev is a multiplier — recompute through getScale so the badge
+    // transform uses the footprint-based pipeline.
+    if(badge){const _k=currentK();badge.setAttribute('transform',`translate(${badge.getAttribute('data-cx')},${badge.getAttribute('data-cy')}) scale(${effS(getScale(op.id),_k)})`);}
     if(selectedFlagId===op.id)renderHandles();
   }
   else if(op.type==='delete'){
@@ -5826,16 +5817,18 @@ function onFlagMove(ev){
     const center=mapToClient(bcx,bcy);
     const newDist=Math.hypot(ev.clientX-center[0],ev.clientY-center[1]);
     const k=d3.zoomTransform(svgSel.node()).k;
-    // Work in effective (screen) scale: the resize ratio is screen-visible
+    // v90: resize is a MULTIPLIER on the team's natural footprint. Work the
+    // ratio in screen space, then divide out the natural footprint so the
+    // stored value stays a clean multiplier (1.0 = untouched).
+    const prevMult = flagScales[resizeData.id]!=null ? flagScales[resizeData.id] : 1.0;
+    const naturalL = getScale(resizeData.id) / Math.max(0.2, Math.min(5, prevMult));
     const origES=effS(resizeData.origScale,k);
     const rawES=origES*newDist/resizeData.origDist;
-    // Convert target screen-scale back to world-space scale
-    let newScale=invEffS(rawES,k);
-    // CRITICAL: clamp the stored world-space scale so it stays reasonable at world view.
-    // Maximum of 2.5 means a user can at most make a flag 2.5x larger than the biggest country's default.
-    newScale=Math.max(0.1,Math.min(2.5,newScale));
-    flagScales[resizeData.id]=newScale;
-    badge.setAttribute('transform',`translate(${bcx},${bcy}) scale(${effS(newScale,k)})`);
+    const newL=invEffS(rawES,k);
+    let newMult=naturalL>0 ? newL/naturalL : 1.0;
+    newMult=Math.max(0.2,Math.min(5,newMult));
+    flagScales[resizeData.id]=newMult;
+    badge.setAttribute('transform',`translate(${bcx},${bcy}) scale(${effS(getScale(resizeData.id),k)})`);
     renderHandles();
     return;
   }
@@ -6149,7 +6142,16 @@ function buildMap(world){
       a=Math.abs(a);
       if(a<=0) return;
       areaMap[String(+f.id)]=Math.sqrt(a);
+      // v90: publish linear footprint (sqrt of projected area, SVG units)
+      // per iso for the screen-space flag sizing model.
+      window._isoLinear = window._isoLinear || {};
+      window._isoLinear[String(+f.id)] = Math.sqrt(a);
     });
+    // Median linear footprint — fallback for isos with broken area data.
+    {
+      const vals=Object.values(window._isoLinear||{}).sort((x,y)=>x-y);
+      window._isoLinearMedian = vals[Math.floor(vals.length/2)] || 200;
+    }
     const sorted=Object.values(areaMap).filter(v=>v>0).sort((a,b)=>a-b);
     const median=sorted[Math.floor(sorted.length/2)]||1;
     // Set defaults for EVERY team (even ones with missing area data, they get 1.0 fallback)
@@ -6425,7 +6427,8 @@ function applyOp(op){
         const cx=parseFloat(badge.getAttribute('data-cx'));
         const cy=parseFloat(badge.getAttribute('data-cy'));
         const k=d3.zoomTransform(svgSel.node()).k;
-        badge.setAttribute('transform',`translate(${cx},${cy}) scale(${effS(op.next,k)})`);
+        // v90: op.next is a multiplier — route through getScale.
+        badge.setAttribute('transform',`translate(${cx},${cy}) scale(${effS(getScale(op.id),k)})`);
       }
       break;
     }
@@ -8474,6 +8477,8 @@ function startGameInMode(mode,heroId){
   // v1 monetization: reset the one-per-run rewarded-ad continue AND the
   // one-per-match free-boost flag whenever a fresh conquest starts.
   GAME.continuesUsed=0; GAME._matchFreeBoostUsed=false;
+  // v90: flush flag footprint cache so sizes recompute for the new run.
+  if (typeof _fpCache !== 'undefined') for (const key in _fpCache) delete _fpCache[key];
   // The specific iso (territory) the arrow hit on the last spin. Captured
   // in gameSpinArrow's animation-end callback. Used by handleConquestWin to
   // move the hero's flag onto the targeted territory rather than the
@@ -12592,6 +12597,35 @@ function openUsernameGate(onDone){
     });
   });
 
+  // v91: toolbar logo + wordmark → back to the splash launcher ("home").
+  // If a game is active, confirm first, then auto-save the run so the mode
+  // picker's Resume button restores it exactly where it left off. The map
+  // and game state stay in memory — going home is purely presentational,
+  // so even without Resume the run continues if the user taps Play again.
+  function goHomeToSplash(){
+    const inGame = (typeof GAME!=='undefined') && GAME.active;
+    if(inGame){
+      const msg = (window.FCLang && FCLang.t)
+        ? FCLang.t('sim.home.confirm')
+        : 'Go to the home screen? Your game will be saved automatically.';
+      if(!window.confirm(msg)) return;
+      try{ if(typeof saveConquestRun==='function') saveConquestRun(); }catch(e){}
+    }
+    // Close any open modals/panels that would float above the splash.
+    ['g-result-modal','g-startup-modal','g-username-modal'].forEach(function(id){
+      const el=document.getElementById(id);
+      if(el){ el.classList.remove('open'); el.style.display='none'; }
+    });
+    window.fcShowSplash();
+  }
+  ['fc-logo-home','fc-wordmark-home'].forEach(function(id){
+    const el=document.getElementById(id);
+    if(el){
+      el.addEventListener('click',goHomeToSplash);
+      el.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' ') goHomeToSplash(); });
+    }
+  });
+
   // Splash "Load saved game" button — always opens the file picker so the
   // creator can choose which .fcg save to load. The autosave-based Resume
   // flow lives in the mode picker (its own button) and is intentionally NOT
@@ -13018,7 +13052,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v88-wordmark-match-nav-font-2026-07-17';
+  window._FC_CAP_VERSION = 'v91-logo-home-confirm-autosave-2026-07-17';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
