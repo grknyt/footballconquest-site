@@ -1010,7 +1010,13 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-lb-page-btn:hover:not(:disabled){background:#1a2f40;border-color:#7ab8e8;color:#fff;}
 .g-lb-page-btn:disabled{opacity:.32;cursor:default;}
 .g-lb-page-label{font-size:12px;color:#7a9bb5;letter-spacing:.6px;
-  font-variant-numeric:tabular-nums;min-width:64px;text-align:center;}
+  font-variant-numeric:tabular-nums;min-width:84px;text-align:center;
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;}
+.g-lb-page-input{width:46px;height:32px;text-align:center;border-radius:7px;
+  background:#0a121c;border:1px solid #2a4f6a;color:#cfdaea;
+  font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;
+  font-family:inherit;padding:0;}
+.g-lb-page-input:focus{outline:none;border-color:#7ab8e8;color:#fff;background:#101a26;}
 #g-leaderboard-clear{padding:7px 13px;font-size:11px;color:#ff8a8a;
   border:1px solid rgba(255,138,138,.3);background:transparent;}
 #g-leaderboard-clear:hover{background:rgba(255,138,138,.1);}
@@ -3751,8 +3757,8 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 <!-- Localization: shared dictionary + i18n engine (EN/TR). FCLang.t() drives
      the simulator's dynamic strings; data-i18n attributes drive static ones. -->
-<script src="/js/translations.js?v=20260630"></script>
-<script src="/js/i18n.js?v=20260630"></script>
+<script src="/js/translations.js?v=20260719"></script>
+<script src="/js/i18n.js?v=20260719"></script>
 <script>
 const FLAG_B64={
 'Albania':'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',
@@ -9554,9 +9560,15 @@ async function renderGlobalLeaderboard(){
   const total=data.total!=null?data.total:rows.length;
   const pages=Math.max(1,Math.ceil(total/FC_LB_PAGE_SIZE));
   const cur=_fcLbGlobalPage+1;
+  /* The page number is an input, not a label — at 20 pages, reaching the tail
+     of the board by clicking › nineteen times is not a real option. inputmode
+     numeric so mobile gets a number pad instead of a full keyboard. */
   const pager=pages>1?`<div class="g-lb-pager">
       <button type="button" class="g-lb-page-btn" id="g-lb-prev" ${_fcLbGlobalPage<=0?'disabled':''}>‹</button>
-      <span class="g-lb-page-label">${cur} / ${pages}</span>
+      <span class="g-lb-page-label">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="g-lb-page-input"
+               class="g-lb-page-input" value="${cur}" aria-label="Page number"> / ${pages}
+      </span>
       <button type="button" class="g-lb-page-btn" id="g-lb-next" ${(!data.hasMore||cur>=pages)?'disabled':''}>›</button>
     </div>`:'';
   body.innerHTML=`<table class="g-leaderboard-table">
@@ -9577,6 +9589,27 @@ async function renderGlobalLeaderboard(){
     _fcLbGlobalPage++; renderGlobalLeaderboard();
     try{ body.scrollTop=0; }catch(e){}
   });
+  const pageInput=document.getElementById('g-lb-page-input');
+  if(pageInput){
+    const jump=()=>{
+      let n=parseInt(String(pageInput.value).replace(/[^0-9]/g,''),10);
+      // Garbage or out-of-range snaps back to the current page rather than
+      // firing a doomed request or landing on an empty board.
+      if(!Number.isFinite(n)||n<1) n=1;
+      if(n>pages) n=pages;
+      const target=n-1;
+      if(target===_fcLbGlobalPage){ pageInput.value=cur; return; }
+      _fcLbGlobalPage=target;
+      renderGlobalLeaderboard();
+      try{ body.scrollTop=0; }catch(e){}
+    };
+    pageInput.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){ e.preventDefault(); pageInput.blur(); jump(); }
+    });
+    pageInput.addEventListener('blur',jump);
+    // Select-all on focus so typing replaces rather than appends to "1".
+    pageInput.addEventListener('focus',()=>{ try{ pageInput.select(); }catch(e){} });
+  }
 }
 function closeLeaderboardModal(){
   const m=document.getElementById('g-leaderboard-modal');
@@ -13637,7 +13670,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v104-DEBUG-lb-paging-2026-07-19';
+  window._FC_CAP_VERSION = 'v105-DEBUG-lb-page-jump-2026-07-19';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
