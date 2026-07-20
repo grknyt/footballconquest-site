@@ -4,7 +4,13 @@
 // this is NOT a route — just a module other route files import from.
 
 export const ALLOWED_SORTS = new Set(['wins', 'fastest_victory', 'gd', 'gf', 'recent']);
+// Rows returned in a SINGLE request (one page).
 export const MAX_LEADERBOARD_LIMIT = 100;
+// How deep into the rankings a caller may page in total. Bounds both the
+// OFFSET (deep offsets force D1 to walk every preceding row, so this is the
+// cost ceiling) and the total-count query, which is capped to the same depth
+// so it stays O(depth) rather than O(table) as the runs table grows.
+export const MAX_LEADERBOARD_DEPTH = 1000;
 export const MAX_USERNAME_LEN = 24;
 export const MAX_HERO_NAME_LEN = 40;
 export const MIN_CAMPAIGN_MS = 5_000;          // claimed-duration floor

@@ -23,8 +23,15 @@
 (function () {
   var STORAGE_KEY = 'fc-lang';
   var SUPPORTED = ['en', 'tr', 'es', 'pt', 'fr', 'de', 'it', 'nl', 'no', 'sv'];
-  // Browser-language prefix → app language code. Order matters for longest-match.
+  // Browser-language prefix → app language code.
+  // 'en' MUST be listed. detectByBrowser() walks navigator.languages in
+  // priority order and returns the first entry that matches ANY prefix here.
+  // While English was absent it could never win, so a device set to English
+  // with Turkish as a *secondary* locale (["en-CA","tr-TR"]) fell through the
+  // English entry and matched Turkish — English was only ever reachable as
+  // the no-match fallback. Every supported language needs a row.
   var BROWSER_PREFIX = [
+    ['en', 'en'],
     ['tr', 'tr'],
     ['es', 'es'],
     ['pt', 'pt'],
@@ -70,7 +77,16 @@
 
   // Resolve the visitor's country via Cloudflare edge → app language code.
   // Returns null if no mapping matches or the probe fails.
+  //
+  // Skipped entirely inside the Capacitor app: there is no Cloudflare edge in
+  // front of a locally-served bundle, so '/cdn-cgi/trace' resolves against the
+  // local web server, which answers extension-less paths with index.html — a
+  // ~2.3 MB read plus a regex scan on every cold launch, for a result that can
+  // only ever be null. The app relies on device locale instead.
   function detectByIP() {
+    if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+      return Promise.resolve(null);
+    }
     return fetch('/cdn-cgi/trace', { cache: 'no-store' })
       .then(function (r) { return r.text(); })
       .then(function (t) {

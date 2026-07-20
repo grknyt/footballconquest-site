@@ -357,6 +357,30 @@ body.web-build #g-squad-panel{display:none!important;}
 .g-squad-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;}
 .g-squad-avatar.loading{opacity:.5;animation:g-squad-pulse 1.2s ease-in-out infinite;}
 @keyframes g-squad-pulse{0%,100%{opacity:.3;}50%{opacity:.7;}}
+/* ── v99 HERO FLAG SWAY ───────────────────────────────────────────────
+   A slow skew/scale oscillation on the hero's badge so the map has some
+   life in it between turns instead of sitting perfectly static. Deliberately
+   applied to the HERO ONLY: the same animation across all 211 badges would
+   mean 211 continuously-compositing layers on a mid-range Android tablet,
+   and every one of them is re-transformed on each zoom/pan frame. One flag
+   is free; the whole set is not.
+   skewY reads as fabric catching wind far better than a rotate, and the
+   paired scaleY keeps the flag from appearing to stretch as it leans.
+   transform-box:fill-box is required — without it the origin resolves
+   against the SVG viewport, not the flag, and it orbits wildly.          */
+@keyframes fc-hero-sway{
+  0%,100%{transform:skewY(0deg) scaleY(1);}
+  25%    {transform:skewY(-1.15deg) scaleY(.988);}
+  50%    {transform:skewY(0deg) scaleY(1);}
+  75%    {transform:skewY(1.15deg) scaleY(.988);}
+}
+.fbadge.fc-hero-flag image,.fbadge.fc-hero-flag rect{
+  transform-box:fill-box;transform-origin:50% 50%;
+  animation:fc-hero-sway 3.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion:reduce){
+  .fbadge.fc-hero-flag image,.fbadge.fc-hero-flag rect{animation:none;}
+}
 #g-squad-fetch-portraits{background:transparent;border:1px solid #2a4f6a;color:#7ab8e8;
   border-radius:5px;padding:5px 8px;font-size:11px;cursor:pointer;margin-top:4px;}
 #g-squad-fetch-portraits:hover:not(:disabled){background:#1a2f40;color:#fff;}
@@ -977,6 +1001,16 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-leaderboard-footer{display:flex;justify-content:space-between;align-items:center;gap:10px;
   border-top:1px solid #1a2f40;padding-top:12px;margin-top:auto;}
 .g-leaderboard-count{font-size:11px;color:#7a9bb5;letter-spacing:.4px;}
+/* v104 global-board pager */
+.g-lb-pager{display:flex;align-items:center;justify-content:center;gap:14px;
+  padding:12px 0 4px;}
+.g-lb-page-btn{min-width:40px;height:40px;border-radius:9px;cursor:pointer;
+  background:#101a26;border:1px solid #2a4f6a;color:#cfdaea;
+  font-size:20px;font-weight:800;line-height:1;}
+.g-lb-page-btn:hover:not(:disabled){background:#1a2f40;border-color:#7ab8e8;color:#fff;}
+.g-lb-page-btn:disabled{opacity:.32;cursor:default;}
+.g-lb-page-label{font-size:12px;color:#7a9bb5;letter-spacing:.6px;
+  font-variant-numeric:tabular-nums;min-width:64px;text-align:center;}
 #g-leaderboard-clear{padding:7px 13px;font-size:11px;color:#ff8a8a;
   border:1px solid rgba(255,138,138,.3);background:transparent;}
 #g-leaderboard-clear:hover{background:rgba(255,138,138,.1);}
@@ -4174,6 +4208,18 @@ const VW=10000,VH=5000,BW=300,BH=195;
 const FLAG_MIN_PX = 15;   // readability floor — no flag renders narrower
 const FLAG_MAX_PX = 58;   // dominance cap — no flag renders wider
 const FLAG_FILL   = 0.34; // flag width as a fraction of territory's linear size
+/* ── v93 LOCALITY WEIGHT ───────────────────────────────────────────────
+   v90 sized every flag by the owner's WHOLE empire footprint, but a badge
+   is drawn at ONE point — wherever its hero currently stands. Conquering a
+   huge country (USA) therefore ballooned the flag even while it sat on a
+   tiny one (Guatemala). v93 blends the two geometrically:
+
+     L = L_local^FLAG_LOCAL_W × L_empire^(1 - FLAG_LOCAL_W)
+
+   At 0.8 the territory underfoot dominates the size, while a world-spanning
+   empire still reads slightly larger than a one-country minnow standing on
+   the same land. Set to 1.0 for purely-local sizing.                      */
+const FLAG_LOCAL_W = 0.8;
 /* Legacy constants kept — REF_K/FLAG_SCALE still referenced by unrelated
    overlay code paths (roulette, dial). Flag badges no longer use them. */
 const REF_K=2.5; // flags scale with map up to this zoom, then stay constant screen size
@@ -5154,6 +5200,33 @@ function _buildIsoDefaultScaleLookup() {
    Cached per team; invalidated when the owned-territory count changes. */
 const _fpCache = {};
 const _teamIsoById = {};
+
+/* v93: linear extent of the territory a badge is physically standing on.
+   Badges only move on conquest, so the isoAtMap() hit-test (DOM-based and
+   comparatively expensive) is cached against the badge's rounded position
+   and reused for every zoom/pan frame in between. Returns null when the
+   position can't be resolved to a country, and the caller falls back to
+   the empire footprint. */
+const _localCache = {};
+function _localIsoLinear(id){
+  const badge = document.querySelector('.fbadge[data-badge-id="'+id+'"]');
+  if (!badge) return null;
+  const cx = parseFloat(badge.getAttribute('data-cx'));
+  const cy = parseFloat(badge.getAttribute('data-cy'));
+  if (!isFinite(cx) || !isFinite(cy)) return null;
+  const key = Math.round(cx) + ',' + Math.round(cy);
+  const c = _localCache[id];
+  if (c && c.key === key) return c.L;
+  let L = null;
+  try {
+    const iso = (typeof isoAtMap === 'function') ? isoAtMap(cx, cy) : null;
+    const lin = window._isoLinear || {};
+    if (iso && lin[String(iso)]) L = lin[String(iso)];
+  } catch(e) { L = null; }
+  _localCache[id] = { key: key, L: L };
+  return L;
+}
+
 function getScale(id){
   const lin = window._isoLinear || {};
   const med = window._isoLinearMedian || 200;
@@ -5162,25 +5235,34 @@ function getScale(id){
     _teamIsoById[id] = t ? String(t.iso) : null;
   }
   const team = (typeof GAME !== 'undefined' && GAME.state) ? GAME.state[id] : null;
-  let L;
+  let LEmpire;
   if (team && team.ownedIsos && team.ownedIsos.size > 0) {
     const n = team.ownedIsos.size;
     const c = _fpCache[id];
     if (c && c.n === n) {
-      L = c.L;
+      LEmpire = c.L;
     } else {
       let areaSum = 0;
       team.ownedIsos.forEach(i => {
         const l = lin[String(i)];
         areaSum += (l ? l*l : med*med*0.04); // small fallback for missing isos
       });
-      L = Math.sqrt(areaSum);
-      _fpCache[id] = { n: n, L: L };
+      LEmpire = Math.sqrt(areaSum);
+      _fpCache[id] = { n: n, LEmpire: LEmpire, L: LEmpire };
     }
   } else {
     const iso = _teamIsoById[id];
-    L = (iso && lin[iso]) ? lin[iso] : med;
+    LEmpire = (iso && lin[iso]) ? lin[iso] : med;
   }
+
+  // v93: bias toward the territory the badge actually sits on. Without a
+  // resolvable local iso (badge dragged offshore, hit-test miss) fall back
+  // to the pure empire footprint, i.e. v90 behaviour.
+  const LLocal = _localIsoLinear(id);
+  const L = (LLocal && LLocal > 0)
+    ? Math.pow(LLocal, FLAG_LOCAL_W) * Math.pow(LEmpire, 1 - FLAG_LOCAL_W)
+    : LEmpire;
+
   // Manual creator resize (drag handles / offline build) — a multiplier on
   // the natural footprint. 1.0 = untouched.
   const m = flagScales[id]!=null ? flagScales[id] : 1.0;
@@ -6652,11 +6734,18 @@ function gSlots(){
   }
 }
 function gBtnState(){
+  /* v102: the post-conquest sequence (colour wave + hero march) runs for ~3s
+     AFTER the phase has already flipped back to 'picked-att'. Without this
+     lock the player could hit Spin Arrow mid-march and the ray would be cast
+     from the flag's OLD position — the spin visibly originating from a
+     country the hero had already left. Blocks every action button until the
+     hero has actually arrived. */
+  const marching = !!window._fcMarching;
   if(GAME.mode==='conquest'){
     // Conquest mode: only one spin button (g-spin-team relabeled to "Spin Arrow"), enabled when waiting for defender pick
-    document.getElementById('g-spin-team').disabled=!GAME.active||GAME.phase!=='picked-att';
+    document.getElementById('g-spin-team').disabled=!GAME.active||GAME.phase!=='picked-att'||marching;
     document.getElementById('g-spin-arrow').disabled=true; // hidden in conquest anyway
-    document.getElementById('g-resolve').disabled=!GAME.active||GAME.phase!=='picked-def';
+    document.getElementById('g-resolve').disabled=!GAME.active||GAME.phase!=='picked-def'||marching;
     document.getElementById('g-skip').style.display='none'; // not used in conquest
   } else {
     document.getElementById('g-skip').style.display=''; // restore for imperialism
@@ -6788,7 +6877,7 @@ function gameSpinTeam(){
       const centroid=teamCentroid(picked.id);
       if(centroid){
         const target=[centroid[0],centroid[1]];
-        panTo(target,Math.max(3,currentK()));
+        panTo(target,heroZoomK(picked.id,target,Math.max(3,currentK())));
       }
     }
   },75);
@@ -6877,9 +6966,52 @@ function panToFitPoints(points,opts){
   svgSel.transition().duration(duration).ease(d3.easeCubicInOut).call(zoomBeh.transform,newT);
 }
 
+/* ── v95 TERRITORY-AWARE CAMERA ────────────────────────────────────────
+   The hero-follow pans used fixed zoom floors (Math.max(6, currentK())),
+   which framed a continent-sized country fine but left the player a speck
+   when standing on Guatemala or Singapore — the spin arrow became almost
+   unreadable. Zoom is now derived from the SAME territory extent that v93
+   uses to size the flag, so the two always agree: small country → tight
+   camera, large country → wide camera.
+
+   At zoom k the visible map spans VW/k SVG units, so holding the territory
+   at a constant fraction of the screen means:
+
+     k = HERO_ZOOM_FILL × VW / L_local
+
+   Clamped at both ends: MIN stops a Russia/Canada conquest from pulling the
+   camera into orbit, MAX stops a micro-state from zooming past the point
+   where surrounding countries (and therefore the arrow's target) leave the
+   frame entirely.                                                        */
+const HERO_ZOOM_FILL = 0.30;  // territory linear extent as a fraction of visible width
+const HERO_ZOOM_MIN  = 3.0;
+const HERO_ZOOM_MAX  = 20.0;
+function heroZoomK(teamId, pt, fallback){
+  let L = null;
+  try {
+    // Prefer the explicit point (the pan target) — during a conquest the badge
+    // may not have been repositioned yet, but the destination is already known.
+    if (pt && isFinite(pt[0]) && isFinite(pt[1]) && typeof isoAtMap === 'function') {
+      const iso = isoAtMap(pt[0], pt[1]);
+      const lin = window._isoLinear || {};
+      if (iso && lin[String(iso)]) L = lin[String(iso)];
+    }
+    if (!L && typeof _localIsoLinear === 'function') L = _localIsoLinear(teamId);
+  } catch(e) { L = null; }
+  if (!L || !(L > 0)) return fallback;
+  const k = HERO_ZOOM_FILL * VW / L;
+  return Math.max(HERO_ZOOM_MIN, Math.min(HERO_ZOOM_MAX, k));
+}
+
 // ── Spin the arrow to find a defender ──
 function gameSpinArrow(){
   if(!GAME.active||GAME.phase!=='picked-att')return;
+  /* v102: authoritative lock for the post-conquest sequence. gBtnState()
+     disables the button too, but conquest mode relabels g-spin-team on the
+     fly and a stray render can momentarily re-enable it — the same hole the
+     _fcSpinning guard below exists to plug. Without this the ray would be
+     cast from the hero's pre-march position. */
+  if(window._fcMarching) return;
   // Re-entry guard: if a spin animation is already in flight, ignore additional clicks.
   // The button's disabled attribute should prevent this, but in conquest mode the visible
   // "Spin Arrow" is actually g-spin-team (relabeled), and a stray render-cycle could
@@ -7245,7 +7377,7 @@ function isoCentroid(iso,nearTo){
 // grid-samples its fill via isPointInFill, and returns the inside point with
 // the greatest clearance from the boundary — a lightweight pole-of-
 // inaccessibility — so the flag lands comfortably inland.
-function isoInteriorPoint(iso,nearTo){
+function isoInteriorPoint(iso,nearTo,random){
   // UK home nations (England 826, Scotland 9001, Wales 9002, N.Ireland 9003)
   // all share the WHOLE-UK <path> geometry — they are separated only by a
   // visual clip-path, which isPointInFill ignores. A geometry search would
@@ -7300,11 +7432,28 @@ function isoInteriorPoint(iso,nearTo){
     }}
     const ins=grid.filter(g=>g.in);
     if(!ins.length) return[target.cx,target.cy];
-    let best=null,bestScore=-Infinity;
-    for(const c of ins){
+    /* v100 `random`: instead of always taking the single most-central cell,
+       pick at random from the cells that are comfortably inland. Clearance is
+       still measured, and anything below 45% of the best is discarded — that
+       filter is what stops the flag landing half in the sea on a ragged
+       coastline, which pure uniform sampling does constantly. So the position
+       varies run to run without ever looking like a mistake. */
+    const scored=ins.map(function(c){
       let clear=Math.min(c.x-target.minX,target.maxX-c.x,c.y-target.minY,target.maxY-c.y);
       for(const o of grid){ if(o.in)continue; const d=Math.hypot(o.x-c.x,o.y-c.y); if(d<clear)clear=d; }
-      const score=clear-(nearTo?0.001*Math.hypot(c.x-nearTo[0],c.y-nearTo[1]):0);
+      return {c:c,clear:clear};
+    });
+    if(random){
+      let maxClear=0;
+      for(const s of scored) if(s.clear>maxClear) maxClear=s.clear;
+      const pool=scored.filter(function(s){ return s.clear>=maxClear*0.45; });
+      const pick=pool.length?pool[Math.floor(Math.random()*pool.length)]:null;
+      return pick?[pick.c.x,pick.c.y]:[target.cx,target.cy];
+    }
+    let best=null,bestScore=-Infinity;
+    for(const s of scored){
+      const c=s.c;
+      const score=s.clear-(nearTo?0.001*Math.hypot(c.x-nearTo[0],c.y-nearTo[1]):0);
       if(score>bestScore){bestScore=score;best=c;}
     }
     return best?[best.x,best.y]:[target.cx,target.cy];
@@ -7987,17 +8136,344 @@ function gameEnd(){
 }
 
 // Merge all internal borders for a team (fade borders between its owned isos)
-function mergeBordersFor(teamId){
+/* v96: `animate` makes newly-internal borders DISSOLVE rather than blink out.
+   Playtest feedback (a first-time player with no strategy-game background)
+   was that an instant recolour reads as a state change, not as an event —
+   you can't tell what just happened. Everything below is cosmetic only; the
+   fadedPairs bookkeeping is unchanged and still applied synchronously, so
+   undo/save/restore behave exactly as before even mid-animation. */
+const CONQUEST_BORDER_FADE_MS = 1000;   // v98: kept roughly in step with the wave
+function mergeBordersFor(teamId,animate){
   const owned=[...GAME.state[teamId].ownedIsos];
+  const soft = animate && typeof d3!=='undefined' && !prefersReducedMotion();
   for(let i=0;i<owned.length;i++){
     for(let j=i+1;j<owned.length;j++){
       const pair=[owned[i],owned[j]].sort().join('|');
       if(borderPaths[pair]&&!fadedPairs.has(pair)){
         fadedPairs.add(pair);
-        borderPaths[pair].setAttribute('opacity','0.04');
+        const bel=borderPaths[pair];
+        if(soft){
+          d3.select(bel).interrupt()
+            .transition()
+            .delay(CONQUEST_WAVE_DELAY_MS)
+            .duration(CONQUEST_BORDER_FADE_MS).ease(d3.easeCubicInOut)
+            .attr('opacity',0.04);
+        } else {
+          bel.setAttribute('opacity','0.04');
+        }
       }
     }
   }
+}
+
+function prefersReducedMotion(){
+  try { return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+  catch(e){ return false; }
+}
+
+/* ── v96 CONQUEST WAVE ─────────────────────────────────────────────────
+   The conquered territory's NEW colour is applied to the real path
+   immediately (unchanged game logic). What this draws is a temporary
+   throwaway copy of the territory in its OLD colour, laid on top, then
+   wiped away by a soft-edged circle expanding out of the point the
+   attacker attacked FROM. The new colour therefore appears to flood in
+   from the direction of the invasion.
+
+   Doing it as a "remove the old" overlay rather than "reveal the new"
+   means the underlying map is already correct at frame zero — undo, save,
+   reload or a second conquest can fire mid-animation and the worst case is
+   an orphaned overlay, which the cleanup timer removes regardless.        */
+const CONQUEST_WAVE_MS = 1250;   // v98: slowed from 850 — the bleed reads better
+/* v99: beat of stillness between the score vanishing and the map changing.
+   The overlay is built and inserted IMMEDIATELY (so the territory keeps
+   showing its old colour and nothing visibly snaps), but the expansion is
+   held back — otherwise the takeover lands on top of the result and the two
+   moments compete. */
+const CONQUEST_WAVE_DELAY_MS = 900;
+
+/* ── v100 HERO MARCH ───────────────────────────────────────────────────
+   The flag used to teleport to the conquered country the instant the win
+   resolved. Now it holds its ground until the colour has finished bleeding
+   across, then physically travels — so the sequence reads as a story:
+   the land turns, THEN you move onto it.
+
+   The transition tweens data-cx/data-cy rather than just the transform, so
+   scaleBadges() and the hero glow (both of which read those attributes)
+   stay in agreement on every frame. Otherwise a zoom mid-walk would snap
+   the flag back to where the attributes still said it was.
+
+   Gait comes from a sine bob perpendicular to travel, plus footfalls
+   dropped at each step's low point. The bob is what sells it as walking
+   rather than sliding; the prints are what make the direction legible. */
+const HERO_WALK_MS = 1000;
+const HERO_WALK_STEPS = 5;      // bob cycles across the journey
+function walkHeroFlagTo(badge, teamId, from, to, delayMs){
+  if(!badge) return;
+  const finish=function(){
+    badge.setAttribute('data-cx',to[0]);
+    badge.setAttribute('data-cy',to[1]);
+    try{
+      badge.setAttribute('transform','translate('+to[0]+','+to[1]+') scale('+effS(getScale(teamId),currentK())+')');
+    }catch(e){}
+    if(typeof movedFlags!=='undefined') movedFlags[teamId]={cx:to[0],cy:to[1]};
+    if(typeof updateHeroGlow==='function') updateHeroGlow();
+    // v102: release the action lock and re-enable the buttons.
+    window._fcMarching=false;
+    try{ if(typeof gBtnState==='function') gBtnState(); }catch(e){}
+    try{ if(typeof rescaleInstantTargets==='function') rescaleInstantTargets(currentK()); }catch(e){}
+  };
+  /* v102: lock actions for the WHOLE post-conquest sequence, not just the
+     walk. GAME.phase flips back to 'picked-att' the moment the win resolves,
+     so without this the player can hit Spin Arrow during the 900ms beat or
+     the 1250ms wave and the ray gets cast from the flag's old position —
+     visibly spinning out of a country the hero has already left. */
+  window._fcMarching=true;
+  try{ if(typeof gBtnState==='function') gBtnState(); }catch(e){}
+  const dx=to[0]-from[0], dy=to[1]-from[1];
+  const dist=Math.hypot(dx,dy);
+  // No walk when it isn't worth one: reduced motion, bulk ult conquests, a
+  // move too short to read, or d3 missing.
+  if(typeof d3==='undefined'||prefersReducedMotion()||
+     (typeof GAME!=='undefined'&&GAME._skipPan)||dist<40){
+    finish(); return;
+  }
+  // Hide the hero aura while travelling — it's a "you are here" marker, and
+  // dragging it along frame by frame is both expensive and visually noisy.
+  const glowEl=document.getElementById('g-hero-glow');
+  if(glowEl) glowEl.style.display='none';
+
+  // Bob perpendicular to the direction of travel, scaled to the flag so the
+  // gait stays proportionate whether crossing Luxembourg or Russia.
+  let amp=BH*0.30;
+  try{ amp=Math.max(BH*0.12,Math.min(BH*0.30,dist*0.05)); }catch(e){}
+  let lastStep=-1;
+  d3.select(badge).interrupt()
+    .transition().delay(delayMs).duration(HERO_WALK_MS).ease(d3.easeCubicInOut)
+    .tween('march',function(){
+      const node=this;
+      return function(t){
+        const bx=from[0]+dx*t, by=from[1]+dy*t;
+        const phase=t*HERO_WALK_STEPS*Math.PI*2;
+        const lift=Math.abs(Math.sin(phase))*amp;
+        node.setAttribute('data-cx',bx);      // attributes track the PATH, not
+        node.setAttribute('data-cy',by);      // the bob, so state stays sane
+        try{
+          node.setAttribute('transform','translate('+bx+','+(by-lift)+') scale('+effS(getScale(teamId),currentK())+')');
+        }catch(e){}
+        // Drop a footfall each time the stride bottoms out.
+        const step=Math.floor(t*HERO_WALK_STEPS);
+        if(step!==lastStep&&t>0.04&&t<0.96){
+          lastStep=step;
+          _dropFootfall(bx,by,amp);
+        }
+      };
+    })
+    .on('end',function(){
+      if(glowEl) glowEl.style.display='';
+      finish();
+    })
+    .on('interrupt',function(){
+      if(glowEl) glowEl.style.display='';
+      finish();
+    });
+  /* Watchdog. _fcMarching disables every action button, so if the transition
+     is ever dropped — WebView throttling while backgrounded is the realistic
+     case — the game would be left permanently unplayable. Force-finish well
+     after the march should have ended. finish() is safe to run twice. */
+  setTimeout(function(){
+    if(window._fcMarching){
+      if(glowEl) glowEl.style.display='';
+      finish();
+    }
+  },delayMs+HERO_WALK_MS+2500);
+}
+
+/* A footfall: a small soft ellipse that fades and spreads where the flag
+   touched down. Appended to the game layer so it sits under the badges. */
+function _dropFootfall(x,y,amp){
+  try{
+    const layer=document.getElementById('badge-layer');
+    if(!layer||!layer.parentNode) return null;
+    const NS='http://www.w3.org/2000/svg';
+    const el=document.createElementNS(NS,'ellipse');
+    const r=Math.max(6,amp*0.55);
+    el.setAttribute('cx',x); el.setAttribute('cy',y+BH*0.20);
+    el.setAttribute('rx',r); el.setAttribute('ry',r*0.42);
+    el.setAttribute('fill','#ffffff');
+    el.setAttribute('fill-opacity','0.34');
+    el.setAttribute('pointer-events','none');
+    layer.parentNode.insertBefore(el,layer);
+    d3.select(el).transition().duration(760).ease(d3.easeCubicOut)
+      .attr('rx',r*1.9).attr('ry',r*0.8).attr('fill-opacity',0)
+      .on('end',function(){ if(el.parentNode) el.parentNode.removeChild(el); });
+    setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); },1400);
+    return el;
+  }catch(e){ return null; }
+}
+/* v97: the wavefront glows a hotter version of the conquering colour and
+   cools to the final shade behind it. Without this the transition is two
+   fills of similar brightness meeting at a blurred seam — the eye reads the
+   RESULT but never catches the MOVEMENT. A bright edge gives it something
+   to track.
+   Worked in HSL, not by mixing toward white: a straight white mix desaturates
+   (#c8102e became a dusty pink) which reads as washed out, not hot. Pushing
+   saturation to full and lightness up keeps the hue vivid, so the band looks
+   like the colour glowing rather than the colour fading. */
+function _hotEdgeColor(hex){
+  try{
+    const s=String(hex||'').replace('#','');
+    if(s.length!==6) return '#ffffff';
+    let r=parseInt(s.slice(0,2),16)/255,
+        g=parseInt(s.slice(2,4),16)/255,
+        b=parseInt(s.slice(4,6),16)/255;
+    const mx=Math.max(r,g,b), mn=Math.min(r,g,b), d=mx-mn;
+    // Achromatic (white/black/grey team colours) have no hue — forcing full
+    // saturation would invent one and render a grey nation's wavefront red.
+    // Brighten toward white instead.
+    if(d<0.004) return '#f2f6ff';
+    let h=0;
+    {
+      if(mx===r) h=((g-b)/d)%6;
+      else if(mx===g) h=(b-r)/d+2;
+      else h=(r-g)/d+4;
+    }
+    h*=60; if(h<0) h+=360;
+    // Full saturation, lifted lightness — vivid, not pastel.
+    const L=0.68, S=1.0;
+    const c=(1-Math.abs(2*L-1))*S, x=c*(1-Math.abs(((h/60)%2)-1)), m=L-c/2;
+    let rr,gg,bb;
+    if(h<60){rr=c;gg=x;bb=0;} else if(h<120){rr=x;gg=c;bb=0;}
+    else if(h<180){rr=0;gg=c;bb=x;} else if(h<240){rr=0;gg=x;bb=c;}
+    else if(h<300){rr=x;gg=0;bb=c;} else {rr=c;gg=0;bb=x;}
+    return '#'+[rr,gg,bb].map(function(v){
+      return Math.round((v+m)*255).toString(16).padStart(2,'0');
+    }).join('');
+  }catch(e){ return '#ffffff'; }
+}
+function animateConquestWave(isoList, prevColors, origin, newColor){
+  try{
+    if(!isoList||!isoList.length) return;
+    if(typeof d3==='undefined'||prefersReducedMotion()) return;
+    if(!origin||!isFinite(origin[0])||!isFinite(origin[1])) return;
+    const al=document.getElementById('active-layer');
+    if(!al||!al.parentNode) return;
+    const NS='http://www.w3.org/2000/svg';
+    const uid='cwave-'+Math.random().toString(36).slice(2,9);
+
+    const wrap=document.createElementNS(NS,'g');
+    wrap.setAttribute('class','conquest-wave');
+    wrap.setAttribute('pointer-events','none');
+
+    // Copy each conquered territory in its pre-conquest colour, and track how
+    // far the wave has to travel to clear the furthest corner of all of them.
+    let maxR=0;
+    isoList.forEach(function(iso){
+      const src=document.querySelector('.cp[data-iso="'+iso+'"]');
+      if(!src) return;
+      const copy=document.createElementNS(NS,'path');
+      copy.setAttribute('d',src.getAttribute('d')||'');
+      const cp=src.getAttribute('clip-path');
+      if(cp) copy.setAttribute('clip-path',cp);   // UK constituents etc.
+      copy.setAttribute('fill',(prevColors&&prevColors[iso])||src.getAttribute('fill')||'#1a3550');
+      copy.setAttribute('fill-opacity',src.getAttribute('fill-opacity')||'0.88');
+      wrap.appendChild(copy);
+      try{
+        const b=src.getBBox();
+        [[b.x,b.y],[b.x+b.width,b.y],[b.x,b.y+b.height],[b.x+b.width,b.y+b.height]]
+          .forEach(function(pt){
+            const dx=pt[0]-origin[0], dy=pt[1]-origin[1];
+            const d=Math.sqrt(dx*dx+dy*dy);
+            if(d>maxR) maxR=d;
+          });
+      }catch(e){}
+    });
+    if(!wrap.childNodes.length) return;
+    if(!(maxR>0)) maxR=400;
+
+    // Soft leading edge, scaled to the territory so a micro-state gets a
+    // proportionally tight wavefront instead of a blur wider than itself.
+    const blur=Math.max(12,Math.min(maxR*0.12,120));
+    // Ring thickness for the hot edge — a stroked circle IS an annulus, so the
+    // glow band is just a stroke that expands with the same radius.
+    const ring=Math.max(24,Math.min(maxR*0.18,220));
+    const hot=_hotEdgeColor(newColor);
+
+    const defs=document.createElementNS(NS,'defs');
+    defs.innerHTML=
+      '<filter id="'+uid+'-b" x="-60%" y="-60%" width="220%" height="220%">'+
+        '<feGaussianBlur stdDeviation="'+blur+'"/>'+
+      '</filter>'+
+      '<filter id="'+uid+'-bg" x="-60%" y="-60%" width="220%" height="220%">'+
+        '<feGaussianBlur stdDeviation="'+(ring*0.35)+'"/>'+
+      '</filter>'+
+      // Erase mask: filled circle hides the old colour from the origin outward.
+      '<mask id="'+uid+'-m" maskUnits="userSpaceOnUse" x="0" y="0" width="'+VW+'" height="'+VH+'">'+
+        '<rect x="0" y="0" width="'+VW+'" height="'+VH+'" fill="#fff"/>'+
+        '<circle id="'+uid+'-c" cx="'+origin[0]+'" cy="'+origin[1]+'" r="0" fill="#000" filter="url(#'+uid+'-b)"/>'+
+      '</mask>'+
+      // Glow mask: stroked circle shows ONLY a band riding the wavefront.
+      '<mask id="'+uid+'-r" maskUnits="userSpaceOnUse" x="0" y="0" width="'+VW+'" height="'+VH+'">'+
+        '<rect x="0" y="0" width="'+VW+'" height="'+VH+'" fill="#000"/>'+
+        '<circle id="'+uid+'-cr" cx="'+origin[0]+'" cy="'+origin[1]+'" r="0" fill="none" '+
+          'stroke="#fff" stroke-width="'+ring+'" filter="url(#'+uid+'-bg)"/>'+
+      '</mask>';
+    wrap.setAttribute('mask','url(#'+uid+'-m)');
+
+    // Second layer: the same territory shapes in the hot colour, revealed only
+    // where the glow ring currently sits. Sits above the cooling layer.
+    const glow=document.createElementNS(NS,'g');
+    glow.setAttribute('class','conquest-wave-edge');
+    glow.setAttribute('pointer-events','none');
+    glow.setAttribute('mask','url(#'+uid+'-r)');
+    // Screen blend makes the band ADD light to whatever is beneath instead of
+    // painting over it, which is what turns a bright fill into a glow.
+    glow.setAttribute('style','mix-blend-mode:screen');
+    Array.prototype.forEach.call(wrap.childNodes,function(n){
+      const c=n.cloneNode(false);
+      c.setAttribute('fill',hot);
+      c.setAttribute('fill-opacity','0.95');
+      glow.appendChild(c);
+    });
+
+    // Sit directly above the country fills but below the border layer, so
+    // borders stay legible while the colour underneath changes. Glow last so
+    // the hot edge rides on top of the cooling fill.
+    al.parentNode.insertBefore(defs,al.nextSibling);
+    al.parentNode.insertBefore(wrap,defs.nextSibling);
+    al.parentNode.insertBefore(glow,wrap.nextSibling);
+
+    let done=false;
+    function cleanup(){
+      if(done) return; done=true;
+      if(defs.parentNode) defs.parentNode.removeChild(defs);
+      if(wrap.parentNode) wrap.parentNode.removeChild(wrap);
+      if(glow.parentNode) glow.parentNode.removeChild(glow);
+    }
+    const circle=document.getElementById(uid+'-c');
+    const ringEl=document.getElementById(uid+'-cr');
+    if(!circle){ cleanup(); return; }
+    const targetR=maxR*1.06+blur*2.5;
+    const hold=CONQUEST_WAVE_DELAY_MS;
+    d3.select(circle).transition()
+      .delay(hold).duration(CONQUEST_WAVE_MS).ease(d3.easeCubicOut)
+      .attr('r',targetR)
+      .on('end',cleanup).on('interrupt',cleanup);
+    if(ringEl){
+      // Glow runs slightly AHEAD of the erase front, so the bright band leads
+      // the colour change rather than trailing it.
+      d3.select(ringEl).transition()
+        .delay(hold).duration(CONQUEST_WAVE_MS).ease(d3.easeCubicOut)
+        .attr('r',targetR+ring*0.5);
+      // Fade the band out over the back third so it doesn't clip abruptly
+      // once it runs past the territory's edge.
+      d3.select(glow).transition()
+        .delay(hold+CONQUEST_WAVE_MS*0.6).duration(CONQUEST_WAVE_MS*0.4)
+        .style('opacity',0);
+    }
+    // Belt-and-braces: never leave an overlay behind if the transition is
+    // dropped (tab backgrounded mid-animation, WebView throttling, etc.).
+    setTimeout(cleanup,hold+CONQUEST_WAVE_MS+1200);
+  }catch(e){ /* cosmetic only — never break a conquest */ }
 }
 
 function gameOpen(){
@@ -8479,6 +8955,9 @@ function startGameInMode(mode,heroId){
   GAME.continuesUsed=0; GAME._matchFreeBoostUsed=false;
   // v90: flush flag footprint cache so sizes recompute for the new run.
   if (typeof _fpCache !== 'undefined') for (const key in _fpCache) delete _fpCache[key];
+  // v93: local-territory hit-test cache is position-keyed, but flush it too so
+  // a new run never reuses a stale badge position from the previous game.
+  if (typeof _localCache !== 'undefined') for (const key in _localCache) delete _localCache[key];
   // The specific iso (territory) the arrow hit on the last spin. Captured
   // in gameSpinArrow's animation-end callback. Used by handleConquestWin to
   // move the hero's flag onto the targeted territory rather than the
@@ -8524,7 +9003,7 @@ function startGameInMode(mode,heroId){
     // themselves and their surroundings. panTo already offsets the target
     // upward via VIEWPORT_VISUAL_CY_FRAC so the flag isn't behind the panel.
     const c=teamCentroid(heroId);
-    if(c) panTo([c[0],c[1]],Math.max(9,currentK()));
+    if(c) panTo([c[0],c[1]],heroZoomK(heroId,c,Math.max(9,currentK())));
     updateHeroGlow();
     refreshConquestHud();
     gLog(FCLang.t('sim.log.wcstarted',{hero:teamDisplayName(GAME.attacker.name)}));
@@ -8752,7 +9231,7 @@ function loadConquestRun(){
     // Pan to hero
     if(GAME.heroTeamId!=null){
       const c=teamCentroid(GAME.heroTeamId);
-      if(c) panTo([c[0],c[1]],Math.max(6,currentK()));
+      if(c) panTo([c[0],c[1]],heroZoomK(GAME.heroTeamId,c,Math.max(6,currentK())));
     }
     return true;
   }catch(e){
@@ -8954,6 +9433,12 @@ function renderLeaderboard(){
 // remembers between opens. (We could persist to localStorage; v1 doesn't.)
 let _fcLbTab='local';
 let _fcLbGlobalSort='wins';
+/* v104: the global board used to show a flat top 50 with no way past it, so
+   anyone outside the top 50 had no reason to look. Paged to a depth of 1000
+   (20 pages of 50). Page size stays 50 because the modal scrolls on mobile
+   and a longer page just buries the pager. */
+let _fcLbGlobalPage=0;
+const FC_LB_PAGE_SIZE=50;
 function openLeaderboardModal(){
   const m=document.getElementById('g-leaderboard-modal');
   if(!m) return;
@@ -8997,7 +9482,9 @@ async function renderGlobalLeaderboard(){
   if(count) count.textContent='';
   let data;
   try{
-    const res=await fetch(`${FC_API_BASE}/leaderboard?sort=${encodeURIComponent(_fcLbGlobalSort)}&limit=50`);
+    const _off=_fcLbGlobalPage*FC_LB_PAGE_SIZE;
+    const res=await fetch(`${FC_API_BASE}/leaderboard?sort=${encodeURIComponent(_fcLbGlobalSort)}`+
+      `&limit=${FC_LB_PAGE_SIZE}&offset=${_off}`);
     if(!res.ok) throw new Error('HTTP '+res.status);
     data=await res.json();
   }catch(err){
@@ -9009,7 +9496,9 @@ async function renderGlobalLeaderboard(){
     return;
   }
   const rows=data.rows||[];
-  if(count) count.textContent=rows.length===0?'':FCLang.t(rows.length===1?'sim.lb.run':'sim.lb.runs',{n:rows.length});
+  // Show the TOTAL reachable run count, not just this page's 50.
+  const _tot=data.total!=null?data.total:rows.length;
+  if(count) count.textContent=_tot===0?'':FCLang.t(_tot===1?'sim.lb.run':'sim.lb.runs',{n:_tot});
   if(rows.length===0){
     body.innerHTML=`<div class="g-leaderboard-empty">
       <b>${FCLang.t('sim.lb.global.empty.h')}</b>
@@ -9029,8 +9518,11 @@ async function renderGlobalLeaderboard(){
   // so we can't precisely mark "you", but we CAN match on username if the user
   // has set one (cheap heuristic; collisions tolerated).
   const myName=fcUsername();
+  const _rankBase=(data.offset!=null?data.offset:_fcLbGlobalPage*FC_LB_PAGE_SIZE);
   const html=rows.map((r,i)=>{
-    const rank=i+1;
+    // Rank is absolute across the whole board, not per-page — otherwise page 2
+    // would start again at #1.
+    const rank=_rankBase+i+1;
     const rankCls=rank===1?'top1':(rank===2?'top2':(rank===3?'top3':''));
     const flagBg=FLAG_B64[r.hero_name]?`background-image:url(data:image/png;base64,${FLAG_B64[r.hero_name]})`:'';
     const flagCls=FLAG_B64[r.hero_name]?'g-lb-flag':'g-lb-flag empty';
@@ -9056,13 +9548,35 @@ async function renderGlobalLeaderboard(){
       <td class="g-lb-date">${fmtDate(r.submitted_at)}</td>
     </tr>`;
   }).join('');
+  /* Pager. Labels are deliberately glyph + numeric ("‹  3 / 20  ›") rather
+     than words, so it needs no new strings across the 10 supported languages
+     and cannot desync from them later. */
+  const total=data.total!=null?data.total:rows.length;
+  const pages=Math.max(1,Math.ceil(total/FC_LB_PAGE_SIZE));
+  const cur=_fcLbGlobalPage+1;
+  const pager=pages>1?`<div class="g-lb-pager">
+      <button type="button" class="g-lb-page-btn" id="g-lb-prev" ${_fcLbGlobalPage<=0?'disabled':''}>‹</button>
+      <span class="g-lb-page-label">${cur} / ${pages}</span>
+      <button type="button" class="g-lb-page-btn" id="g-lb-next" ${(!data.hasMore||cur>=pages)?'disabled':''}>›</button>
+    </div>`:'';
   body.innerHTML=`<table class="g-leaderboard-table">
     <thead><tr>
       <th>#</th><th></th><th>${FCLang.t('sim.lb.col.countryplayer')}</th><th>${FCLang.t('sim.lb.col.result')}</th>
       <th>${FCLang.t('sim.lb.col.wl')}</th><th>${FCLang.t('sim.lb.col.goals')}</th><th>${FCLang.t('sim.lb.col.turns')}</th><th>${FCLang.t('sim.lb.col.date')}</th>
     </tr></thead>
     <tbody>${html}</tbody>
-  </table>`;
+  </table>${pager}`;
+  const prev=document.getElementById('g-lb-prev');
+  const next=document.getElementById('g-lb-next');
+  if(prev) prev.addEventListener('click',()=>{
+    if(_fcLbGlobalPage<=0) return;
+    _fcLbGlobalPage--; renderGlobalLeaderboard();
+    try{ body.scrollTop=0; }catch(e){}
+  });
+  if(next) next.addEventListener('click',()=>{
+    _fcLbGlobalPage++; renderGlobalLeaderboard();
+    try{ body.scrollTop=0; }catch(e){}
+  });
 }
 function closeLeaderboardModal(){
   const m=document.getElementById('g-leaderboard-modal');
@@ -9098,6 +9612,7 @@ function wireLeaderboardModal(){
   const sortSel=document.getElementById('g-leaderboard-sort');
   if(sortSel) sortSel.addEventListener('change',()=>{
     _fcLbGlobalSort=sortSel.value;
+    _fcLbGlobalPage=0;   // a new sort is a new board — never land on a stale page
     renderGlobalLeaderboard();
   });
   // Set/change display name — uses a plain prompt() for v1.
@@ -10055,12 +10570,14 @@ function wireResultModal(){
     if(_simAutoConfirmTimer) clearTimeout(_simAutoConfirmTimer);
     // Reveal pause before auto-confirming. Base time scales with how much
     // info we're asking the player to absorb:
-    //   1400ms = bare FT result
+    //   400ms = bare FT result   (v98: was 1400 — cut a full second because
+    //           the result was outstaying its welcome once the map transition
+    //           behind it got more elaborate)
     //   +400ms for AET / pens (finish tag)
     //   +400ms per visible impact line (momentum / OVR)
-    // So a routine 1–0 with no OVR step: 1400ms.
-    // A pens-decided thrash with both deltas: 1400 + 400 + 800 = 2600ms.
-    const holdMs = 1400
+    // So a routine 1–0 with no OVR step: 400ms.
+    // A pens-decided thrash with both deltas: 400 + 400 + 800 = 1600ms.
+    const holdMs = 400
       + (finish==='normal' ? 0 : 400)
       + visibleImpactLines * 400;
     _simAutoConfirmTimer=setTimeout(()=>{
@@ -10195,7 +10712,9 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   });
   GAME.state[opp.id].ownedIsos.clear();
   GAME.state[opp.id].alive=false;
-  mergeBordersFor(hero.id);
+  mergeBordersFor(hero.id,true);   // v96: dissolve the now-internal borders
+  // v96: flood the hero's colour in from wherever the attack was launched.
+  animateConquestWave(opponentIsoList,prevColors,[fromX,fromY],paintColor);
   // If any of these isos had a region-flag marker (from a prior retreat),
   // strip it — the territory just changed hands again.
   if(typeof removeRetakenFlagsForIsos==='function') removeRetakenFlagsForIsos(opponentIsoList);
@@ -10216,7 +10735,10 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   //   3. First iso centroid with nearTo bias — last-resort fallback.
   let newPos=null;
   if(GAME.defenderIso){
-    newPos=isoInteriorPoint(GAME.defenderIso,[fromX,fromY]);
+    // v100: `true` = land somewhere random inside the territory rather than
+    // always the same most-central cell, so repeat conquests of the same
+    // country don't plant the flag on an identical pixel every run.
+    newPos=isoInteriorPoint(GAME.defenderIso,[fromX,fromY],true);
   }
   if(!newPos){
     const oppTeam=teams.find(t=>t.id===opp.id);
@@ -10225,19 +10747,11 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
       if(homePoint&&!isNaN(homePoint[0])) newPos=homePoint;
     }
   }
-  if(!newPos) newPos=isoInteriorPoint(opponentIsoList[0],[fromX,fromY])||defC||[fromX,fromY];
-  if(heroBadge){
-    heroBadge.setAttribute('data-cx',newPos[0]);
-    heroBadge.setAttribute('data-cy',newPos[1]);
-    const k=currentK();
-    const s=getScale(hero.id);
-    heroBadge.setAttribute('transform',`translate(${newPos[0]},${newPos[1]}) scale(${effS(s,k)})`);
-    // Track moved position so the engine remembers
-    if(typeof movedFlags!=='undefined'){
-      movedFlags[hero.id]={cx:newPos[0],cy:newPos[1]};
-    }
-  }
-  updateHeroGlow();
+  if(!newPos) newPos=isoInteriorPoint(opponentIsoList[0],[fromX,fromY],true)||defC||[fromX,fromY];
+  // v100: hold position until the colour has finished bleeding across, then
+  // march. Sequence is: 900ms beat -> 1250ms wave -> flag walks over.
+  walkHeroFlagTo(heroBadge,hero.id,[fromX,fromY],newPos,
+                 CONQUEST_WAVE_DELAY_MS+CONQUEST_WAVE_MS);
   // Push to conquest stack (for retreat on future losses)
   GAME.conquestStack.push({
     opponentId:opp.id,
@@ -10247,8 +10761,15 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
     heroFromX:fromX,heroFromY:fromY,
     heroToX:newPos[0],heroToY:newPos[1]
   });
-  // Draw a permanent arrow trail
-  drawConquestTrailArrow(fromX,fromY,newPos[0],newPos[1],{class:'g-trail-arrow g-trail-win'});
+  // Draw a permanent arrow trail — held back to land with the march rather
+  // than pointing at a flag that hasn't set off yet.
+  (function(_fx,_fy,_tx,_ty){
+    const _drawTrail=function(){
+      try{ drawConquestTrailArrow(_fx,_fy,_tx,_ty,{class:'g-trail-arrow g-trail-win'}); }catch(e){}
+    };
+    if(typeof GAME!=='undefined'&&GAME._skipPan) _drawTrail();
+    else setTimeout(_drawTrail,CONQUEST_WAVE_DELAY_MS+CONQUEST_WAVE_MS+HERO_WALK_MS*0.5);
+  })(fromX,fromY,newPos[0],newPos[1]);
   // Reset loss counts (those were per-opponent; opponent is now dead)
   delete GAME.lossCounts[opp.id];
   // Bump campaign tally — wins, plus goals for/against from this match.
@@ -10329,7 +10850,9 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   gSlots();
   gameRender();
   // Pan to hero's new position
-  if(!GAME._skipPan) panTo([newPos[0],newPos[1]],Math.max(6,currentK()));
+  // v95: zoom is derived from the territory just conquered, so taking a
+  // micro-state pulls the camera in tight enough to read the next spin.
+  if(!GAME._skipPan) panTo([newPos[0],newPos[1]],heroZoomK(hero.id,newPos,Math.max(6,currentK())));
   // Refresh floating HUD with the win
   refreshConquestHud({lastResult:{type:'win',hero:hero.name,opp:opp.name,score:`${heroScore}–${oppScore}`}});
   // Check for total victory
@@ -10621,7 +11144,7 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   if(mid){delete mid.dataset.showingScore;mid.innerHTML='<span class="g-vs">vs</span>';}
   gSlots();
   gameRender();
-  panTo([lastConquest.heroFromX,lastConquest.heroFromY],Math.max(6,currentK()));
+  panTo([lastConquest.heroFromX,lastConquest.heroFromY],heroZoomK(GAME.heroTeamId,[lastConquest.heroFromX,lastConquest.heroFromY],Math.max(6,currentK())));
   // Persist the post-retreat state so a reload picks up here.
   if(typeof saveConquestRun==='function') saveConquestRun();
   // Refresh the floating HUD AFTER the retreat so the "Losses to X: Y/3"
@@ -10741,7 +11264,7 @@ function undoConquestWin(op){
   updateHeroGlow();
   gSlots();
   gameRender();
-  panTo([op.heroFromX,op.heroFromY],Math.max(6,currentK()));
+  panTo([op.heroFromX,op.heroFromY],heroZoomK(GAME.heroTeamId,[op.heroFromX,op.heroFromY],Math.max(6,currentK())));
   refreshConquestHud();
   gLog(FCLang.t('sim.log.undoconquest',{name:teamDisplayName(op.oppName)}));
 }
@@ -10813,7 +11336,7 @@ function undoConquestLoss(op){
   updateHeroGlow();
   gSlots();
   gameRender();
-  panTo([op.heroPosBefore[0],op.heroPosBefore[1]],Math.max(6,currentK()));
+  panTo([op.heroPosBefore[0],op.heroPosBefore[1]],heroZoomK(GAME.heroTeamId,op.heroPosBefore,Math.max(6,currentK())));
   refreshConquestHud();
   gLog(FCLang.t('sim.log.undoloss',{name:teamDisplayName(op.oppName)}));
 }
@@ -11685,9 +12208,15 @@ function updateHeroGlow(){
   if(!layer)return;
   const existing=document.getElementById('g-hero-glow');
   if(existing) existing.remove();
+  // v99: the sway class follows the hero, so clear it off whoever had it —
+  // the hero changes on load/undo, and a stale class would leave a dead
+  // team's flag animating.
+  document.querySelectorAll('.fbadge.fc-hero-flag')
+    .forEach(function(b){ b.classList.remove('fc-hero-flag'); });
   if(GAME.mode!=='conquest'||!GAME.heroTeamId||!GAME.active) return;
   const heroBadge=document.querySelector(`.fbadge[data-badge-id="${GAME.heroTeamId}"]`);
   if(!heroBadge)return;
+  heroBadge.classList.add('fc-hero-flag');
   const cx=parseFloat(heroBadge.getAttribute('data-cx'));
   const cy=parseFloat(heroBadge.getAttribute('data-cy'));
   if(isNaN(cx)||isNaN(cy))return;
@@ -11786,7 +12315,6 @@ function renderInstantTargets(){
   layer.innerHTML='';
   if(!GAME||GAME.mode!=='conquest'||!GAME.active||GAME.phase!=='picked-att') return;
   if(window._fcSpinning||!GAME.attacker) return;
-  const invK=1/currentK();
   Object.values(GAME.state).forEach(function(st){
     if(!st.alive||st.id===GAME.attacker.id) return;
     const team=teams.find(function(t){return t.id===st.id;});
@@ -11799,12 +12327,22 @@ function renderInstantTargets(){
     g.setAttribute('data-team',String(team.id));
     g.setAttribute('data-cx',String(c[0]));
     g.setAttribute('data-cy',String(c[1]));
-    g.setAttribute('transform','translate('+c[0]+','+c[1]+') scale('+invK+')');
+    g.setAttribute('data-cost',String(cost));
     g.setAttribute('pointer-events','auto');
-    g.innerHTML='<rect x="-115" y="-260" width="230" height="92" rx="16" '+
-      'fill="rgba(10,18,28,0.96)" stroke="#f0c040" stroke-width="3"/>'+
-      '<text x="0" y="-198" text-anchor="middle" font-family="system-ui,sans-serif" '+
-      'font-size="58" font-weight="800" fill="#ffd84d">⚡ '+cost+'⭐</text>';
+    /* v101: rebuilt as a compact "N★" tag pinned to the flag's top-right
+       corner. The old pill was drawn at a fixed 230 SVG units wide, which on
+       a 10000-unit-wide map works out to ~21px on a phone at ANY zoom — the
+       text was around 5px tall and effectively unreadable. Everything here is
+       laid out at a nominal 100-unit font and then scaled by _iwLabelScale()
+       so the tag lands at a real target pixel height instead. */
+    const digits=String(cost).length;
+    const w=150+digits*58;
+    g.innerHTML='<rect x="0" y="-64" width="'+w+'" height="128" rx="34" '+
+      'fill="rgba(8,14,22,0.95)" stroke="#f0c040" stroke-width="7"/>'+
+      '<text x="'+(w/2)+'" y="40" text-anchor="middle" '+
+      'font-family="system-ui,-apple-system,sans-serif" '+
+      'font-size="100" font-weight="800" fill="#ffd84d">'+cost+'★</text>';
+    _positionIwPill(g,team.id,currentK());
     const stop=function(e){e.stopPropagation();};
     g.addEventListener('pointerdown',stop);
     g.addEventListener('mousedown',stop);
@@ -11812,13 +12350,60 @@ function renderInstantTargets(){
     layer.appendChild(g);
   });
 }
-// Keep the pills at constant screen size as the map zooms.
+/* v102: the tag is sized RELATIVE TO ITS FLAG, not to the screen. v101 pinned
+   it to a fixed pixel height, which made it tower over the flags it annotates
+   — flags are sized by territory (v93), so a constant-size tag is enormous
+   next to Slovenia and unremarkable next to Brazil. Scaling with the flag
+   keeps the pair reading as one unit at every zoom and territory size.
+   The px clamps only catch the extremes, so a micro-state's tag stays legible
+   and a continent's doesn't dominate. Authored tag height is 128 units. */
+const IW_LABEL_FLAG_FRAC = 0.55;   // tag height as a fraction of flag height
+const IW_LABEL_MIN_PX    = 10;
+const IW_LABEL_MAX_PX    = 26;
+function _iwLabelScale(k,bs){
+  const V=(typeof _pxPerSvgUnit==='function')?_pxPerSvgUnit():0.09;
+  let s=(bs!=null&&bs>0)
+    ? (BH*bs*IW_LABEL_FLAG_FRAC)/128
+    : 18/(128*k*V);                 // fallback if the flag scale is unknown
+  const px=128*s*k*V;
+  if(px<IW_LABEL_MIN_PX)      s=IW_LABEL_MIN_PX/(128*k*V);
+  else if(px>IW_LABEL_MAX_PX) s=IW_LABEL_MAX_PX/(128*k*V);
+  return isFinite(s)&&s>0?s:0.5;
+}
+/* Pin the tag to the TOP-RIGHT corner of the team's flag rather than the
+   country centroid. The flag is the thing the player is actually looking at,
+   and after the v93 sizing change its position and size no longer track the
+   country's centre — so a centroid-anchored tag could sit well away from the
+   flag it describes. Reads the badge's live data-cx/cy so it follows a flag
+   that has been moved or has just marched. */
+function _positionIwPill(g,teamId,k){
+  if(!g) return;
+  let bx=parseFloat(g.getAttribute('data-cx'));
+  let by=parseFloat(g.getAttribute('data-cy'));
+  let bs=null;
+  const badge=document.querySelector('.fbadge[data-badge-id="'+teamId+'"]');
+  if(badge){
+    const nx=parseFloat(badge.getAttribute('data-cx'));
+    const ny=parseFloat(badge.getAttribute('data-cy'));
+    if(isFinite(nx)&&isFinite(ny)){ bx=nx; by=ny; }
+    try{ bs=effS(getScale(teamId),k); }catch(e){ bs=null; }
+  }
+  if(!isFinite(bx)||!isFinite(by)) return;
+  const s=_iwLabelScale(k,bs);
+  // Offset to the flag's top-right corner. The tag overlaps the corner
+  // slightly so it reads as a badge ON the flag rather than a separate
+  // floating object that could be mistaken for another country's.
+  const halfW=(bs!=null?BW/2*bs:0);
+  const halfH=(bs!=null?BH/2*bs:0);
+  const px=bx+halfW-(34*s);
+  const py=by-halfH+(20*s);
+  g.setAttribute('transform','translate('+px+','+py+') scale('+s+')');
+}
+// Keep the tags pinned + constant screen size as the map zooms.
 function rescaleInstantTargets(k){
   if(k==null) k=currentK();
-  const invK=1/k;
   document.querySelectorAll('#instant-layer .iw-pill').forEach(function(g){
-    g.setAttribute('transform','translate('+g.getAttribute('data-cx')+','+
-      g.getAttribute('data-cy')+') scale('+invK+')');
+    _positionIwPill(g,g.getAttribute('data-team'),k);
   });
 }
 function ensureInstantModal(){
@@ -12184,7 +12769,7 @@ function unleashUltimate(){
           window._fcSpinning=false;
           removeAllUltStrikes();
           const heroAfter=teamCentroid(hero.id);
-          if(heroAfter) panTo(heroAfter, Math.max(5, currentK()));
+          if(heroAfter) panTo(heroAfter, heroZoomK(hero.id, heroAfter, Math.max(5, currentK())));
         }
         if(typeof refreshConquestHud==='function') refreshConquestHud();
       }, FLASH_TO_PAINT_DELAY);
@@ -13052,7 +13637,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v91-logo-home-confirm-autosave-2026-07-17';
+  window._FC_CAP_VERSION = 'v104-DEBUG-lb-paging-2026-07-19';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
@@ -13251,7 +13836,14 @@ function openUsernameGate(onDone){
   //   5. On dismissal (or 1.5s later) preload the NEXT interstitial
   var AdMob = plugins.AdMob;
   var AD_UNIT_INTERSTITIAL_ID = 'ca-app-pub-2248373411425621/5974877791';
-  var AD_IS_TESTING = true; // FLIP TO false BEFORE PLAY STORE SUBMISSION
+  // 🔴 FLIP TO false BEFORE CUTTING THE SIGNED PLAY STORE RELEASE BUILD.
+  // true  = Google test ads. Render identically for layout QA, bill nothing,
+  //         and cannot trigger invalid-traffic flags no matter how often the
+  //         debug build is run or how many times an ad is tapped.
+  // false = real inventory. Only ever ship this in a signed release build;
+  //         self-clicks on real ads risk suspending the AdMob account, which
+  //         shares payments profile 9456-5402-5532 with AdSense and YouTube.
+  var AD_IS_TESTING = true; // DEBUG BATCH (2026-07-19): test ads while iterating locally.
   var INTERSTITIAL_COOLDOWN_MS = 3 * 60 * 1000;
   var interstitialLoaded = false;
   var lastInterstitialShownAt = 0;

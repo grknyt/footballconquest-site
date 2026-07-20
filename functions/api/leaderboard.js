@@ -1,8 +1,12 @@
-// GET /api/leaderboard?sort=wins&limit=50&hero=Brazil&device_id=<id>
+// GET /api/leaderboard?sort=wins&limit=50&offset=0&hero=Brazil&device_id=<id>
 //
 // Returns a JSON array of run rows sorted by the requested dimension.
 // Each row strips device_id unless the caller passed device_id explicitly
 // (for "my own global runs" views).
+//
+// Paging: `offset` walks the rankings up to MAX_LEADERBOARD_DEPTH rows deep.
+// The response carries `total` (capped at that depth) and `hasMore` so the
+// client can render a pager without guessing.
 //
 // Sort dimensions:
 //   wins             — most total wins
@@ -11,7 +15,8 @@
 //   gf               — most goals scored
 //   recent           — most recently submitted
 
-import { json, corsHeaders, ALLOWED_SORTS, MAX_LEADERBOARD_LIMIT, MAX_HERO_NAME_LEN } from './_lib.js';
+import { json, corsHeaders, ALLOWED_SORTS, MAX_LEADERBOARD_LIMIT,
+         MAX_LEADERBOARD_DEPTH, MAX_HERO_NAME_LEN } from './_lib.js';
 
 export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
@@ -21,6 +26,12 @@ export async function onRequestGet({ request, env }) {
   let limit = parseInt(url.searchParams.get('limit') || '50', 10);
   if (!Number.isFinite(limit) || limit < 1) limit = 50;
   if (limit > MAX_LEADERBOARD_LIMIT) limit = MAX_LEADERBOARD_LIMIT;
+
+  let offset = parseInt(url.searchParams.get('offset') || '0', 10);
+  if (!Number.isFinite(offset) || offset < 0) offset = 0;
+  if (offset > MAX_LEADERBOARD_DEPTH - 1) offset = MAX_LEADERBOARD_DEPTH - 1;
+  // Never let a page straddle the depth ceiling.
+  if (offset + limit > MAX_LEADERBOARD_DEPTH) limit = MAX_LEADERBOARD_DEPTH - offset;
 
   const heroFilter = url.searchParams.get('hero');
   const deviceFilter = url.searchParams.get('device_id');
@@ -47,19 +58,44 @@ export async function onRequestGet({ request, env }) {
     FROM runs
     ${whereClause}
     ORDER BY ${orderBy}
-    LIMIT ?
+    LIMIT ? OFFSET ?
   `;
-  params.push(limit);
+  const pageParams = params.concat([limit, offset]);
 
-  const { results } = await env.DB.prepare(sql).bind(...params).all();
+  // Total is deliberately computed over a bounded subquery. A bare COUNT(*)
+  // would scan the whole runs table on every leaderboard open and get slower
+  // forever; this one can never cost more than MAX_LEADERBOARD_DEPTH rows, so
+  // `total` means "how many are reachable", which is exactly what the pager
+  // needs to render page counts.
+  const countSql = `
+    SELECT COUNT(*) AS n FROM (
+      SELECT 1 FROM runs
+      ${whereClause}
+      LIMIT ${MAX_LEADERBOARD_DEPTH}
+    )
+  `;
+
+  const [pageRes, countRes] = await Promise.all([
+    env.DB.prepare(sql).bind(...pageParams).all(),
+    env.DB.prepare(countSql).bind(...params).all()
+  ]);
+
   // Strip device_id from public output unless the caller queried for it
   // explicitly (their own global runs).
-  const rows = (results || []).map(r => {
+  const rows = (pageRes.results || []).map(r => {
     const out = { ...r };
     if (!deviceFilter) delete out.device_id;
     return out;
   });
-  return json({ sort, limit, count: rows.length, rows });
+  const total = (countRes.results && countRes.results[0] && countRes.results[0].n) || 0;
+  return json({
+    sort, limit, offset,
+    count: rows.length,
+    total,
+    depthCap: MAX_LEADERBOARD_DEPTH,
+    hasMore: offset + rows.length < total,
+    rows
+  });
 }
 
 export function onRequestOptions() {
