@@ -15,6 +15,11 @@ window.FC_TRANSLATIONS = {
     "sim.tb.bug": "Report bug",
     "sim.tb.fullscreen": "Fullscreen",
     "sim.tb.exitfullscreen": "Exit",
+    "sim.recap.record": "Record",
+    "sim.recap.goals": "Goals",
+    "sim.recap.turns": "Turns",
+    "sim.recap.continents": "Continents",
+    "sim.recap.aura": "Aura",
     /* ── shared: nav + footer ── */
     "nav.play": "Play",
     "nav.howto": "How to play",
