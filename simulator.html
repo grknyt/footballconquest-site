@@ -2785,6 +2785,43 @@ body.web-build .g-result-card.revealed .g-sim-btn{
 }
 
 
+/* ── v115: MINIMIZED Continents / Events boxes — uniform single-colour pill ──
+   On touch devices the two collapsed panels looked mismatched: the Events
+   header packs extra icon buttons (🔍 ⚽ 🌍) so its coloured bar sat taller
+   than the Continents bar (which only has a title + chevron), reading as a
+   bigger font on a wider background. And both used a separate header fill
+   (#0a1624) floating over the panel body, so the "box" was two-tone.
+   Fix: while collapsed, paint the whole box with the SAME blue gradient used
+   by the bottom UI panel, make the header transparent + borderless, force a
+   single fixed height, and vertically-centre the title. The Events action
+   icons are hidden while collapsed so both boxes read as a plain centred
+   title — they return the moment the panel is expanded. */
+@media (pointer: coarse) {
+  #g-campaign-panel.collapsed,
+  #g-events-panel.collapsed {
+    background: linear-gradient(135deg,#1e3452 0%,#0e1a2c 50%,#050c17 100%) !important;
+    max-height: 46px !important;
+  }
+  #g-campaign-panel.collapsed #g-campaign-header,
+  #g-events-panel.collapsed #g-events-header {
+    background: transparent !important;
+    border-bottom: none !important;
+    height: 46px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  /* Symmetry: while collapsed, the Events header hides its filter/search/globe
+     buttons + turn-summary so it mirrors the Continents header (title + ▶). */
+  #g-events-panel.collapsed #g-events-header > .g-events-filter,
+  #g-events-panel.collapsed #g-events-header > #g-events-search-btn,
+  #g-events-panel.collapsed #g-events-header > .g-events-turn-summary {
+    display: none !important;
+  }
+}
+
+
 /* ── Floating bug-report link ──
    Small semi-transparent emoji button anchored to the bottom-left of the
    viewport. Clicks open /contact.html#bug-report in a new tab with the
@@ -13788,7 +13825,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v114-consistent-result-dwell-2026-07-23';
+  window._FC_CAP_VERSION = 'v115-uniform-collapsed-panels-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
