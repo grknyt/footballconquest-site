@@ -2802,6 +2802,13 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     background: linear-gradient(135deg,#1e3452 0%,#0e1a2c 50%,#050c17 100%) !important;
     max-height: 46px !important;
   }
+  /* Show ONLY the header when collapsed — hide every other child outright so
+     no body/log content peeks below the title (max-height clipping alone let a
+     line bleed through). */
+  #g-campaign-panel.collapsed > *:not(#g-campaign-header),
+  #g-events-panel.collapsed > *:not(#g-events-header) {
+    display: none !important;
+  }
   #g-campaign-panel.collapsed #g-campaign-header,
   #g-events-panel.collapsed #g-events-header {
     background: transparent !important;
@@ -2811,6 +2818,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     padding-bottom: 0 !important;
     display: flex !important;
     align-items: center !important;
+    font-size: 16px !important;   /* larger, cleaner title */
   }
   /* Symmetry: while collapsed, the Events header hides its filter/search/globe
      buttons + turn-summary so it mirrors the Continents header (title + ▶). */
@@ -13825,7 +13833,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v115-uniform-collapsed-panels-2026-07-23';
+  window._FC_CAP_VERSION = 'v116-collapsed-panel-title-only-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
