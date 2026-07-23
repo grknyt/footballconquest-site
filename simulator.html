@@ -6355,7 +6355,20 @@ function buildMap(world){
   svgSel.call(zoomBeh);
   $('zi').onclick=()=>svgSel.transition().duration(250).call(zoomBeh.scaleBy,1.5);
   $('zo').onclick=()=>svgSel.transition().duration(250).call(zoomBeh.scaleBy,.67);
-  $('zr').onclick=()=>svgSel.transition().duration(350).call(zoomBeh.transform,d3.zoomIdentity);
+  /* v112: the ⟳ button is now a TOGGLE — tap to centre+zoom on your team,
+     tap again to zoom out to the whole world. In imperialism mode / no active
+     hero it just resets to the world view (its old behaviour). */
+  var _zrCentered=false;
+  $('zr').onclick=function(){
+    var hasHero = (typeof GAME!=='undefined' && GAME.active && GAME.mode==='conquest' && GAME.heroTeamId!=null);
+    if(hasHero && !_zrCentered){
+      var c=teamCentroid(GAME.heroTeamId);
+      if(c){ panTo([c[0],c[1]], heroZoomK(GAME.heroTeamId,c,Math.max(6,currentK()))); _zrCentered=true; return; }
+    }
+    // world view (also the fallback when there's no hero to centre on)
+    svgSel.transition().duration(350).call(zoomBeh.transform,d3.zoomIdentity);
+    _zrCentered=false;
+  };
 
   // Capture phase: our handlers fire BEFORE D3 zoom sees the event.
   // In edit modes we stopPropagation for single-touch so D3 doesn't also pan.
@@ -13700,7 +13713,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v111-DEBUG-zoom-fixes-2026-07-22';
+  window._FC_CAP_VERSION = 'v112-recenter-toggle-2026-07-22';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
