@@ -11271,6 +11271,20 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
     gSlots();
     gameRender();
     refreshConquestHud({lastResult:{type:'loss',hero:hero.name,opp:opp.name,score:`${heroScore}–${oppScore}`}});
+    // v123: on a no-retreat loss the hero stays put, but the camera is still
+    // zoomed out on the arrow's target from the spin. Pull it back in to the
+    // hero's flag so the next Spin Arrow isn't cast from a far-out view (you
+    // could only see the spinner). Mirrors the retreat branch's pan-back.
+    try {
+      const hb=document.querySelector(`.fbadge[data-badge-id="${hero.id}"]`);
+      let hc=null;
+      if(hb){
+        const hx=parseFloat(hb.getAttribute('data-cx')), hy=parseFloat(hb.getAttribute('data-cy'));
+        if(isFinite(hx)&&isFinite(hy)) hc=[hx,hy];
+      }
+      if(!hc && typeof teamCentroid==='function') hc=teamCentroid(hero.id);
+      if(hc && typeof panTo==='function') panTo([hc[0],hc[1]], heroZoomK(hero.id, hc, Math.max(6,currentK())));
+    } catch(e){}
     return;
   }
   const lastConquest=GAME.conquestStack.pop();
@@ -14000,7 +14014,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v122-aura-taller-light-bg-2026-07-23';
+  window._FC_CAP_VERSION = 'v123-rezoom-hero-on-noretreat-loss-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
