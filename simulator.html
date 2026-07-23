@@ -3361,6 +3361,29 @@ body.fc-stat-floated:not(.map-light) #g-stat-stack .g-aura-hbar-fill{
   #g-event-toast{ top:202px !important; }
 }
 
+/* ── v141 TABLET PORTRAIT (≥701px, portrait) — same two-column top layout as
+   phones, but tablet-sized. Stat stack (TURN + RECORD/GOALS) top-left, Events/
+   Continents (+ the My Team pill) top-right, loss/event floats pushed down to
+   clear them. The AURA bar is already docked in the panel top strip (JS). */
+@media (orientation: portrait) and (min-width: 701px) {
+  body.fc-stat-floated #g-stat-stack{
+    top:10px !important; left:10px !important;
+    width:calc(50vw - 15px) !important; max-width:440px !important;
+    z-index:27 !important; gap:8px !important;
+  }
+  #g-left-stack{
+    top:10px !important; right:10px !important; left:auto !important; bottom:auto !important;
+    width:calc(50vw - 15px) !important; max-width:440px !important;
+    flex-direction:column !important; align-items:stretch !important; gap:8px !important;
+  }
+  #g-campaign-panel, #g-events-panel, #g-squad-panel{
+    width:100% !important; flex:0 0 auto !important; min-width:0 !important; max-width:none !important;
+  }
+  /* Loss warning + event toast below the top cards. */
+  #g-loss-float{ top:172px !important; }
+  #g-event-toast{ top:226px !important; }
+}
+
 /* ── v129 MOBILE: horizontal team slot (flag | name/OVR | vertical stars) ──
    Match the desktop card layout on phones — flag on the left, team name + OVR
    stacked in the middle, and the star rating as a vertical column on the right
@@ -14088,7 +14111,7 @@ function openUsernameGate(onDone){
   // on WIDE LANDSCAPE (desktop / landscape tablet) OR NARROW PHONES (portrait).
   // On phones the CSS puts this stack in the left column and Events/Continents
   // in a stacked right column. Medium portrait tablets keep the in-panel layout.
-  var MQ = window.matchMedia('(orientation: landscape) and (min-width: 900px) and (min-height: 500px), (max-width: 760px)');
+  var MQ = window.matchMedia('(orientation: landscape) and (min-width: 900px) and (min-height: 500px), (max-width: 760px), (orientation: portrait) and (min-width: 700px)');
   // The AURA bar docks in the bottom panel's top strip whenever the strip is
   // floated (desktop AND phones) — the left stack then just holds TURN +
   // RECORD/GOALS. Un-floated (medium tablet portrait) it returns to the top-row.
@@ -14288,7 +14311,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v140-turn-badge-spacing-fix-2026-07-23';
+  window._FC_CAP_VERSION = 'v141-tablet-portrait-two-column-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
