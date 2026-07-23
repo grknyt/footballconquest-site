@@ -3361,6 +3361,21 @@ body.fc-stat-floated #game-panel.open.conquest-mode .g-tm-bar-track{
 body.fc-stat-floated #game-panel.open.conquest-mode .g-body{ padding-top:26px !important; }
 body.fc-stat-floated #game-panel #game-close{ top:3px !important; right:6px !important; z-index:6 !important; }
 
+/* v132: PHONE — the AURA bar is docked in the panel's top strip (JS sets
+   body.fc-aura-in-panel + moves it into .g-body above the slots). It fills the
+   strip, leaving ~48px on the right for the collapse ▼. The generous 26px
+   top-padding is no longer needed since the aura now occupies that row. */
+@media (max-width: 700px) {
+  body.fc-aura-in-panel #game-panel.open.conquest-mode .g-body{ padding-top:8px !important; }
+  body.fc-aura-in-panel #game-panel.open.conquest-mode .g-body > .g-aura-hbar{
+    display:block !important; width:calc(100% - 48px) !important; height:30px !important;
+    margin:0 0 8px 0 !important; flex:0 0 auto !important;
+  }
+  /* Hidden in the flags-only MINI state (it's no longer inside .g-top-row, which
+     mini hides, so hide it explicitly). */
+  body.fc-aura-in-panel #game-panel.g-mini .g-body > .g-aura-hbar{ display:none !important; }
+}
+
 /* ── v130 PORTRAIT LOCK FOR PHONES ─────────────────────────────────────────
    Phones in landscape land in an awkward layout gap and the bottom UI eats the
    screen. Rather than perfect a cramped phone-landscape layout, we block it: a
@@ -14002,9 +14017,29 @@ function openUsernameGate(onDone){
   // On phones the CSS puts this stack in the left column and Events/Continents
   // in a stacked right column. Medium portrait tablets keep the in-panel layout.
   var MQ = window.matchMedia('(orientation: landscape) and (min-width: 900px) and (min-height: 500px), (max-width: 760px)');
+  // On PHONES the AURA bar docks in the bottom panel's top strip instead of the
+  // left stack (which then just holds TURN + RECORD/GOALS). Desktop/tablet keep
+  // the AURA card in the left stack.
+  var MOBILE = window.matchMedia('(max-width: 700px)');
   var stack = null, homeParent = null, homeNext = null;
   var badgeHome = null, badgeNext = null;
   function topRow(){ return document.querySelector('.g-top-row'); }
+  function auraEl(){ return document.querySelector('.g-aura-hbar'); }
+  // Move AURA into the panel body (top strip) on phones, or back into the
+  // floated top-row otherwise. `tr` is the .g-top-row (aura's normal home).
+  function placeAura(tr, floated){
+    var aura = auraEl(); if (!aura || !tr) return;
+    if (floated && MOBILE.matches) {
+      var gp = document.getElementById('game-panel');
+      var body = gp ? gp.querySelector('.g-body') : null;
+      var slots = body ? body.querySelector('.g-slots') : null;
+      if (body && slots && aura.parentNode !== body) body.insertBefore(aura, slots);
+      document.body.classList.add('fc-aura-in-panel');
+    } else {
+      if (aura.parentNode !== tr) tr.appendChild(aura);   // order:2 keeps it below stats
+      document.body.classList.remove('fc-aura-in-panel');
+    }
+  }
   function ensureStack(){
     if (stack && stack.isConnected) return stack;
     stack = document.getElementById('g-stat-stack');
@@ -14027,8 +14062,10 @@ function openUsernameGate(onDone){
         if (!badgeHome) { badgeHome = badge.parentNode; badgeNext = badge.nextElementSibling; }
         if (badge.parentNode !== s || s.firstChild !== badge) s.insertBefore(badge, s.firstChild);
       }
+      placeAura(tr, true);
       document.body.classList.add('fc-stat-floated');
     } else {
+      placeAura(tr, false);   // aura back into the top-row BEFORE it returns home
       if (homeParent && tr.parentNode !== homeParent) {
         if (homeNext && homeNext.parentNode === homeParent) homeParent.insertBefore(tr, homeNext);
         else homeParent.appendChild(tr);
@@ -14045,6 +14082,9 @@ function openUsernameGate(onDone){
   else init();
   if (MQ.addEventListener) MQ.addEventListener('change', apply);
   else if (MQ.addListener) MQ.addListener(apply);
+  // Re-evaluate when crossing the phone boundary (aura moves stack ⇄ panel).
+  if (MOBILE.addEventListener) MOBILE.addEventListener('change', apply);
+  else if (MOBILE.addListener) MOBILE.addListener(apply);
 })();
 </script>
 
@@ -14160,7 +14200,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v131-move-floats-down+collapse-btn-corner-2026-07-23';
+  window._FC_CAP_VERSION = 'v132-mobile-aura-in-panel-top-strip-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
