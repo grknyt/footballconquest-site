@@ -3279,12 +3279,24 @@ body.fc-stat-floated:not(.map-light) #g-stat-stack .g-aura-hbar-fill{
     top:4px !important; left:4px !important;
     width:calc(50vw - 8px) !important; z-index:27 !important; gap:4px !important;
   }
+  /* v134: all four top boxes share a uniform 46px height so the left column
+     (TURN + RECORD/GOALS) matches the right (CONTINENTS + EVENTS) — a clean
+     2×2 grid instead of the lopsided short/tall pair. Content vertically
+     centred inside each. */
   body.fc-stat-floated #g-stat-stack .g-conquest-stats{
-    font-size:11px !important; padding:6px 9px !important; letter-spacing:.4px !important;
+    font-size:11px !important; padding:2px 11px !important; letter-spacing:.4px !important;
+    height:46px !important; box-sizing:border-box !important;
+    display:flex !important; flex-direction:column !important; justify-content:center !important;
   }
   body.fc-stat-floated #g-stat-stack .g-conquest-stats .gcs-lbl{ min-width:4.2em !important; }
   body.fc-stat-floated #g-stat-stack #g-turn-badge{
-    font-size:11px !important; padding:6px 9px !important; letter-spacing:.4px !important;
+    font-size:11px !important; padding:2px 11px !important; letter-spacing:.4px !important;
+    box-sizing:border-box !important;
+  }
+  /* .visible carries display (overrides the block rule above) so the badge text
+     centres vertically in the 46px box. */
+  body.fc-stat-floated #g-stat-stack #g-turn-badge.visible{
+    height:46px !important; display:flex !important; align-items:center !important;
   }
   body.fc-stat-floated #g-stat-stack .g-aura-hbar{ height:30px !important; }
   body.fc-stat-floated #g-stat-stack .g-aura-hbar-text{ font-size:15px !important; }
@@ -3304,9 +3316,9 @@ body.fc-stat-floated:not(.map-light) #g-stat-stack .g-aura-hbar-fill{
      proportionate in the narrower column. */
   #g-campaign-panel.collapsed #g-campaign-header,
   #g-events-panel.collapsed #g-events-header{
-    font-size:12px !important; height:40px !important;
+    font-size:12px !important; height:46px !important;   /* match the left cards */
   }
-  #g-campaign-panel.collapsed, #g-events-panel.collapsed{ max-height:40px !important; }
+  #g-campaign-panel.collapsed, #g-events-panel.collapsed{ max-height:46px !important; }
 
   /* Push the floating loss warning + event toast DOWN below the top cards
      (TURN/RECORD/GOALS/AURA on the left, Continents/Events on the right) so
@@ -3369,7 +3381,9 @@ body.fc-stat-floated #game-panel #game-close{ top:3px !important; right:6px !imp
   body.fc-aura-in-panel #game-panel.open.conquest-mode .g-body{ padding-top:8px !important; }
   body.fc-aura-in-panel #game-panel.open.conquest-mode .g-body > .g-aura-hbar{
     display:block !important; width:calc(100% - 48px) !important; height:30px !important;
-    margin:0 0 8px 0 !important; flex:0 0 auto !important;
+    /* No bottom margin — the panel's flex `gap` already separates the aura from
+       the slots, so the gap below matches the padding above (both ~8px). */
+    margin:0 !important; flex:0 0 auto !important;
   }
   /* Hidden in the flags-only MINI state (it's no longer inside .g-top-row, which
      mini hides, so hide it explicitly). */
@@ -14200,7 +14214,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v132-mobile-aura-in-panel-top-strip-2026-07-23';
+  window._FC_CAP_VERSION = 'v134-uniform-top-boxes-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
