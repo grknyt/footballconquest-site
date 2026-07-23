@@ -48,13 +48,11 @@
 <!-- The simulator itself, in an iframe -->
 <div class="play-frame-wrap">
   <iframe src="/simulator.html" class="play-frame" id="play-frame" title="Football Conquest Simulator" allowfullscreen></iframe>
-  <!-- Fullscreen toggle: expands ONLY the game (hides the site nav + the
-       browser chrome) so the two stacked bars don't eat play space. Uses the
-       Fullscreen API on the iframe wrapper. Swaps icon + label when active. -->
-  <button type="button" id="play-fs-btn" class="play-fs-btn" aria-label="Toggle fullscreen">
-    <span class="play-fs-ico">⛶</span>
-    <span class="play-fs-txt" data-i18n="play.fullscreen">Fullscreen</span>
-  </button>
+  <!-- The Fullscreen control now lives INSIDE the game's own top toolbar
+       (simulator.html #btn-fs) so it's always visible regardless of screen
+       size. The iframe carries `allowfullscreen`, so the game requesting
+       fullscreen on itself fills the screen and hides both the site nav and
+       the browser chrome — same effect as the old floating button here. -->
 </div>
 
 <style>
@@ -63,58 +61,9 @@
      the wrapper to the iframe — and (b) act as the fullscreen element. */
   .play-frame-wrap { position: relative; display: flex; flex-direction: column; }
   body.play-page .play-frame-wrap { flex: 1 1 auto; min-height: 0; }
-  /* When the wrapper is the fullscreen element, make the iframe fill it. */
-  .play-frame-wrap:fullscreen { width: 100vw; height: 100vh; background: #0a1929; }
-  .play-frame-wrap:fullscreen .play-frame { width: 100%; height: 100%; border: 0; flex: 1 1 auto; }
-  /* Bottom-right, on the SAME line as (and just to the LEFT of) the game's
-     own ⟳ reset-view button, which lives inside the iframe at bottom:12px
-     right:12px and is ~40px wide. Placing this at right:62px leaves a small
-     gap so the two read as one control cluster in the corner. */
-  .play-fs-btn {
-    position: absolute; bottom: 14px; right: 62px; z-index: 40;
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(7,14,23,.85); color: #2fb673;
-    border: 1px solid rgba(47,182,115,.6); border-radius: 8px;
-    padding: 10px 18px; font-family: var(--display); font-size: 14px;
-    font-weight: 700; letter-spacing: .5px; cursor: pointer;
-    box-shadow: 0 4px 14px rgba(0,0,0,.4);
-    backdrop-filter: blur(4px); -webkit-tap-highlight-color: transparent;
-    transition: background .15s, border-color .15s, transform .12s;
-  }
-  .play-fs-btn:hover { background: rgba(10,25,41,.97); border-color: #2fb673; transform: translateY(-1px); }
-  .play-fs-btn:active { transform: translateY(0); }
-  .play-fs-ico { font-size: 17px; line-height: 1; }
-  @media (max-width: 700px) {
-    .play-fs-btn .play-fs-txt { display: none; }
-    .play-fs-btn { padding: 10px 12px; right: 58px; }
-  }
+  /* When the iframe itself is the fullscreen element it fills the screen. */
+  .play-frame:fullscreen { width: 100vw; height: 100vh; border: 0; background: #0a1929; }
 </style>
-
-<script>
-(function(){
-  var wrap = document.querySelector('.play-frame-wrap');
-  var btn  = document.getElementById('play-fs-btn');
-  if (!wrap || !btn) return;
-  function inFS(){ return document.fullscreenElement || document.webkitFullscreenElement; }
-  btn.addEventListener('click', function(){
-    if (inFS()) {
-      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
-    } else {
-      (wrap.requestFullscreen || wrap.webkitRequestFullscreen).call(wrap);
-    }
-  });
-  // Reflect state on the button (icon + label) when fullscreen changes,
-  // including when the user hits Esc to leave.
-  function sync(){
-    var on = !!inFS();
-    btn.querySelector('.play-fs-ico').textContent = on ? '🡼' : '⛶';
-    var txt = btn.querySelector('.play-fs-txt');
-    if (txt) txt.textContent = on ? 'Exit' : 'Fullscreen';
-  }
-  document.addEventListener('fullscreenchange', sync);
-  document.addEventListener('webkitfullscreenchange', sync);
-})();
-</script>
 
 <!-- Mini footer -->
 <footer class="footer" style="padding:48px 36px 32px;">

@@ -12,7 +12,13 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;background:#070e17;-webkit-user-select:none;user-select:none;}
-#app{background:#0b1520;color:#fff;display:flex;flex-direction:column;width:100vw;height:100vh;font-family:system-ui,sans-serif;}
+/* height: use the DYNAMIC viewport unit so #app matches the *visible* area on
+   mobile browsers whose URL/nav bar shrinks the viewport. With plain 100vh the
+   app was as tall as the LAYOUT viewport (taller than what's visible), so
+   #mwrap's bottom — and the bottom game panel anchored to it — fell below the
+   fold, hidden behind the browser chrome. That's the "can't find the pick
+   attacker button" report. 100vh stays as the fallback for old browsers. */
+#app{background:#0b1520;color:#fff;display:flex;flex-direction:column;width:100vw;height:100vh;height:100dvh;font-family:system-ui,sans-serif;}
 /* Toolbar sits above any open modal (modals are at z-index 50) so the
    Leaderboards, Theme, Undo, History, and hamburger controls stay readable
    and clickable even when a central modal is open. position:relative is
@@ -3108,6 +3114,17 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
     justify-content: center;
   }
 }
+
+/* ── v113 FULLSCREEN TOOLBAR BUTTON ────────────────────────────────────────
+   Always-available control in the top bar. Fills the screen (hides the site
+   nav + the mobile browser's URL/nav chrome) so every game control fits at
+   any resolution — the fix for "I can't find the pick-attacker button" on
+   cramped landscape browsers. Green accent so it stands out as the escape
+   hatch. Hidden inside the Capacitor app (already runs immersive/fullscreen)
+   and hidden by JS when the Fullscreen API isn't available. */
+#btn-fs { color: #2fb673; border-color: #254c3e; }
+#btn-fs:hover { background: #0e1a2a; border-color: #2fb673; }
+.fc-capacitor-app #btn-fs { display: none !important; }
 </style>
 </head>
 <!-- web-build = simulate-only public site. Remove the class to enable
@@ -3164,6 +3181,7 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
       <span id="paint-label" data-i18n="sim.tb.tappick">Tap to pick</span>
     </div>
     <div class="acts">
+      <button class="abtn" id="btn-fs" title="Fullscreen — fills the screen so every control fits at any resolution" onclick="window.fcToggleFS && window.fcToggleFS()">⛶ <span class="fs-label" data-i18n="sim.tb.fullscreen">Fullscreen</span></button>
       <button class="abtn" id="btn-bug" title="Report a bug" onclick="window.fcOpenBugReport && window.fcOpenBugReport()">🐛 <span data-i18n="sim.tb.bug">Report bug</span></button>
       <button type="button" class="abtn sim-hamburger" id="sim-hamburger-btn" title="More" aria-label="Toggle toolbar menu" aria-expanded="false">☰</button>
       <div class="sim-acts-drawer" id="sim-acts-drawer">
@@ -13660,6 +13678,57 @@ function openUsernameGate(onDone){
 </script>
 
 
+<!-- v113: Fullscreen toggle for the top-toolbar #btn-fs. Fills the screen so
+     every control fits at any resolution. When the simulator runs inside the
+     play.html iframe (allowfullscreen is set), requesting fullscreen on our own
+     documentElement makes the iframe fill the screen — hiding both the site nav
+     and the browser's URL/nav chrome. Hidden inside the Capacitor app (already
+     immersive) and hidden entirely when the Fullscreen API is unavailable
+     (e.g. iOS Safari, which doesn't expose it for elements). -->
+<script>
+(function setupFullscreenToggle(){
+  var docEl = document.documentElement;
+  var reqFS = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.msRequestFullscreen;
+  var exitFS = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+  function fsElement(){ return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement; }
+
+  window.fcToggleFS = function(){
+    if (!reqFS) return;
+    try {
+      if (fsElement()) { exitFS.call(document); }
+      else { reqFS.call(docEl); }
+    } catch (e) {}
+  };
+
+  function syncBtn(){
+    var btn = document.getElementById('btn-fs');
+    if (!btn) return;
+    var on = !!fsElement();
+    // Icon swaps ⛶ (enter) ⇄ 🡼 (exit); label swaps Fullscreen ⇄ Exit.
+    btn.firstChild && (btn.firstChild.nodeValue = on ? '🡼 ' : '⛶ ');
+    var lbl = btn.querySelector('.fs-label');
+    if (lbl) {
+      if (on) { lbl.removeAttribute('data-i18n'); lbl.textContent = (window.FCLang && window.FCLang.t && window.FCLang.t('sim.tb.exitfullscreen')) || 'Exit'; }
+      else    { lbl.setAttribute('data-i18n','sim.tb.fullscreen'); lbl.textContent = (window.FCLang && window.FCLang.t && window.FCLang.t('sim.tb.fullscreen')) || 'Fullscreen'; }
+    }
+  }
+
+  function init(){
+    var btn = document.getElementById('btn-fs');
+    if (!btn) return;
+    // No Fullscreen API (or blocked in this context) → hide the button so we
+    // never show a dead control.
+    if (!reqFS) { btn.style.display = 'none'; return; }
+    document.addEventListener('fullscreenchange', syncBtn);
+    document.addEventListener('webkitfullscreenchange', syncBtn);
+    syncBtn();
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', init); }
+  else { init(); }
+})();
+</script>
+
+
 <!-- Capacitor mobile-app tweaks. Runs only when the simulator is loaded inside
      the native iOS/Android WebView (window.Capacitor is undefined on the web
      build, so this block is a harmless no-op there). Hides features that are
@@ -13713,7 +13782,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v112-recenter-toggle-2026-07-22';
+  window._FC_CAP_VERSION = 'v113-toolbar-fullscreen-dvh-fit-2026-07-22';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──

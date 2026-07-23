@@ -13,6 +13,8 @@
 window.FC_TRANSLATIONS = {
   en: {
     "sim.tb.bug": "Report bug",
+    "sim.tb.fullscreen": "Fullscreen",
+    "sim.tb.exitfullscreen": "Exit",
     /* ── shared: nav + footer ── */
     "nav.play": "Play",
     "nav.howto": "How to play",
