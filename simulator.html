@@ -3308,11 +3308,67 @@ body.fc-stat-floated:not(.map-light) #g-stat-stack .g-aura-hbar-fill{
   }
   #g-campaign-panel.collapsed, #g-events-panel.collapsed{ max-height:40px !important; }
 }
+
+/* ── v129 MOBILE: horizontal team slot (flag | name/OVR | vertical stars) ──
+   Match the desktop card layout on phones — flag on the left, team name + OVR
+   stacked in the middle, and the star rating as a vertical column on the right
+   (was hidden + stacked vertically on mobile). Compact sizes so both slots +
+   the vs gutter still fit the bottom panel width. */
+@media (max-width: 700px) {
+  #game-panel.conquest-mode .g-slot{
+    display:grid !important;
+    grid-template-columns:auto 1fr auto !important;
+    grid-template-rows:auto auto !important;
+    grid-template-areas:"flag name stars" "flag ovr stars" !important;
+    column-gap:7px !important; row-gap:0 !important;
+    align-items:center !important; justify-items:start !important;
+    min-width:0 !important; padding:5px 9px !important;
+  }
+  #game-panel.conquest-mode .g-slot-flag{
+    grid-area:flag !important; width:42px !important; height:28px !important;
+    margin:0 !important; align-self:center !important;
+  }
+  #game-panel.conquest-mode .g-slot-val{
+    grid-area:name !important; margin:0 !important; text-align:left !important;
+    align-self:end !important; font-size:11px !important; line-height:1.1 !important;
+  }
+  #game-panel.conquest-mode .g-slot-overall{
+    grid-area:ovr !important; margin:0 !important; text-align:left !important;
+    align-self:start !important; font-size:12px !important; line-height:1.1 !important;
+  }
+  #game-panel.conquest-mode .g-slot-stars{
+    grid-area:stars !important; display:flex !important; flex-direction:column !important;
+    align-items:center !important; justify-content:center !important; align-self:center !important;
+    margin:0 !important; gap:0 !important; font-size:9px !important; line-height:1 !important;
+    letter-spacing:0 !important; white-space:normal !important;
+  }
+}
 /* With the strip gone from the panel, shorten the Territory/Momentum bars so
    they don't tower above the team flag. */
 body.fc-stat-floated #game-panel.open.conquest-mode .g-tm-bars{ align-items:center; }
 body.fc-stat-floated #game-panel.open.conquest-mode .g-tm-bar-track{
   flex:none !important; min-height:0 !important; height:60px !important;
+}
+
+/* ── v130 PORTRAIT LOCK FOR PHONES ─────────────────────────────────────────
+   Phones in landscape land in an awkward layout gap and the bottom UI eats the
+   screen. Rather than perfect a cramped phone-landscape layout, we block it: a
+   full-screen "rotate to portrait" prompt shows ONLY on short landscape
+   viewports (max-height:500px = a phone on its side). Tablets and desktop have
+   taller landscape viewports, so they never see it and keep both orientations. */
+#fc-rotate-lock{ display:none; }
+@media (orientation: landscape) and (max-height: 500px) {
+  #fc-rotate-lock{
+    display:flex; position:fixed; inset:0; z-index:9999;
+    background:#070e17; align-items:center; justify-content:center;
+    text-align:center; padding:24px; -webkit-user-select:none; user-select:none;
+  }
+  .fc-rotate-inner{ max-width:420px; }
+  .fc-rotate-icon{ font-size:52px; line-height:1; margin-bottom:14px;
+    animation:fc-rotate-wiggle 1.8s ease-in-out infinite; }
+  @keyframes fc-rotate-wiggle{ 0%,100%{transform:rotate(-12deg);} 50%{transform:rotate(12deg);} }
+  .fc-rotate-title{ font-size:20px; font-weight:800; color:#fff; letter-spacing:.3px; }
+  .fc-rotate-sub{ font-size:13px; color:#7a9bb5; margin-top:8px; line-height:1.5; }
 }
 </style>
 </head>
@@ -3348,6 +3404,17 @@ body.fc-stat-floated #game-panel.open.conquest-mode .g-tm-bar-track{
 })();
 </script>
 <div id="app">
+  <!-- v130: portrait lock for PHONES. Shown only on short landscape screens
+       (max-height:500px) — i.e. a phone turned sideways. Tablets and desktop
+       (taller landscape viewports) never see it, so they keep both
+       orientations. Hidden by default; the media query below reveals it. -->
+  <div id="fc-rotate-lock" aria-hidden="true">
+    <div class="fc-rotate-inner">
+      <div class="fc-rotate-icon">📱↻</div>
+      <div class="fc-rotate-title">Please rotate your device</div>
+      <div class="fc-rotate-sub">Football Conquest plays best in portrait on phones.</div>
+    </div>
+  </div>
   <div id="hdr">
     <!-- v91: logo + wordmark are a HOME button — tap returns to the splash
          launcher. Mid-game taps confirm first, then auto-save the run so
@@ -13923,7 +13990,7 @@ function openUsernameGate(onDone){
   // on WIDE LANDSCAPE (desktop / landscape tablet) OR NARROW PHONES (portrait).
   // On phones the CSS puts this stack in the left column and Events/Continents
   // in a stacked right column. Medium portrait tablets keep the in-panel layout.
-  var MQ = window.matchMedia('(orientation: landscape) and (min-width: 900px), (max-width: 760px)');
+  var MQ = window.matchMedia('(orientation: landscape) and (min-width: 900px) and (min-height: 500px), (max-width: 760px)');
   var stack = null, homeParent = null, homeNext = null;
   var badgeHome = null, badgeNext = null;
   function topRow(){ return document.querySelector('.g-top-row'); }
@@ -14082,7 +14149,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v128-mobile-two-column-top-2026-07-23';
+  window._FC_CAP_VERSION = 'v130-portrait-lock-phones-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
