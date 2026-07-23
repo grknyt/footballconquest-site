@@ -44,8 +44,8 @@ body {
      whispers behind text without hurting readability. The cream shows
      through as the background-color beneath the tiled image. */
   background-color: var(--paper);
-  background-image: url(/assets/fc-watermark-cream.png?v=globe);
-  background-size: 300px auto;
+  background-image: url(/assets/fc-watermark-cream.png?v=fc4);
+  background-size: 400px 400px;
   background-repeat: repeat;
   color: var(--ink);
   font-family: var(--serif);
@@ -324,8 +324,8 @@ img, svg { display: block; max-width: 100%; height: auto; }
      mark (fc-watermark-dark.png — a 200×200 checker tile of the mark, green
      baked at 0.15/0.22 opacity), matching the app icon + game map. Was a
      red "FC" text SVG. */
-  background-image: url("/assets/fc-watermark-dark.png?v=globe");
-  background-size: 200px 200px;
+  background-image: url("/assets/fc-watermark-dark.png?v=fc4");
+  background-size: 400px 400px;
   background-repeat: repeat;
   filter: blur(3.5px);
   pointer-events: none;
