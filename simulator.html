@@ -10662,18 +10662,17 @@ function wireResultModal(){
       return;
     }
     if(_simAutoConfirmTimer) clearTimeout(_simAutoConfirmTimer);
-    // Reveal pause before auto-confirming. Base time scales with how much
-    // info we're asking the player to absorb:
-    //   400ms = bare FT result   (v98: was 1400 — cut a full second because
-    //           the result was outstaying its welcome once the map transition
-    //           behind it got more elaborate)
-    //   +400ms for AET / pens (finish tag)
-    //   +400ms per visible impact line (momentum / OVR)
-    // So a routine 1–0 with no OVR step: 400ms.
-    // A pens-decided thrash with both deltas: 400 + 400 + 800 = 1600ms.
-    const holdMs = 400
-      + (finish==='normal' ? 0 : 400)
-      + visibleImpactLines * 400;
+    // v114: CONSISTENT reveal dwell time. The old formula scaled with the
+    // number of impact lines and bottomed out at 400ms — so a routine result
+    // (or any loss with no deltas to show) flashed by before the player could
+    // read the score, and the duration jumped around match to match. That's
+    // the "sometimes disappears way too quickly / inconsistent" report. Now
+    // there's a firm ~1.2s floor EVERY time, with a small bump only when
+    // there's genuinely more to read (an extra-time / penalties tag). The
+    // impact lines appear alongside the score and are readable within that
+    // window, so they no longer stretch the timer. Tap-anywhere and Esc still
+    // skip instantly for players who want to move on.
+    const holdMs = 1200 + (finish==='normal' ? 0 : 400);
     _simAutoConfirmTimer=setTimeout(()=>{
       _simAutoConfirmTimer=null;
       document.getElementById('g-result-confirm').click();
@@ -13789,7 +13788,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v113-toolbar-fullscreen-dvh-fit-2026-07-22';
+  window._FC_CAP_VERSION = 'v114-consistent-result-dwell-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
