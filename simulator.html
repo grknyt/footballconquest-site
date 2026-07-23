@@ -3307,6 +3307,12 @@ body.fc-stat-floated:not(.map-light) #g-stat-stack .g-aura-hbar-fill{
     font-size:12px !important; height:40px !important;
   }
   #g-campaign-panel.collapsed, #g-events-panel.collapsed{ max-height:40px !important; }
+
+  /* Push the floating loss warning + event toast DOWN below the top cards
+     (TURN/RECORD/GOALS/AURA on the left, Continents/Events on the right) so
+     they're no longer hidden behind them. */
+  #g-loss-float{ top:128px !important; }
+  #g-event-toast{ top:174px !important; }
 }
 
 /* ── v129 MOBILE: horizontal team slot (flag | name/OVR | vertical stars) ──
@@ -3349,6 +3355,11 @@ body.fc-stat-floated #game-panel.open.conquest-mode .g-tm-bars{ align-items:cent
 body.fc-stat-floated #game-panel.open.conquest-mode .g-tm-bar-track{
   flex:none !important; min-height:0 !important; height:60px !important;
 }
+/* v131: RECORD/GOALS/AURA are floated out, so the panel's first row is now the
+   slots and the collapse ▼ (#game-close) overlapped the top-right slot. Give
+   the body a clear strip at the top for the ▼ and pin it to the corner. */
+body.fc-stat-floated #game-panel.open.conquest-mode .g-body{ padding-top:26px !important; }
+body.fc-stat-floated #game-panel #game-close{ top:3px !important; right:6px !important; z-index:6 !important; }
 
 /* ── v130 PORTRAIT LOCK FOR PHONES ─────────────────────────────────────────
    Phones in landscape land in an awkward layout gap and the bottom UI eats the
@@ -14149,7 +14160,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v130-portrait-lock-phones-2026-07-23';
+  window._FC_CAP_VERSION = 'v131-move-floats-down+collapse-btn-corner-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
