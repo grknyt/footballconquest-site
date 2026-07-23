@@ -891,6 +891,9 @@ body.web-build #fc-menu-hide-ui{display:none!important;}
    Both left-aligned via block display + parent text-align:left. */
 .g-conquest-stats .gcs-record{display:block;line-height:1.2;}
 .g-conquest-stats .gcs-goals{display:block;line-height:1.2;margin-top:1px;}
+/* Fixed-width label column so RECORD/GOALS digits align on both lines. Sized
+   to the longer word ("RECORD") at this font + letter-spacing. */
+.g-conquest-stats .gcs-lbl{display:inline-block;min-width:4.8em;}
 .g-conquest-stats b{color:#fff;font-weight:800;}
 .g-conquest-stats b.w{color:#6dd86d;}
 .g-conquest-stats b.l{color:#ff8a8a;}
@@ -11728,12 +11731,14 @@ function updateConquestHud(state){
     // Two stacked lines per Gürkan v28 polish: RECORD on line 1, GOALS on
     // line 2, both left-aligned inside the game panel. Turn info moved OUT
     // to its own floating pill above the game panel (via #g-turn-badge).
+    // Two aligned columns: the label ("RECORD"/"GOALS") is a fixed-width
+    // inline-block so the digits after it start at the same x on both lines.
     conquestStatsEl.innerHTML =
       '<span class="gcs-record">' +
-        FCLang.t('sim.hud.record') + ' <b class="w">' + s.wins + '</b>–<b class="l">' + s.losses + '</b>' +
+        '<span class="gcs-lbl">' + FCLang.t('sim.hud.record') + '</span> <b class="w">' + s.wins + '</b>–<b class="l">' + s.losses + '</b>' +
       '</span>' +
       '<span class="gcs-goals">' +
-        FCLang.t('sim.hud.goals') + ' <b>' + s.gf + '</b>–<b>' + s.ga + '</b> (<b class="' + gdClass + '">' + gdStr + '</b>)' +
+        '<span class="gcs-lbl">' + FCLang.t('sim.hud.goals') + '</span> <b>' + s.gf + '</b>–<b>' + s.ga + '</b> (<b class="' + gdClass + '">' + gdStr + '</b>)' +
       '</span>';
   }
   if(statsEl) statsEl.style.display='none';
@@ -13971,7 +13976,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v119-turnbadge-float+tiny-zoom-fix2-2026-07-23';
+  window._FC_CAP_VERSION = 'v120-record-goals-column-align-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
