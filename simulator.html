@@ -902,6 +902,12 @@ body.web-build #fc-menu-hide-ui{display:none!important;}
   font-size:13px;line-height:1.5;
   padding:8px 13px;background:transparent;border-radius:0;
   font-size:12px;line-height:1.55;color:#b8c9d8;}
+/* v117: when the panel is EXPANDED, give the log a minimum height so toggling
+   the ⚽ "match results only" filter (or an early-game log with few entries)
+   can't shrink the whole box down to just the header bar — it used to collapse
+   to a sliver and not return to its normal size. Collapsed state hides the log
+   entirely (v116) so this floor doesn't apply there. */
+#g-events-panel:not(.collapsed) #g-log{min-height:100px;}
 .g-log{font-size:13px;color:#cfdaea;flex:1;min-width:0;max-height:110px;overflow-y:auto;
 background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-log-empty{color:#4a6a80;font-style:italic;text-align:center;font-size:12px;}
@@ -7097,7 +7103,8 @@ function panToFitPoints(points,opts){
    frame entirely.                                                        */
 const HERO_ZOOM_FILL = 0.30;  // territory linear extent as a fraction of visible width
 const HERO_ZOOM_MIN  = 3.0;
-const HERO_ZOOM_MAX  = 20.0;
+const HERO_ZOOM_MAX  = 30.0;  // v117: was 20 — micro-island nations (Puerto Rico,
+                              // St Lucia, etc.) need to frame tighter or they're a speck.
 function heroZoomK(teamId, pt, fallback){
   let L = null;
   try {
@@ -7109,6 +7116,20 @@ function heroZoomK(teamId, pt, fallback){
       if (iso && lin[String(iso)]) L = lin[String(iso)];
     }
     if (!L && typeof _localIsoLinear === 'function') L = _localIsoLinear(teamId);
+    // v117: tier-3 fallback — isoAtMap ray-casts routinely MISS tiny island
+    // polygons, so L came back null for micro-nations and the camera dropped to
+    // the far-out numeric fallback ("tiny country zoomed way too far out"). Look
+    // the hero team's own home-country iso extent up directly instead.
+    if (!L) {
+      const lin = window._isoLinear || {};
+      let isoStr = (typeof _teamIsoById !== 'undefined') ? _teamIsoById[teamId] : undefined;
+      if (isoStr === undefined && typeof teams !== 'undefined') {
+        const t = teams.find(x => x.id === teamId);
+        isoStr = t ? String(t.iso) : null;
+        if (typeof _teamIsoById !== 'undefined') _teamIsoById[teamId] = isoStr;
+      }
+      if (isoStr && lin[String(isoStr)]) L = lin[String(isoStr)];
+    }
   } catch(e) { L = null; }
   if (!L || !(L > 0)) return fallback;
   const k = HERO_ZOOM_FILL * VW / L;
@@ -13178,7 +13199,12 @@ function startNewGameFlow(){
   const hdr=document.getElementById('g-events-header');
   const panel=document.getElementById('g-events-panel');
   if(!hdr||!panel)return;
-  hdr.addEventListener('click',()=>{
+  hdr.addEventListener('click',(e)=>{
+    // Only collapse when the header ITSELF (title / empty area) is tapped —
+    // never when an inner control (🔍 search, ⚽ filter, ▼ toggle) is clicked.
+    // Defends against a stray button tap folding the panel regardless of each
+    // button's own stopPropagation.
+    if(e.target.closest('button, input, a')) return;
     panel.classList.toggle('collapsed');
   });
   // 'Match results only' filter — hides non-result log entries via a CSS class.
@@ -13833,7 +13859,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v117-remove-vestigial-globe-btn-2026-07-23';
+  window._FC_CAP_VERSION = 'v117-events-fixes-tiny-zoom-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
