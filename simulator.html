@@ -3321,13 +3321,16 @@ body.fc-stat-floated:not(.map-light) #g-stat-stack .g-aura-hbar-fill{
   }
   body.fc-stat-floated #g-stat-stack .g-conquest-stats .gcs-lbl{ min-width:4.2em !important; }
   body.fc-stat-floated #g-stat-stack #g-turn-badge{
-    font-size:11px !important; padding:2px 11px !important; letter-spacing:.4px !important;
+    font-size:11px !important; padding:0 11px !important; letter-spacing:.4px !important;
     box-sizing:border-box !important;
   }
-  /* .visible carries display (overrides the block rule above) so the badge text
-     centres vertically in the 46px box. */
+  /* Vertically centre via line-height (NOT flex) — a flex container would turn
+     the badge's text runs + <b> numbers into separate flex items and strip the
+     whitespace between them ("TURN 5" → "TURN5"). block + line-height keeps the
+     text as one inline flow, spaces intact. */
   body.fc-stat-floated #g-stat-stack #g-turn-badge.visible{
-    height:46px !important; display:flex !important; align-items:center !important;
+    height:46px !important; display:block !important; line-height:46px !important;
+    white-space:nowrap !important;
   }
   body.fc-stat-floated #g-stat-stack .g-aura-hbar{ height:30px !important; }
   body.fc-stat-floated #g-stat-stack .g-aura-hbar-text{ font-size:15px !important; }
@@ -14285,7 +14288,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v139-floats-below-recenter-pill-2026-07-23';
+  window._FC_CAP_VERSION = 'v140-turn-badge-spacing-fix-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
