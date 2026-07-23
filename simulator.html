@@ -3190,9 +3190,23 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
   display:none; pointer-events:none; }
 #g-stat-stack .g-top-row,
 #g-stat-stack .g-conquest-stats,
-#g-stat-stack .g-aura-hbar{ pointer-events:auto; }
-body.fc-stat-floated #game-panel.open.conquest-mode ~ #g-stat-stack{ display:block; }
+#g-stat-stack .g-aura-hbar,
+#g-stat-stack #g-turn-badge{ pointer-events:auto; }
+body.fc-stat-floated #game-panel.open.conquest-mode ~ #g-stat-stack{
+  display:flex; flex-direction:column; gap:6px; }
 body.fc-stat-floated #game-panel.g-mini ~ #g-stat-stack{ display:none !important; }
+/* TURN · LEFT card (top of the stack) — same box style/size as the others.
+   position:static so the badge's own "float above the panel" JS (which sets an
+   inline `bottom`) is ignored while it's docked in the stack. */
+body.fc-stat-floated #g-stat-stack #g-turn-badge{
+  position:static !important; transform:none !important;
+  width:100%; margin:0; text-align:left;
+  background:linear-gradient(135deg,#1e3452 0%,#0e1a2c 50%,#050c17 100%);
+  border:1px solid #254c3e; border-radius:10px; padding:8px 13px;
+  font-size:13px; letter-spacing:.8px;
+  box-shadow:0 6px 18px rgba(0,0,0,.4);
+}
+body.fc-stat-floated #g-stat-stack #g-turn-badge.visible{ display:block !important; }
 #g-stat-stack .g-top-row{
   display:flex !important; flex-direction:column; align-items:stretch;
   gap:6px; width:100%; margin:0; padding:0; background:transparent;
@@ -7142,32 +7156,34 @@ function panToFitPoints(points,opts){
    frame entirely.                                                        */
 const HERO_ZOOM_FILL = 0.30;  // territory linear extent as a fraction of visible width
 const HERO_ZOOM_MIN  = 3.0;
-const HERO_ZOOM_MAX  = 30.0;  // v117: was 20 — micro-island nations (Puerto Rico,
-                              // St Lucia, etc.) need to frame tighter or they're a speck.
+const HERO_ZOOM_MAX  = 42.0;  // v119: was 30 — the very tiniest nations (British
+                              // Virgin Islands, etc.) hit this ceiling, so it sets
+                              // how punched-in a micro-state gets. Raised again.
 function heroZoomK(teamId, pt, fallback){
   let L = null;
   try {
+    const lin = window._isoLinear || {};
     // Prefer the explicit point (the pan target) — during a conquest the badge
     // may not have been repositioned yet, but the destination is already known.
     if (pt && isFinite(pt[0]) && isFinite(pt[1]) && typeof isoAtMap === 'function') {
       const iso = isoAtMap(pt[0], pt[1]);
-      const lin = window._isoLinear || {};
       if (iso && lin[String(iso)]) L = lin[String(iso)];
     }
     if (!L && typeof _localIsoLinear === 'function') L = _localIsoLinear(teamId);
-    // v117: tier-3 fallback — isoAtMap ray-casts routinely MISS tiny island
+    // v119: tier-3 fallback — isoAtMap ray-casts routinely MISS tiny island
     // polygons, so L came back null for micro-nations and the camera dropped to
-    // the far-out numeric fallback ("tiny country zoomed way too far out"). Look
-    // the hero team's own home-country iso extent up directly instead.
-    if (!L) {
-      const lin = window._isoLinear || {};
-      let isoStr = (typeof _teamIsoById !== 'undefined') ? _teamIsoById[teamId] : undefined;
-      if (isoStr === undefined && typeof teams !== 'undefined') {
-        const t = teams.find(x => x.id === teamId);
-        isoStr = t ? String(t.iso) : null;
-        if (typeof _teamIsoById !== 'undefined') _teamIsoById[teamId] = isoStr;
+    // the far-out numeric fallback ("tiny country zoomed way too far out"). Use
+    // the hero's own owned-iso extents from GAME.state, which are keyed by the
+    // SAME numeric feature id as _isoLinear (an earlier attempt keyed on the
+    // 3-letter ISO code, which never matched). Take the smallest owned island so
+    // a micro home country frames tight rather than defaulting wide.
+    if (!L && typeof GAME !== 'undefined' && GAME.state && GAME.state[teamId]) {
+      const owned = GAME.state[teamId].ownedIsos;
+      if (owned && owned.size) {
+        let minL = Infinity;
+        owned.forEach(function(i){ const l = lin[String(i)]; if (l && l < minL) minL = l; });
+        if (minL !== Infinity) L = minL;
       }
-      if (isoStr && lin[String(isoStr)]) L = lin[String(isoStr)];
     }
   } catch(e) { L = null; }
   if (!L || !(L > 0)) return fallback;
@@ -13798,6 +13814,7 @@ function openUsernameGate(onDone){
 (function floatStatStrip(){
   var MQ = window.matchMedia('(orientation: landscape) and (min-width: 900px)');
   var stack = null, homeParent = null, homeNext = null;
+  var badgeHome = null, badgeNext = null;
   function topRow(){ return document.querySelector('.g-top-row'); }
   function ensureStack(){
     if (stack && stack.isConnected) return stack;
@@ -13811,15 +13828,25 @@ function openUsernameGate(onDone){
   function apply(){
     var tr = topRow();
     if (!tr) return;
+    var badge = document.getElementById('g-turn-badge');
     if (MQ.matches) {
       if (!homeParent) { homeParent = tr.parentNode; homeNext = tr.nextElementSibling; }
       var s = ensureStack();
       if (tr.parentNode !== s) s.appendChild(tr);
+      // TURN·LEFT badge docks at the TOP of the stack, above RECORD/GOALS.
+      if (badge) {
+        if (!badgeHome) { badgeHome = badge.parentNode; badgeNext = badge.nextElementSibling; }
+        if (badge.parentNode !== s || s.firstChild !== badge) s.insertBefore(badge, s.firstChild);
+      }
       document.body.classList.add('fc-stat-floated');
     } else {
       if (homeParent && tr.parentNode !== homeParent) {
         if (homeNext && homeNext.parentNode === homeParent) homeParent.insertBefore(tr, homeNext);
         else homeParent.appendChild(tr);
+      }
+      if (badge && badgeHome && badge.parentNode !== badgeHome) {
+        if (badgeNext && badgeNext.parentNode === badgeHome) badgeHome.insertBefore(badge, badgeNext);
+        else badgeHome.appendChild(badge);
       }
       document.body.classList.remove('fc-stat-floated');
     }
@@ -13944,7 +13971,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v118-float-record-aura-topleft-2026-07-23';
+  window._FC_CAP_VERSION = 'v119-turnbadge-float+tiny-zoom-fix2-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
