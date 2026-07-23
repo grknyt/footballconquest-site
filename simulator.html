@@ -429,10 +429,10 @@ body.web-build #g-squad-panel{display:none!important;}
 .fbadge:nth-child(6n)   image,.fbadge:nth-child(6n)   rect{animation-delay:-5.4s;}
 /* Pause every flag animation during active pan/zoom for smoothness. */
 body.fc-panning .fbadge image,body.fc-panning .fbadge rect{animation-play-state:paused;}
-@media (prefers-reduced-motion:reduce){
-  .fbadge.fc-hero-flag image,.fbadge.fc-hero-flag rect,
-  .fbadge image,.fbadge rect{animation:none;}
-}
+/* NOTE: the idle flag sway intentionally does NOT honour prefers-reduced-motion
+   — it's a core "living map" effect and many Android/Samsung devices ship with
+   "Remove animations" on, which was silently killing it. The motion is gentle
+   enough to keep. */
 #g-squad-fetch-portraits{background:transparent;border:1px solid #2a4f6a;color:#7ab8e8;
   border-radius:5px;padding:5px 8px;font-size:11px;cursor:pointer;margin-top:4px;}
 #g-squad-fetch-portraits:hover:not(:disabled){background:#1a2f40;color:#fff;}
@@ -14338,7 +14338,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v142b-idle-flag-sway-stronger-2026-07-23';
+  window._FC_CAP_VERSION = 'v142c-idle-sway-ignore-reduced-motion-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
