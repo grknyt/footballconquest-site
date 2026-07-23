@@ -3176,6 +3176,45 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
 #btn-fs { color: #2fb673; border-color: #254c3e; }
 #btn-fs:hover { background: #0e1a2a; border-color: #2fb673; }
 .fc-capacitor-app #btn-fs { display: none !important; }
+
+/* ── v118 FLOATING RECORD·GOALS + AURA (wide landscape) ────────────────────
+   Desktop web + landscape tablets: the RECORD/GOALS + AURA strip (.g-top-row)
+   is lifted out of the bottom panel and reparented (by JS) into #g-stat-stack,
+   which lives OUTSIDE the transform-centered #game-panel so it can pin to the
+   map's top-left as two stacked, equal-width cards — mirroring Events /
+   Continents on the right. Everything keys off body.fc-stat-floated, which the
+   JS sets ONLY while the strip is actually floated, so portrait/narrow keeps
+   the original in-panel layout untouched. #g-stat-stack is a sibling of
+   #game-panel, so it pins to the same positioned ancestor (#mwrap). */
+#g-stat-stack{ position:absolute; top:8px; left:8px; z-index:26; width:236px;
+  display:none; pointer-events:none; }
+#g-stat-stack .g-top-row,
+#g-stat-stack .g-conquest-stats,
+#g-stat-stack .g-aura-hbar{ pointer-events:auto; }
+body.fc-stat-floated #game-panel.open.conquest-mode ~ #g-stat-stack{ display:block; }
+body.fc-stat-floated #game-panel.g-mini ~ #g-stat-stack{ display:none !important; }
+#g-stat-stack .g-top-row{
+  display:flex !important; flex-direction:column; align-items:stretch;
+  gap:6px; width:100%; margin:0; padding:0; background:transparent;
+}
+/* RECORD · GOALS card (top) */
+#g-stat-stack .g-conquest-stats{
+  order:1; display:block !important; flex:none; margin:0; text-align:left;
+  background:linear-gradient(135deg,#1e3452 0%,#0e1a2c 50%,#050c17 100%);
+  border:1px solid #254c3e; border-radius:10px; padding:8px 13px;
+  box-shadow:0 6px 18px rgba(0,0,0,.4);
+}
+/* AURA card (below, same width) */
+#g-stat-stack .g-aura-hbar{
+  order:2; display:block !important; width:100% !important; margin:0; flex:none;
+  border:1px solid #254c3e; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,.4);
+}
+/* With the strip gone from the panel, shorten the Territory/Momentum bars so
+   they don't tower above the team flag. */
+body.fc-stat-floated #game-panel.open.conquest-mode .g-tm-bars{ align-items:center; }
+body.fc-stat-floated #game-panel.open.conquest-mode .g-tm-bar-track{
+  flex:none !important; min-height:0 !important; height:60px !important;
+}
 </style>
 </head>
 <!-- web-build = simulate-only public site. Remove the class to enable
@@ -13748,6 +13787,52 @@ function openUsernameGate(onDone){
 </script>
 
 
+<!-- v118: On wide landscape (desktop web + landscape tablet) lift the
+     RECORD·GOALS + AURA strip (.g-top-row) out of the bottom panel into a
+     dedicated top-left floating container (#g-stat-stack). The panel is
+     transform-centered, which traps position:fixed children, so a CSS-only
+     float is impossible — we reparent the actual node instead (so every
+     updateConquestHud() write still lands) and move it back into the panel on
+     portrait/narrow. The <style> rules key off body.fc-stat-floated. -->
+<script>
+(function floatStatStrip(){
+  var MQ = window.matchMedia('(orientation: landscape) and (min-width: 900px)');
+  var stack = null, homeParent = null, homeNext = null;
+  function topRow(){ return document.querySelector('.g-top-row'); }
+  function ensureStack(){
+    if (stack && stack.isConnected) return stack;
+    stack = document.getElementById('g-stat-stack');
+    if (!stack) { stack = document.createElement('div'); stack.id = 'g-stat-stack'; }
+    var gp = document.getElementById('game-panel');
+    var host = gp ? gp.parentNode : document.getElementById('mwrap');
+    if (host && stack.parentNode !== host) host.appendChild(stack);
+    return stack;
+  }
+  function apply(){
+    var tr = topRow();
+    if (!tr) return;
+    if (MQ.matches) {
+      if (!homeParent) { homeParent = tr.parentNode; homeNext = tr.nextElementSibling; }
+      var s = ensureStack();
+      if (tr.parentNode !== s) s.appendChild(tr);
+      document.body.classList.add('fc-stat-floated');
+    } else {
+      if (homeParent && tr.parentNode !== homeParent) {
+        if (homeNext && homeNext.parentNode === homeParent) homeParent.insertBefore(tr, homeNext);
+        else homeParent.appendChild(tr);
+      }
+      document.body.classList.remove('fc-stat-floated');
+    }
+  }
+  function init(){ apply(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+  if (MQ.addEventListener) MQ.addEventListener('change', apply);
+  else if (MQ.addListener) MQ.addListener(apply);
+})();
+</script>
+
+
 <!-- v113: Fullscreen toggle for the top-toolbar #btn-fs. Fills the screen so
      every control fits at any resolution. When the simulator runs inside the
      play.html iframe (allowfullscreen is set), requesting fullscreen on our own
@@ -13859,7 +13944,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v117-events-fixes-tiny-zoom-2026-07-23';
+  window._FC_CAP_VERSION = 'v118-float-record-aura-topleft-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
