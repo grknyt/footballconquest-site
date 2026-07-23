@@ -1050,6 +1050,12 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 #g-startup-modal.open, #g-result-modal.open, #g-username-modal.open{
   display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
 }
+/* v126: center the Match Result card in the SAME gap the camera focuses on —
+   the unobscured area above the bottom UI — not the whole viewport. Reserving
+   the bottom-occluded 22vh (VIEWPORT_BOTTOM_OCCLUDED) means the card's margin:
+   auto centers it at ~39vh, matching VIEWPORT_VISUAL_CY_FRAC. Only the result
+   modal shifts; startup/username stay viewport-centered. */
+#g-result-modal.open{ padding-bottom:22vh; }
 #g-username-modal{z-index:52;}
 .g-username-card{max-width:380px;text-align:center;}
 .g-username-icon{font-size:40px;margin-bottom:10px;}
@@ -14030,7 +14036,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v125-lock-conquest-strike-while-marching-2026-07-23';
+  window._FC_CAP_VERSION = 'v126-result-modal-center-in-gap-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
