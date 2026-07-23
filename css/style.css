@@ -10,13 +10,13 @@
   --paper: #f4ead5;
   --paper-2: #e8dcc4;
   /* v-green rebrand (2026-07-17): green promoted to the PRIMARY accent to
-     match the mobile app's FC-arrow launcher icon (#18bf2f). Red is kept
+     match the mobile app's FC-arrow launcher icon (#007546). Red is kept
      defined for the in-game loss/danger semantics and any legacy refs, but
      the marketing site's accent, CTAs, links, dividers, and brand mark now
      use green. Black (--ink) sits on green for max contrast, mirroring the
      black-FC-on-green app icon. */
-  --green: #18bf2f;
-  --green-dark: #0f9a24;
+  --green: #007546;
+  --green-dark: #254c3e;
   --red: #c8102e;
   --red-dark: #8a0a1f;
   --gold: #d4a936;

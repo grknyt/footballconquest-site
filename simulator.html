@@ -85,9 +85,9 @@ background:linear-gradient(135deg,#1e3452 0%,#0e1a2c 50%,#050c17 100%);
 /* Border + outer glow recoloured to brand green (v-green) so the panel
    frame ties to the app identity. Interior gradient stays navy so the
    flags, semantic win/loss colours, and gold Aura still read cleanly. */
-border:1.5px solid #2a7a3a;border-radius:12px;
+border:1.5px solid #254c3e;border-radius:12px;
 display:none;flex-direction:column;z-index:25;overflow:hidden;
-box-shadow:0 8px 24px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08), 0 0 20px rgba(24,191,47,.18);}
+box-shadow:0 8px 24px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08), 0 0 20px rgba(0,117,70,.18);}
 #game-panel.open{display:flex;}
 .g-head{padding:7px 16px;background:#0a1624;border-bottom:1px solid #1a2f40;
 display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:6px;}
@@ -184,7 +184,7 @@ box-shadow:0 2px 6px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12);}
    Pick attacker) recoloured blue → brand green, black text. Tactic buttons
    keep their own semantic colours (defensive-red / balanced-blue /
    attacking-orange) via more specific rules below. */
-.g-btn.primary{background:linear-gradient(180deg,#22d63c 0%,#0f9a24 100%);color:#062a0d;border:1px solid #18bf2f;}
+.g-btn.primary{background:linear-gradient(180deg,#007546 0%,#254c3e 100%);color:#ffffff;border:1px solid #007546;}
 .g-btn.primary:hover:not(:disabled){background:linear-gradient(180deg,#2ee84a 0%,#12ad29 100%);}
 .g-btn.danger{background:linear-gradient(180deg,#c72a2a 0%,#6e1414 100%);color:#fff;border:1px solid #c72a2a;}
 .g-btn.danger:hover:not(:disabled){background:linear-gradient(180deg,#e03535 0%,#821818 100%);}
@@ -703,7 +703,7 @@ body.web-build .g-recruit-modal{display:none!important;}
   height:30px;
   background:linear-gradient(135deg,#141619 0%,#1c1f23 100%);
   border:1px solid #2e3a31;border-radius:9px;overflow:hidden;
-  box-shadow:inset 0 1px 3px rgba(0,0,0,.6),0 0 14px rgba(24,191,47,.12);}
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.6),0 0 14px rgba(0,117,70,.12);}
 #game-panel.open.conquest-mode .g-aura-hbar{display:block;}
 .g-aura-hbar-fill{position:absolute;inset:0;width:0;
   background:linear-gradient(90deg,#3a4048 0%,#4c535c 50%,#5a626c 100%);
@@ -713,13 +713,13 @@ body.web-build .g-recruit-modal{display:none!important;}
   display:flex;align-items:center;padding:0 14px;gap:9px;
   pointer-events:none;}
 .g-aura-hbar-text{font-family:'Montserrat',Impact,'Arial Black','Helvetica Neue Black',sans-serif;
-  font-size:23px;font-weight:900;letter-spacing:.5px;color:#22d63c;text-transform:uppercase;
-  text-shadow:0 0 8px rgba(24,191,47,.35);}
-.g-aura-hbar-star{color:#22d63c;font-size:19px;font-weight:900;
-  line-height:1;filter:drop-shadow(0 0 4px rgba(24,191,47,.4));}
+  font-size:23px;font-weight:900;letter-spacing:.5px;color:#2fb673;text-transform:uppercase;
+  text-shadow:0 0 8px rgba(0,117,70,.35);}
+.g-aura-hbar-star{color:#2fb673;font-size:19px;font-weight:900;
+  line-height:1;filter:drop-shadow(0 0 4px rgba(0,117,70,.4));}
 .g-aura-hbar-val{margin-left:auto;font-family:'Montserrat',Impact,'Arial Black','Helvetica Neue Black',sans-serif;
-  font-size:14px;font-weight:900;color:#22d63c;letter-spacing:.5px;
-  text-shadow:0 0 6px rgba(24,191,47,.3);font-variant-numeric:tabular-nums;}
+  font-size:14px;font-weight:900;color:#2fb673;letter-spacing:.5px;
+  text-shadow:0 0 6px rgba(0,117,70,.3);font-variant-numeric:tabular-nums;}
 /* Territory + Momentum — thin vertical bars to the LEFT of the attacker slot,
    inside the .g-slots flex row. */
 .g-tm-bars{display:none;flex-direction:row;align-items:stretch;gap:8px;
@@ -1440,8 +1440,8 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 /* v-green: primary "Play Match / Simulate" CTA recoloured red → brand green
    to match the app icon + site. Black text on green (like the icon) for max
    contrast. Loss-red / win-green result states elsewhere are untouched. */
-.g-sim-btn{width:100%;padding:14px 18px;border-radius:8px;border:1px solid #18bf2f;
-  background:linear-gradient(180deg,#22d63c 0%,#0f9a24 100%);color:#062a0d;
+.g-sim-btn{width:100%;padding:14px 18px;border-radius:8px;border:1px solid #007546;
+  background:linear-gradient(180deg,#007546 0%,#254c3e 100%);color:#ffffff;
   font-size:17px;font-weight:800;letter-spacing:0.6px;
   min-height:56px;
   cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:11px;
@@ -1747,8 +1747,8 @@ body.fc-splash-active #btn-history{display:none;}
    (was red "FC" text). Text kept in DOM for a11y, hidden visually. */
 .fc-logo{display:inline-flex;align-items:center;justify-content:center;
   width:26px;height:26px;border-radius:5px;margin-right:6px;
-  background:url(/assets/fc-logo.png?v=green) center / cover no-repeat;
-  border:1px solid rgba(24,191,47,0.4);
+  background:url(/assets/fc-logo.png?v=globe) center / cover no-repeat;
+  border:1px solid rgba(0,117,70,0.4);
   color:transparent;text-indent:-9999px;overflow:hidden;
   font-size:15px;line-height:1;}
 /* Wordmark next to the FC badge — gives the app a branded strip identity
@@ -1761,7 +1761,7 @@ body.fc-splash-active #btn-history{display:none;}
      Impact condensed) — same typeface as the lighter wordmark, kept green. */
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Roboto,Helvetica,Arial,sans-serif;
   font-weight:800;font-size:12px;line-height:1;letter-spacing:1px;white-space:nowrap;
-  color:#22d63c;text-transform:uppercase;margin-right:10px;
+  color:#2fb673;text-transform:uppercase;margin-right:10px;
   text-shadow:0 1px 0 rgba(0,0,0,.4);}
 @media (max-width: 400px) { .fc-wordmark { display: none; } }
 /* Splash card */
@@ -1780,23 +1780,23 @@ body.fc-splash-active #btn-history{display:none;}
 /* v-green: splash badge now shows the real green FC-arrow logo image
    (was a red "FC" text glyph). Wordmark unchanged. */
 .fc-splash-badge{width:44px;height:44px;border-radius:8px;
-  background:url(/assets/fc-logo.png?v=green) center / cover no-repeat;
-  border:1px solid rgba(24,191,47,0.5);
+  background:url(/assets/fc-logo.png?v=globe) center / cover no-repeat;
+  border:1px solid rgba(0,117,70,0.5);
   color:transparent;text-indent:-9999px;overflow:hidden;
   display:inline-flex;line-height:1;}
 .fc-splash-wordmark{color:#f4ead5;font-size:11px;font-weight:700;letter-spacing:3.5px;
   text-align:center;margin-bottom:14px;}
 /* Play button red → brand green, black text, green pulse glow. */
-.fc-play-btn{padding:12px 30px;border-radius:6px;border:1px solid #18bf2f;
-  background:linear-gradient(180deg,#22d63c 0%,#0f9a24 100%);color:#062a0d;font-size:13px;font-weight:800;letter-spacing:1px;
+.fc-play-btn{padding:12px 30px;border-radius:6px;border:1px solid #007546;
+  background:linear-gradient(180deg,#007546 0%,#254c3e 100%);color:#ffffff;font-size:13px;font-weight:800;letter-spacing:1px;
   cursor:pointer;display:inline-flex;align-items:center;gap:9px;font-family:inherit;
   animation:fc-pulse-glow 2.4s ease-in-out infinite;
   -webkit-tap-highlight-color:transparent;transition:transform .15s;}
 .fc-play-btn:hover{transform:translateY(-1px);animation-duration:1.6s;}
 .fc-play-btn:active{transform:translateY(0);}
 @keyframes fc-pulse-glow{
-  0%,100%{box-shadow:0 0 18px rgba(24,191,47,0.4),0 0 36px rgba(24,191,47,0.18);}
-  50%{box-shadow:0 0 30px rgba(24,191,47,0.8),0 0 60px rgba(24,191,47,0.4);}
+  0%,100%{box-shadow:0 0 18px rgba(0,117,70,0.4),0 0 36px rgba(0,117,70,0.18);}
+  50%{box-shadow:0 0 30px rgba(0,117,70,0.8),0 0 60px rgba(0,117,70,0.4);}
 }
 /* Pulse rings behind the card */
 .fc-pulse-rings{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
@@ -3189,10 +3189,10 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
              Two sizes per 200×200 tile in a checker layout, each at low
              opacity so it stays a watermark and never competes with flags. -->
         <pattern id="fc-checker-pat" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
-          <image href="/assets/fc-mark-green.png" x="14"  y="20"  width="72" height="72" opacity="0.22"/>
-          <image href="/assets/fc-mark-green.png" x="128" y="34"  width="44" height="44" opacity="0.15"/>
-          <image href="/assets/fc-mark-green.png" x="24"  y="132" width="44" height="44" opacity="0.15"/>
-          <image href="/assets/fc-mark-green.png" x="118" y="122" width="72" height="72" opacity="0.22"/>
+          <image href="/assets/fc-mark-green.png?v=globe" x="14"  y="20"  width="72" height="72" opacity="0.22"/>
+          <image href="/assets/fc-mark-green.png?v=globe" x="128" y="34"  width="44" height="44" opacity="0.15"/>
+          <image href="/assets/fc-mark-green.png?v=globe" x="24"  y="132" width="44" height="44" opacity="0.15"/>
+          <image href="/assets/fc-mark-green.png?v=globe" x="118" y="122" width="72" height="72" opacity="0.22"/>
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#fc-checker-pat)" filter="url(#fc-checker-blur)"/>
@@ -3216,8 +3216,8 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
     <!-- ── Splash launcher: front door when no game is active ─────────────── -->
     <div id="fc-splash" aria-hidden="false">
       <svg class="fc-pulse-rings" viewBox="0 0 340 340" aria-hidden="true">
-        <circle cx="170" cy="170" r="80" fill="none" stroke="#18bf2f" stroke-width="1.5" opacity="0.6"/>
-        <circle cx="170" cy="170" r="80" fill="none" stroke="#18bf2f" stroke-width="1.5" opacity="0.6"/>
+        <circle cx="170" cy="170" r="80" fill="none" stroke="#007546" stroke-width="1.5" opacity="0.6"/>
+        <circle cx="170" cy="170" r="80" fill="none" stroke="#007546" stroke-width="1.5" opacity="0.6"/>
       </svg>
       <div class="fc-splash-card" role="dialog" aria-label="Football Conquest launcher">
         <svg class="fc-bg" viewBox="0 0 300 300" fill="none" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
@@ -3233,11 +3233,11 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
                to brand green so the splash card backdrop matches the palette.
                Gold/cream/navy blobs kept for variety at this low opacity. -->
           <g opacity="0.55">
-            <path d="M32 75 Q16 91 22 118 L27 150 Q38 166 64 161 L86 139 Q97 123 86 107 L75 91 Q59 70 43 70 Z" fill="#18bf2f"/>
+            <path d="M32 75 Q16 91 22 118 L27 150 Q38 166 64 161 L86 139 Q97 123 86 107 L75 91 Q59 70 43 70 Z" fill="#007546"/>
             <path d="M77 177 Q70 209 77 236 L88 257 Q99 263 107 255 L113 230 Q116 204 107 177 Z" fill="#d4a936"/>
             <path d="M127 70 L150 67 L167 80 L164 102 L145 107 L129 99 Z" fill="#f4ead5"/>
             <path d="M131 123 Q127 147 139 177 L155 201 L167 197 L171 166 L165 142 L153 126 Z" fill="#1a3b5c"/>
-            <path d="M182 65 Q207 63 246 78 L279 90 L284 107 L268 118 L238 110 L198 96 L177 84 Z" fill="#18bf2f"/>
+            <path d="M182 65 Q207 63 246 78 L279 90 L284 107 L268 118 L238 110 L198 96 L177 84 Z" fill="#007546"/>
             <path d="M238 139 L243 163 L252 180 L259 164 L252 139 Z" fill="#d4a936"/>
             <path d="M252 214 Q241 230 252 248 L273 257 L289 251 L284 233 L270 220 Z" fill="#1a3b5c"/>
           </g>
@@ -13670,7 +13670,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v105-DEBUG-lb-page-jump-2026-07-19';
+  window._FC_CAP_VERSION = 'v107-DEBUG-globe-rebrand-2026-07-22';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
@@ -13868,7 +13868,25 @@ function openUsernameGate(onDone){
   //   4. startNewGameFlow() consumes the flag → showInterstitial() → new game
   //   5. On dismissal (or 1.5s later) preload the NEXT interstitial
   var AdMob = plugins.AdMob;
-  var AD_UNIT_INTERSTITIAL_ID = 'ca-app-pub-2248373411425621/5974877791';
+  /* v105 PLATFORM-AWARE AD UNITS. iOS ad units are SEPARATE objects in AdMob
+     from the Android ones — you create them by registering an iOS app in your
+     AdMob account, and they have their own IDs. Same ad unit ID cannot serve
+     both platforms. iOS values below are placeholders until that's done.
+     🔴 The REPLACE_IOS_* strings must be swapped for the real iOS unit IDs
+     before an iOS release, or ad calls no-op on iPhone/iPad. */
+  var _adPlatform = (window.Capacitor && Capacitor.getPlatform) ? Capacitor.getPlatform() : 'android';
+  var AD_IDS = {
+    android: {
+      interstitial: 'ca-app-pub-2248373411425621/5974877791',
+      rewarded:     'ca-app-pub-2248373411425621/8323507836'
+    },
+    ios: {
+      interstitial: 'ca-app-pub-2248373411425621/8100174809',
+      rewarded:     'ca-app-pub-2248373411425621/4659623246'
+    }
+  };
+  var _adSet = AD_IDS[_adPlatform] || AD_IDS.android;
+  var AD_UNIT_INTERSTITIAL_ID = _adSet.interstitial;
   // 🔴 FLIP TO false BEFORE CUTTING THE SIGNED PLAY STORE RELEASE BUILD.
   // true  = Google test ads. Render identically for layout QA, bill nothing,
   //         and cannot trigger invalid-traffic flags no matter how often the
@@ -13935,7 +13953,7 @@ function openUsernameGate(onDone){
   // 1/match (GAME._matchFreeBoostUsed). Reset points live in the game logic
   // — this file just exposes fcShowRewardedAd() as a Promise<boolean> where
   // true = user watched to completion, false = dismissed/failed.
-  var REWARDED_AD_UNIT_ID = 'ca-app-pub-2248373411425621/8323507836';
+  var REWARDED_AD_UNIT_ID = _adSet.rewarded;   // v105: platform-aware (see AD_IDS above)
   var rewardedLoaded = false;
 
   function preloadRewarded() {
