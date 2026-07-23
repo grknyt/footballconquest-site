@@ -6962,6 +6962,10 @@ function gBtnState(){
     document.getElementById('g-resolve').disabled=!GAME.active||GAME.phase!=='picked-def';
     document.getElementById('g-skip').disabled=!GAME.active||GAME.phase==='idle';
   }
+  // Keep Conquest Strike (#g-ult) in lock-step — it has its own disabled logic
+  // (which now also honours _fcMarching), so re-evaluate it whenever button
+  // states refresh, including at march start/end (both call gBtnState()).
+  if(typeof updateUltBtn==='function') updateUltBtn();
 }
 
 function gameInit(){
@@ -12787,6 +12791,7 @@ function updateUltBtn(){
   btn.disabled = !inConquest
     || GAME.phase!=='picked-att'
     || window._fcSpinning
+    || window._fcMarching      // locked while the hero flag is relocating
     || aura < instantWinCost(0)
     || !hasTargets;
 }
@@ -12956,6 +12961,7 @@ function playSynthRoar(){
 function unleashUltimate(){
   if(!GAME||GAME.mode!=='conquest'||GAME.phase!=='picked-att'||!GAME.attacker) return;
   if(window._fcSpinning) return;
+  if(window._fcMarching) return;   // locked while the hero flag is relocating
   const hero=GAME.attacker;
   const aura=GAME.aura||0;
   if(aura < instantWinCost(0)) return;
@@ -14024,7 +14030,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v124-recap-i18n+enlarge-2026-07-23';
+  window._FC_CAP_VERSION = 'v125-lock-conquest-strike-while-marching-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
