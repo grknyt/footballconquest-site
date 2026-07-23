@@ -85,12 +85,16 @@ body.map-light #fc-bg-pattern image{filter:brightness(0.7) saturate(0.85);opacit
 #zr .zr-lbl{ font-size:11px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:#9fd0f0; }
 #zr:hover{ background:#12233a; border-color:#2fb673; }
 #zr:hover .zr-lbl{ color:#fff; }
-/* v137: docked in the right column (#g-left-stack) below Events/Continents —
-   full column width, matching box height, always last via order. */
+/* v138: docked in the right column below Events/Continents — a COMPACT pill
+   (smaller than the boxes) right-aligned so its right edge lines up with the
+   Events pill's right edge. */
 #g-left-stack #zr{
-  order:99 !important; width:100% !important; box-sizing:border-box !important;
-  height:46px !important; justify-content:center !important; margin:0 !important;
+  order:99 !important; align-self:flex-end !important;
+  width:auto !important; height:auto !important; margin:0 !important;
+  padding:6px 10px !important;
 }
+#g-left-stack #zr .zr-ico{ font-size:14px !important; }
+#g-left-stack #zr .zr-lbl{ font-size:10px !important; }
 /* It left .zc, so cover the splash / demo hide cases here. */
 body.fc-splash-active #zr, body.fc-demo-mode #zr{ display:none !important; }
 .zb:hover{background:#1a2f40;}
@@ -14281,7 +14285,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v137-recenter-below-events+strike-land-center-2026-07-23';
+  window._FC_CAP_VERSION = 'v138-recenter-compact-right-aligned-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
