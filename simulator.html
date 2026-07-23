@@ -408,8 +408,30 @@ body.web-build #g-squad-panel{display:none!important;}
   transform-box:fill-box;transform-origin:50% 50%;
   animation:fc-hero-sway 3.4s ease-in-out infinite;
 }
+/* v142 IDLE LIFE: every flag on the map gets a gentle wind-sway so the whole
+   world feels alive at rest, not just the hero. Kept subtle (±0.85° vs the
+   hero's ±1.15°), slow (6.2s), transform-only, and phase-staggered across 6
+   buckets so they don't wave in lockstep. The hero rule above is more specific,
+   so the hero keeps its stronger sway. Animations PAUSE while the map is being
+   panned/zoomed (body.fc-panning) to keep interaction perfectly smooth. */
+@keyframes fc-idle-sway{
+  0%,100%{transform:skewY(0deg) scaleY(1);}
+  50%    {transform:skewY(0.85deg) scaleY(.995);}
+}
+.fbadge image,.fbadge rect{
+  transform-box:fill-box;transform-origin:50% 50%;
+  animation:fc-idle-sway 6.2s ease-in-out infinite;
+}
+.fbadge:nth-child(6n+2) image,.fbadge:nth-child(6n+2) rect{animation-delay:-1.0s;}
+.fbadge:nth-child(6n+3) image,.fbadge:nth-child(6n+3) rect{animation-delay:-2.1s;}
+.fbadge:nth-child(6n+4) image,.fbadge:nth-child(6n+4) rect{animation-delay:-3.2s;}
+.fbadge:nth-child(6n+5) image,.fbadge:nth-child(6n+5) rect{animation-delay:-4.3s;}
+.fbadge:nth-child(6n)   image,.fbadge:nth-child(6n)   rect{animation-delay:-5.4s;}
+/* Pause every flag animation during active pan/zoom for smoothness. */
+body.fc-panning .fbadge image,body.fc-panning .fbadge rect{animation-play-state:paused;}
 @media (prefers-reduced-motion:reduce){
-  .fbadge.fc-hero-flag image,.fbadge.fc-hero-flag rect{animation:none;}
+  .fbadge.fc-hero-flag image,.fbadge.fc-hero-flag rect,
+  .fbadge image,.fbadge rect{animation:none;}
 }
 #g-squad-fetch-portraits{background:transparent;border:1px solid #2a4f6a;color:#7ab8e8;
   border-radius:5px;padding:5px 8px;font-size:11px;cursor:pointer;margin-top:4px;}
@@ -6721,6 +6743,11 @@ function buildMap(world){
     // at 60fps. Game-state changes (turn end, conquest, retreat) call
     // updateHeroGlow() directly when a full rebuild is actually warranted.
     if(typeof rescaleHeroGlow==='function') rescaleHeroGlow();
+    // v142: pause the idle flag-sway animations while the map is moving so the
+    // pan/zoom stays perfectly smooth; resume ~180ms after the last move.
+    if(!document.body.classList.contains('fc-panning')) document.body.classList.add('fc-panning');
+    clearTimeout(window._fcPanTimer);
+    window._fcPanTimer=setTimeout(function(){ document.body.classList.remove('fc-panning'); }, 180);
   });
   svgSel.call(zoomBeh);
   $('zi').onclick=()=>svgSel.transition().duration(250).call(zoomBeh.scaleBy,1.5);
@@ -14311,7 +14338,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v141-tablet-portrait-two-column-2026-07-23';
+  window._FC_CAP_VERSION = 'v142-idle-flag-sway-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
