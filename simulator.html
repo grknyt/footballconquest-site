@@ -3814,10 +3814,10 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
              the ID won't NPE. The visible turn/remaining now lives in the
              top-left floating #g-turn-badge. -->
         <span class="g-events-turn-summary" id="g-events-turn-summary" style="display:none;"></span>
-        <!-- 🌍 button: consolidated Continents view. Toggles the panel body
-             between the events log and the continent progress bars. Standalone
-             #g-campaign-panel hidden per v39 polish. -->
-        <button type="button" id="g-events-mode-continents" class="g-events-filter" data-i18n-attr="title:sim.cont.title" title="🌍 Continents">🌍</button>
+        <!-- v116: the old 🌍 "continents inside events" toggle was removed.
+             Continents has had its own dedicated #g-campaign-panel since v43,
+             so the inline view is permanently CSS-hidden — tapping the button
+             just blanked the events log (looked like a broken minimize). Gone. -->
         <button type="button" id="g-events-search-btn" class="g-events-filter" data-i18n-attr="title:sim.ev.search" title="Search events">🔍</button>
         <button type="button" id="g-events-filter" class="g-events-filter" data-i18n-attr="title:sim.ev.filter" title="Match results only">⚽</button>
         <span id="g-events-toggle">▼</span>
@@ -13833,7 +13833,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v116-collapsed-panel-title-only-2026-07-23';
+  window._FC_CAP_VERSION = 'v117-remove-vestigial-globe-btn-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
