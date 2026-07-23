@@ -3078,17 +3078,20 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
 /* v74: single ▼ control handles both modes (mini in conquest, collapse in
    imperialism) — the separate #game-mini button was removed. */
 
-/* ── v109 DESKTOP-WEB BAKED ZOOM ───────────────────────────────────────────
-   Gürkan preferred the site at ~115% browser zoom, with the match-sim /
-   match-result modal at ~125%. Bake those in so he doesn't hand-set browser
-   zoom each visit. Scoped to `pointer: fine` + wide viewport = a desktop
-   mouse browser only; the app and phones/tablets are touch (`pointer:coarse`)
-   so their carefully-tuned layouts are completely untouched. CSS `zoom`
-   (not transform) so it reflows like real browser zoom. The modal's own
-   1.087 compounds with the 1.15 on body -> 1.15 x 1.087 ≈ 1.25 effective. */
+/* ── v109 DESKTOP-WEB TARGETED ZOOM ────────────────────────────────────────
+   Map + overall UI stay 100% (do NOT zoom the whole body — that scaled the
+   map and broke the splash card's SVG slice-clipping). Only three surfaces
+   are enlarged for the desktop-mouse web player who preferred them bigger:
+     • bottom control panel (#game-panel)           -> 115%
+     • events + continents panel (#g-events-panel)   -> 115%
+     • match-sim / match-result modal (.g-result-card) -> 125%
+   Scoped to `pointer: fine` + wide viewport = desktop mouse browser only; the
+   app and phones/tablets are touch (pointer:coarse) so their tuned layouts
+   are untouched. CSS `zoom` reflows like real browser zoom. */
 @media (min-width: 1000px) and (pointer: fine) {
-  body.web-build { zoom: 1.15; }
-  body.web-build #g-result-modal .g-result-card { zoom: 1.087; }
+  body.web-build #game-panel,
+  body.web-build #g-events-panel { zoom: 1.15; }
+  body.web-build #g-result-modal .g-result-card { zoom: 1.25; }
 }
 </style>
 </head>
@@ -13682,7 +13685,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v109-DEBUG-desktop-zoom-2026-07-22';
+  window._FC_CAP_VERSION = 'v110-DEBUG-targeted-zoom-2026-07-22';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
