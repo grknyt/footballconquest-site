@@ -3078,6 +3078,18 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
 /* v74: single ▼ control handles both modes (mini in conquest, collapse in
    imperialism) — the separate #game-mini button was removed. */
 
+/* ── v109 DESKTOP-WEB BAKED ZOOM ───────────────────────────────────────────
+   Gürkan preferred the site at ~115% browser zoom, with the match-sim /
+   match-result modal at ~125%. Bake those in so he doesn't hand-set browser
+   zoom each visit. Scoped to `pointer: fine` + wide viewport = a desktop
+   mouse browser only; the app and phones/tablets are touch (`pointer:coarse`)
+   so their carefully-tuned layouts are completely untouched. CSS `zoom`
+   (not transform) so it reflows like real browser zoom. The modal's own
+   1.087 compounds with the 1.15 on body -> 1.15 x 1.087 ≈ 1.25 effective. */
+@media (min-width: 1000px) and (pointer: fine) {
+  body.web-build { zoom: 1.15; }
+  body.web-build #g-result-modal .g-result-card { zoom: 1.087; }
+}
 </style>
 </head>
 <!-- web-build = simulate-only public site. Remove the class to enable
@@ -3183,16 +3195,16 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
         <filter id="fc-checker-blur" x="-10%" y="-10%" width="120%" height="120%">
           <feGaussianBlur stdDeviation="3.5"/>
         </filter>
-        <!-- v-green: the tiled watermark now uses the actual FC-arrow LOGO
-             mark (green on transparent, /assets/fc-mark-green.png) instead
-             of plain "FC" text, so the map backdrop echoes the app icon.
-             Two sizes per 200×200 tile in a checker layout, each at low
-             opacity so it stays a watermark and never competes with flags. -->
+        <!-- globe-rebrand: the map-backdrop watermark uses the FC-ARROW mark
+             (green on transparent, /assets/fc-mark-fc.png) to match the site
+             background watermark. The GLOBE stays the logo everywhere else;
+             backgrounds use the FC-arrow. Alternating sizes per 200×200 tile:
+             72px (full) checker-paired with 36px (50%), low opacity. -->
         <pattern id="fc-checker-pat" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
-          <image href="/assets/fc-mark-green.png?v=globe" x="14"  y="20"  width="72" height="72" opacity="0.22"/>
-          <image href="/assets/fc-mark-green.png?v=globe" x="128" y="34"  width="44" height="44" opacity="0.15"/>
-          <image href="/assets/fc-mark-green.png?v=globe" x="24"  y="132" width="44" height="44" opacity="0.15"/>
-          <image href="/assets/fc-mark-green.png?v=globe" x="118" y="122" width="72" height="72" opacity="0.22"/>
+          <image href="/assets/fc-mark-fc.png?v=fc4" x="14"  y="34"  width="72" height="72" opacity="0.22"/>
+          <image href="/assets/fc-mark-fc.png?v=fc4" x="140" y="48"  width="36" height="36" opacity="0.16"/>
+          <image href="/assets/fc-mark-fc.png?v=fc4" x="30"  y="140" width="36" height="36" opacity="0.16"/>
+          <image href="/assets/fc-mark-fc.png?v=fc4" x="112" y="118" width="72" height="72" opacity="0.22"/>
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#fc-checker-pat)" filter="url(#fc-checker-blur)"/>
@@ -13670,7 +13682,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v107-DEBUG-globe-rebrand-2026-07-22';
+  window._FC_CAP_VERSION = 'v109-DEBUG-desktop-zoom-2026-07-22';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
