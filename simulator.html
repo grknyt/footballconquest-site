@@ -3268,6 +3268,46 @@ body.fc-stat-floated:not(.map-light) #g-stat-stack .g-aura-hbar-fill{
   background:linear-gradient(90deg,#bfe6d2 0%,#8fd6b4 100%);
   box-shadow:inset 0 0 14px rgba(0,117,70,.18);
 }
+
+/* ── v128 MOBILE PORTRAIT: two-column top layout ───────────────────────────
+   Phones: LEFT column = the floated stat stack (TURN, RECORD/GOALS, AURA);
+   RIGHT column = Events + Continents stacked vertically. Frees the bottom UI
+   and right-sizes the headers that were oversized on phones. */
+@media (max-width: 700px) {
+  /* LEFT column — stat stack, half the viewport width */
+  body.fc-stat-floated #g-stat-stack{
+    top:4px !important; left:4px !important;
+    width:calc(50vw - 8px) !important; z-index:27 !important; gap:4px !important;
+  }
+  body.fc-stat-floated #g-stat-stack .g-conquest-stats{
+    font-size:11px !important; padding:6px 9px !important; letter-spacing:.4px !important;
+  }
+  body.fc-stat-floated #g-stat-stack .g-conquest-stats .gcs-lbl{ min-width:4.2em !important; }
+  body.fc-stat-floated #g-stat-stack #g-turn-badge{
+    font-size:11px !important; padding:6px 9px !important; letter-spacing:.4px !important;
+  }
+  body.fc-stat-floated #g-stat-stack .g-aura-hbar{ height:30px !important; }
+  body.fc-stat-floated #g-stat-stack .g-aura-hbar-text{ font-size:15px !important; }
+  body.fc-stat-floated #g-stat-stack .g-aura-hbar-star{ font-size:13px !important; }
+  body.fc-stat-floated #g-stat-stack .g-aura-hbar-val{ font-size:11px !important; }
+
+  /* RIGHT column — Events + Continents stacked vertically */
+  #g-left-stack{
+    top:4px !important; right:4px !important; left:auto !important;
+    width:calc(50vw - 8px) !important;
+    flex-direction:column !important; align-items:stretch !important; gap:4px !important;
+  }
+  #g-campaign-panel, #g-events-panel, #g-squad-panel{
+    width:100% !important; flex:0 0 auto !important; min-width:0 !important; max-width:none !important;
+  }
+  /* Right-size the collapsed headers (were 16px via the touch rule) so they're
+     proportionate in the narrower column. */
+  #g-campaign-panel.collapsed #g-campaign-header,
+  #g-events-panel.collapsed #g-events-header{
+    font-size:12px !important; height:40px !important;
+  }
+  #g-campaign-panel.collapsed, #g-events-panel.collapsed{ max-height:40px !important; }
+}
 /* With the strip gone from the panel, shorten the Territory/Momentum bars so
    they don't tower above the team flag. */
 body.fc-stat-floated #game-panel.open.conquest-mode .g-tm-bars{ align-items:center; }
@@ -13879,7 +13919,11 @@ function openUsernameGate(onDone){
      portrait/narrow. The <style> rules key off body.fc-stat-floated. -->
 <script>
 (function floatStatStrip(){
-  var MQ = window.matchMedia('(orientation: landscape) and (min-width: 900px)');
+  // Float the RECORD/GOALS + AURA + TURN strip into the top-left #g-stat-stack
+  // on WIDE LANDSCAPE (desktop / landscape tablet) OR NARROW PHONES (portrait).
+  // On phones the CSS puts this stack in the left column and Events/Continents
+  // in a stacked right column. Medium portrait tablets keep the in-panel layout.
+  var MQ = window.matchMedia('(orientation: landscape) and (min-width: 900px), (max-width: 760px)');
   var stack = null, homeParent = null, homeNext = null;
   var badgeHome = null, badgeNext = null;
   function topRow(){ return document.querySelector('.g-top-row'); }
@@ -14038,7 +14082,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v127-center-only-revealed-result-2026-07-23';
+  window._FC_CAP_VERSION = 'v128-mobile-two-column-top-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
