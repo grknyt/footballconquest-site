@@ -85,6 +85,14 @@ body.map-light #fc-bg-pattern image{filter:brightness(0.7) saturate(0.85);opacit
 #zr .zr-lbl{ font-size:11px; font-weight:800; letter-spacing:.5px; text-transform:uppercase; color:#9fd0f0; }
 #zr:hover{ background:#12233a; border-color:#2fb673; }
 #zr:hover .zr-lbl{ color:#fff; }
+/* v137: docked in the right column (#g-left-stack) below Events/Continents —
+   full column width, matching box height, always last via order. */
+#g-left-stack #zr{
+  order:99 !important; width:100% !important; box-sizing:border-box !important;
+  height:46px !important; justify-content:center !important; margin:0 !important;
+}
+/* It left .zc, so cover the splash / demo hide cases here. */
+body.fc-splash-active #zr, body.fc-demo-mode #zr{ display:none !important; }
 .zb:hover{background:#1a2f40;}
 /* Horizontal strip across the bottom, full-width */
 /* Default panel: centered horizontally, width hugs its content (with a max so
@@ -13225,8 +13233,22 @@ function unleashUltimate(){
           GAME._skipPan=false;
           window._fcSpinning=false;
           removeAllUltStrikes();
-          const heroAfter=teamCentroid(hero.id);
-          if(heroAfter) panTo(heroAfter, heroZoomK(hero.id, heroAfter, Math.max(5, currentK())));
+          // v137: centre on where the hero flag actually LANDS. Each conquest
+          // marches the flag to a spot stored on the conquest stack (heroTo*),
+          // and that march runs async — so panning to teamCentroid immediately
+          // framed the pre-march position. Pan to the last conquest's landing
+          // point AFTER its march finishes.
+          var _last=GAME.conquestStack[GAME.conquestStack.length-1];
+          var _landing=(_last && isFinite(_last.heroToX) && isFinite(_last.heroToY))
+                       ? [_last.heroToX, _last.heroToY] : teamCentroid(hero.id);
+          if(_landing){
+            var _marchMs=(typeof CONQUEST_WAVE_DELAY_MS!=='undefined'?CONQUEST_WAVE_DELAY_MS:900)
+                        +(typeof CONQUEST_WAVE_MS!=='undefined'?CONQUEST_WAVE_MS:1250)
+                        +(typeof HERO_WALK_MS!=='undefined'?HERO_WALK_MS:700)+150;
+            setTimeout(function(){
+              panTo(_landing, heroZoomK(hero.id, _landing, Math.max(6, currentK())));
+            }, _marchMs);
+          }
         }
         if(typeof refreshConquestHud==='function') refreshConquestHud();
       }, FLASH_TO_PAINT_DELAY);
@@ -14132,6 +14154,22 @@ function openUsernameGate(onDone){
 </script>
 
 
+<!-- v137: dock the 🎯/🌍 recenter pill (#zr) at the bottom of the right column
+     (#g-left-stack), directly below the Events/Continents boxes, instead of a
+     floating map corner. Reparented once; the +/- zoom buttons stay in .zc. -->
+<script>
+(function dockRecenterBelowEvents(){
+  function go(){
+    var zr = document.getElementById('zr');
+    var col = document.getElementById('g-left-stack');
+    if (zr && col && zr.parentNode !== col) col.appendChild(zr);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go);
+  else go();
+})();
+</script>
+
+
 <!-- v113: Fullscreen toggle for the top-toolbar #btn-fs. Fills the screen so
      every control fits at any resolution. When the simulator runs inside the
      play.html iframe (allowfullscreen is set), requesting fullscreen on our own
@@ -14243,7 +14281,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v136-aura-in-panel-desktop-too-2026-07-23';
+  window._FC_CAP_VERSION = 'v137-recenter-below-events+strike-land-center-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
