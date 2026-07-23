@@ -3206,9 +3206,15 @@ body.fc-stat-floated #g-stat-stack #g-turn-badge{
   width:100%; margin:0; text-align:left;
   background:linear-gradient(135deg,#1e3452 0%,#0e1a2c 50%,#050c17 100%);
   border:1px solid #254c3e; border-radius:10px; padding:8px 13px;
-  font-size:13px; letter-spacing:.8px;
+  /* Match the RECORD/GOALS label font: 15px, weight 700, letter-spacing 1px,
+     muted-blue #7a9bb5. The bold TURN/LEFT numbers stay white via the base
+     #g-turn-badge b rule, mirroring the GOALS digits. */
+  font-size:15px; font-weight:700; letter-spacing:1px; color:#7a9bb5;
   box-shadow:0 6px 18px rgba(0,0,0,.4);
 }
+/* TURN / LEFT numbers styled like the GOALS digits: bold white (weight 800),
+   same 15px size inherited from the badge. */
+body.fc-stat-floated #g-stat-stack #g-turn-badge b{ color:#fff; font-weight:800; }
 body.fc-stat-floated #g-stat-stack #g-turn-badge.visible{ display:block !important; }
 #g-stat-stack .g-top-row{
   display:flex !important; flex-direction:column; align-items:stretch;
@@ -13976,7 +13982,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v120-record-goals-column-align-2026-07-23';
+  window._FC_CAP_VERSION = 'v121-turn-badge-font-match-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
