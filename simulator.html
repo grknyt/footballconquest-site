@@ -3247,6 +3247,23 @@ body.fc-splash-active #g-final-newgame { display: none !important; }
    cramped landscape browsers. Green accent so it stands out as the escape
    hatch. Hidden inside the Capacitor app (already runs immersive/fullscreen)
    and hidden by JS when the Fullscreen API isn't available. */
+#btn-sound.sound-off{ opacity:.55; }
+/* ── v144 JUICE: tactile press-down on the main game buttons ───────────────
+   A quick scale on :active makes every tap feel physical. The action-button
+   glows animate box-shadow (not transform), so this doesn't fight them. */
+.g-btn:active:not(:disabled),
+.g-sim-btn:active:not(:disabled),
+.g-tactic-btn:active,
+.g-boost-btn:active:not(:disabled),
+.g-result-actions .g-btn:active:not(:disabled),
+#g-hud-newgame:active,#g-final-newgame:active,
+.mbtn:active{
+  transform:scale(.955);
+  transition:transform .04s ease;
+}
+/* A soft "pop" when the AURA counter ticks up (JS adds .aura-bump). */
+@keyframes fc-aura-bump{ 0%{transform:scale(1);} 35%{transform:scale(1.14);} 100%{transform:scale(1);} }
+.g-aura-hbar-val.aura-bump{ animation:fc-aura-bump .5s ease-out; }
 #btn-fs { color: #2fb673; border-color: #254c3e; }
 #btn-fs:hover { background: #0e1a2a; border-color: #2fb673; }
 .fc-capacitor-app #btn-fs { display: none !important; }
@@ -3566,6 +3583,7 @@ body.fc-aura-in-panel #game-panel.g-mini .g-body > .g-aura-hbar{ display:none !i
       <button class="abtn" id="btn-leaderboard" data-i18n-attr="title:sim.tb.tip.lb" title="View leaderboards (your runs + global)">🏆 <span data-i18n="sim.tb.leaderboards">Leaderboards</span></button>
       <button class="abtn" id="btn-save">💾 <span data-i18n="sim.tb.save">Save</span></button>
       <button class="abtn" id="btn-load">📂 <span data-i18n="sim.tb.load">Load</span></button>
+      <button class="abtn" id="btn-sound" title="Toggle ambient stadium sound" onclick="window.fcToggleAmbient && window.fcToggleAmbient()">🔊 <span id="btn-sound-label" data-i18n="sim.tb.sound">Sound</span></button>
       <button class="abtn" id="btn-theme" data-i18n-attr="title:sim.tb.tip.theme" title="Toggle light/dark map">☀️ <span id="btn-theme-label">Light</span></button>
       <button class="abtn" id="btn-reset" data-i18n-attr="title:sim.tb.tip.reset" title="Clear all changes (can undo)">⟳ <span data-i18n="sim.tb.reset">Reset</span></button>
       <span class="sim-lang">
@@ -4179,8 +4197,8 @@ body.fc-aura-in-panel #game-panel.g-mini .g-body > .g-aura-hbar{ display:none !i
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 <!-- Localization: shared dictionary + i18n engine (EN/TR). FCLang.t() drives
      the simulator's dynamic strings; data-i18n attributes drive static ones. -->
-<script src="/js/translations.js?v=20260723c"></script>
-<script src="/js/i18n.js?v=20260723c"></script>
+<script src="/js/translations.js?v=20260723d"></script>
+<script src="/js/i18n.js?v=20260723d"></script>
 <script>
 const FLAG_B64={
 'Albania':'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',
@@ -12121,7 +12139,14 @@ function renderMetricsPanel(){
     aFill.style.width=pct+'%';
   }
   const aVal=document.getElementById('g-aura-hbar-val');
-  if(aVal) aVal.textContent=String(aura);
+  if(aVal){
+    // v144 juice: pop the counter when Aura goes UP (earned), not on decreases.
+    const prevAura=parseInt(aVal.textContent,10);
+    if(!isNaN(prevAura) && aura>prevAura){
+      aVal.classList.remove('aura-bump'); void aVal.offsetWidth; aVal.classList.add('aura-bump');
+    }
+    aVal.textContent=String(aura);
+  }
   // Territory + Momentum vertical bars (fill from the bottom up)
   function setVbar(id, val, max){
     const fill=document.getElementById(id+'-fill');
@@ -14227,6 +14252,75 @@ function openUsernameGate(onDone){
 </script>
 
 
+<!-- v143: ambient stadium audio with an on/off toggle (#btn-sound). Prefers a
+     real loop at /assets/crowd.mp3; if that's missing it synthesises a soft
+     low-passed murmur so there's always an ambient bed. Starts on the first
+     user gesture (autoplay policy), persists the on/off choice, and stays muted
+     if the player turns it off. -->
+<script>
+(function fcAmbient(){
+  var KEY='fc-ambient-on';
+  var stored=null; try{ stored=localStorage.getItem(KEY); }catch(e){}
+  var enabled = (stored===null) ? true : (stored!=='0');   // default ON
+  var started=false, mode=null, el=null, synth=null;
+  var MP3_VOL=0.32, SYNTH_VOL=0.05;
+
+  function startSynth(){
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+      var ctx=new AC();
+      var sr=ctx.sampleRate, buf=ctx.createBuffer(1, sr*4, sr), d=buf.getChannelData(0), last=0;
+      for(var i=0;i<d.length;i++){ var w=Math.random()*2-1; d[i]=(last+0.02*w)/1.02; last=d[i]; d[i]*=1.5; }
+      var src=ctx.createBufferSource(); src.buffer=buf; src.loop=true;
+      var lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=680; lp.Q.value=0.4;
+      var gain=ctx.createGain(); gain.gain.value=0;
+      // slow swell so it breathes like a distant crowd rather than flat noise
+      var lfo=ctx.createOscillator(); lfo.frequency.value=0.08;
+      var lfoGain=ctx.createGain(); lfoGain.gain.value=0.018;
+      lfo.connect(lfoGain); lfoGain.connect(gain.gain);
+      src.connect(lp); lp.connect(gain); gain.connect(ctx.destination);
+      src.start(); lfo.start();
+      gain.gain.linearRampToValueAtTime(SYNTH_VOL, ctx.currentTime+2.2);
+      synth={ctx:ctx,gain:gain}; mode='synth';
+    }catch(e){}
+  }
+  function start(){
+    if(started) return; started=true;
+    // Try a real crowd loop first; fall back to the synth bed.
+    try{
+      el=new Audio('/assets/crowd.mp3'); el.loop=true; el.volume=0;
+      var toSynth=function(){ if(mode) return; el=null; startSynth(); };
+      el.addEventListener('error', toSynth, {once:true});
+      var p=el.play();
+      if(p&&p.then){ p.then(function(){ mode='mp3'; fadeEl(MP3_VOL,1400); }).catch(toSynth); }
+      else { mode='mp3'; fadeEl(MP3_VOL,1400); }
+    }catch(e){ startSynth(); }
+  }
+  function fadeEl(target,ms){
+    if(!el) return; var from=el.volume, t0=performance.now();
+    (function step(now){ if(!el) return; var k=Math.min(1,(now-t0)/ms); el.volume=from+(target-from)*k; if(k<1) requestAnimationFrame(step); })(t0);
+  }
+  function resume(){ if(mode==='mp3'&&el){ el.play&&el.play(); fadeEl(MP3_VOL,600);} else if(mode==='synth'&&synth){ try{synth.ctx.resume();synth.gain.gain.linearRampToValueAtTime(SYNTH_VOL,synth.ctx.currentTime+0.6);}catch(e){} } }
+  function pause(){ if(mode==='mp3'&&el){ fadeEl(0,400); setTimeout(function(){el&&el.pause&&el.pause();},420);} else if(mode==='synth'&&synth){ try{synth.gain.gain.linearRampToValueAtTime(0,synth.ctx.currentTime+0.4);}catch(e){} } }
+
+  function begin(){ if(enabled && !started) start(); }
+  ['pointerdown','touchstart','keydown'].forEach(function(ev){ document.addEventListener(ev, begin, {passive:true}); });
+
+  function syncBtn(){
+    var b=document.getElementById('btn-sound'); if(!b) return;
+    b.firstChild && (b.firstChild.nodeValue = enabled ? '🔊 ' : '🔇 ');
+    b.classList.toggle('sound-off', !enabled);
+  }
+  window.fcToggleAmbient=function(){
+    enabled=!enabled; try{ localStorage.setItem(KEY, enabled?'1':'0'); }catch(e){}
+    if(enabled){ if(!started) start(); else resume(); } else { pause(); }
+    syncBtn();
+  };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', syncBtn); else syncBtn();
+})();
+</script>
+
+
 <!-- v113: Fullscreen toggle for the top-toolbar #btn-fs. Fills the screen so
      every control fits at any resolution. When the simulator runs inside the
      play.html iframe (allowfullscreen is set), requesting fullscreen on our own
@@ -14338,7 +14432,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v142c-idle-sway-ignore-reduced-motion-2026-07-23';
+  window._FC_CAP_VERSION = 'v144-ambient-audio+button-juice-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
