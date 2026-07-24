@@ -8222,26 +8222,37 @@ function _ringsFor(iso){
   const WRAP_JUMP=VW*0.5;
   polys.forEach(poly=>{
     if(!poly||!poly.length) return;
-    const outer=poly[0];
-    const pts=[];
-    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-    outer.forEach(pt=>{
-      const p=proj(pt);
-      if(!p||isNaN(p[0])||isNaN(p[1])) return;
-      pts.push([p[0],p[1]]);
-      if(p[0]<minX)minX=p[0];if(p[1]<minY)minY=p[1];
-      if(p[0]>maxX)maxX=p[0];if(p[1]>maxY)maxY=p[1];
+    // v147: iterate ALL rings of the polygon — poly[0] is the outer coastline,
+    // poly[1..] are HOLES. Holes matter for enclaves: South Africa has a hole
+    // where Lesotho sits, Italy has holes for San Marino + Vatican. Without the
+    // hole ring, a spin from INSIDE the enclave doesn't cross the surrounding
+    // country's boundary until it exits at the far coast, so it wrongly targets
+    // the next country over (Lesotho→Botswana, San Marino→France). Adding the
+    // hole ring means the surrounding country registers right at the enclave's
+    // edge. For rays coming from OUTSIDE, the outer ring is still hit first, so
+    // this doesn't change normal targeting.
+    poly.forEach(ringCoords=>{
+      if(!ringCoords||ringCoords.length<3) return;
+      const pts=[];
+      let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+      ringCoords.forEach(pt=>{
+        const p=proj(pt);
+        if(!p||isNaN(p[0])||isNaN(p[1])) return;
+        pts.push([p[0],p[1]]);
+        if(p[0]<minX)minX=p[0];if(p[1]<minY)minY=p[1];
+        if(p[0]>maxX)maxX=p[0];if(p[1]>maxY)maxY=p[1];
+      });
+      if(pts.length<3) return;
+      // Build the set of edges (i → i+1, mod N) that span more than half the
+      // map width — these are the antimeridian-wrap artifacts. Stored as a Set
+      // of starting-vertex indices for O(1) lookup during ray testing.
+      const skipEdges=new Set();
+      for(let i=0;i<pts.length;i++){
+        const j=(i+1)%pts.length;
+        if(Math.abs(pts[j][0]-pts[i][0]) > WRAP_JUMP) skipEdges.add(i);
+      }
+      rings.push({points:pts,bbox:{minX,minY,maxX,maxY},skipEdges});
     });
-    if(pts.length<3) return;
-    // Build the set of edges (i → i+1, mod N) that span more than half the
-    // map width — these are the antimeridian-wrap artifacts. Stored as a Set
-    // of starting-vertex indices for O(1) lookup during ray testing.
-    const skipEdges=new Set();
-    for(let i=0;i<pts.length;i++){
-      const j=(i+1)%pts.length;
-      if(Math.abs(pts[j][0]-pts[i][0]) > WRAP_JUMP) skipEdges.add(i);
-    }
-    rings.push({points:pts,bbox:{minX,minY,maxX,maxY},skipEdges});
   });
   return _isoRings[iso]=rings;
 }
@@ -14459,7 +14470,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v146-remove-idle-flag-sway-lag-2026-07-23';
+  window._FC_CAP_VERSION = 'v147-enclave-hole-rings-2026-07-24';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
