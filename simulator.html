@@ -5667,7 +5667,16 @@ function _localIsoLinear(id){
   try {
     const iso = (typeof isoAtMap === 'function') ? isoAtMap(cx, cy) : null;
     const lin = window._isoLinear || {};
-    if (iso && lin[String(iso)]) L = lin[String(iso)];
+    if (iso && lin[String(iso)]) {
+      // v145: only trust the local iso if the team actually OWNS it. Otherwise
+      // a mis-hit-test (e.g. Australia's centroid resolving to a wrong/tiny
+      // neighbour) would shrink the flag via the locality blend. When the hit
+      // lands on non-owned ground, return null so getScale falls back to the
+      // correct empire footprint. Creator/offline build (no GAME.state) keeps
+      // the raw behaviour.
+      const st = (typeof GAME !== 'undefined' && GAME.state) ? GAME.state[id] : null;
+      if (!st || !st.ownedIsos || st.ownedIsos.has(String(iso))) L = lin[String(iso)];
+    }
   } catch(e) { L = null; }
   _localCache[id] = { key: key, L: L };
   return L;
@@ -8703,6 +8712,42 @@ const CONQUEST_WAVE_DELAY_MS = 900;
    rather than sliding; the prints are what make the direction legible. */
 const HERO_WALK_MS = 1000;
 const HERO_WALK_STEPS = 5;      // bob cycles across the journey
+/* v145 juice: a short burst of little particles at a map point — fired when a
+   hero flag lands on freshly-conquered ground. Sized to the flag (fm = flag
+   width in map units) so it reads consistently at every zoom. Lives in the
+   zoomed #game-layer so it tracks the map. Skipped under reduced-motion. */
+function fcConquestBurst(x, y, color, fm){
+  try{
+    if(prefersReducedMotion()) return;
+    var layer=document.getElementById('game-layer'); if(!layer) return;
+    var SVG='http://www.w3.org/2000/svg';
+    fm = fm && fm>0 ? fm : 60;
+    var N=13, spread=fm*1.5;
+    for(var i=0;i<N;i++){
+      (function(i){
+        var ang=(i/N)*Math.PI*2 + (Math.random()-0.5)*0.5;
+        var dist=spread*(0.55+Math.random()*0.85);
+        var c=document.createElementNS(SVG,'circle');
+        c.setAttribute('cx',x); c.setAttribute('cy',y);
+        c.setAttribute('r',(fm*(0.05+Math.random()*0.045)).toFixed(1));
+        c.setAttribute('fill', (i%3===0)?'#ffd54a':(color||'#ffffff'));
+        c.setAttribute('opacity','0.95');
+        c.setAttribute('pointer-events','none');
+        c.style.filter='drop-shadow(0 0 '+(fm*0.03).toFixed(1)+'px rgba(255,213,74,.5))';
+        layer.appendChild(c);
+        var tx=x+Math.cos(ang)*dist, ty=y+Math.sin(ang)*dist - dist*0.30; // slight lift
+        var t0=performance.now(), dur=520+Math.random()*260;
+        (function step(now){
+          var p=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-p,2);
+          c.setAttribute('cx',(x+(tx-x)*e).toFixed(1));
+          c.setAttribute('cy',(y+(ty-y)*e).toFixed(1));
+          c.setAttribute('opacity',(0.95*(1-p)).toFixed(2));
+          if(p<1) requestAnimationFrame(step); else if(c.parentNode) c.parentNode.removeChild(c);
+        })(t0);
+      })(i);
+    }
+  }catch(e){}
+}
 function walkHeroFlagTo(badge, teamId, from, to, delayMs){
   if(!badge) return;
   const finish=function(){
@@ -8713,6 +8758,13 @@ function walkHeroFlagTo(badge, teamId, from, to, delayMs){
     }catch(e){}
     if(typeof movedFlags!=='undefined') movedFlags[teamId]={cx:to[0],cy:to[1]};
     if(typeof updateHeroGlow==='function') updateHeroGlow();
+    // v145 juice: celebratory particle burst where the flag lands.
+    try{
+      var _s=effS(getScale(teamId),currentK());
+      var _fm=BW*(_s||0.2);
+      var _col=(typeof primaryColor==='function')?primaryColor(teams.find(function(t){return t.id===teamId;})):'#ffffff';
+      if(typeof fcConquestBurst==='function') fcConquestBurst(to[0],to[1],_col,_fm);
+    }catch(e){}
     // v102: release the action lock and re-enable the buttons.
     window._fcMarching=false;
     try{ if(typeof gBtnState==='function') gBtnState(); }catch(e){}
@@ -14432,7 +14484,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v144-ambient-audio+button-juice-2026-07-23';
+  window._FC_CAP_VERSION = 'v145-australia-flag-fix+conquest-burst-2026-07-23';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
