@@ -4074,7 +4074,7 @@ body.fc-aura-in-panel #game-panel.g-mini .g-body > .g-aura-hbar{ display:none !i
             <button class="g-btn ghost" id="g-skip" disabled data-i18n="sim.gp.skipturn">Skip turn</button>
           </div>
           <div class="g-actions g-actions-ult">
-            <button class="g-btn g-btn-ult" id="g-ult" disabled data-i18n-attr="title:sim.ult.tip" title="Spend Aura to wipe up to 5 weak teams in a straight line">🦁 <span id="g-ult-label">Lion's Roar</span> <span class="g-ult-cost" id="g-ult-cost"></span></button>
+            <button class="g-btn g-btn-ult" id="g-ult" disabled data-i18n-attr="title:sim.ult.tip" title="Spend Aura to wipe up to 5 weak teams in a straight line"><span id="g-ult-emoji">🦁</span> <span id="g-ult-label">Conquest Strike</span> <span class="g-ult-cost" id="g-ult-cost"></span></button>
           </div>
         </div>
       </div>
@@ -13052,15 +13052,377 @@ function openInstantConfirm(teamId){
 // Coexists with the click-a-flag instant-win; same eligibility, same per-OVR
 // cost (3–6 per team, so a full 5-target roar typically costs 15–30 Aura).
 // ══════════════════════════════════════════════════════════════════════════
-const ULTIMATE_NAMES = {
-  826: "Lion's Roar"      // England — Gürkan's first ult flavour.
-  // Add more per-team names here, keyed by team.iso.
+// ══════════════════════════════════════════════════════════════════════════
+// v148 — Per-team Conquest Strike flavour: a title + emoji + a mascot-matched
+// synthesised sound for every one of the 212 teams. Titles lean on each
+// nation's real footballing nickname / mascot where one exists (Three Lions,
+// Super Eagles, Azzurri, Les Bleus…). Each team maps to one of 16 sound
+// archetypes rendered live via Web Audio — no audio files shipped. To swap in
+// a real recording later, drop it in /assets/strikes/ and add its archetype to
+// FC_STRIKE_MP3 below; the synth is the automatic fallback.
+// Row shape:  iso -> [ title, emoji, soundArchetype ]
+// ══════════════════════════════════════════════════════════════════════════
+const FC_STRIKE = {
+  // ---- UEFA (Europe) ----
+  8:["Eagles' Dive","🦅","eagle"], 20:["Tricolor Surge","🔺","anthem"], 51:["Ararat Lions","🦁","roar"],
+  40:["Alpine Eagle","🦅","eagle"], 31:["Land of Fire","🔥","dragon"], 112:["White Storks","🕊️","crane"],
+  56:["Red Devils' Charge","😈","warhorn"], 70:["Dragons' Fury","🐉","dragon"], 100:["Lions' Roar","🦁","roar"],
+  191:["Vatreni Blaze","🔥","dragon"], 196:["Island Storm","🌊","ocean"], 203:["Bohemian Lion","🦁","roar"],
+  208:["Danish Dynamite","💥","thunder"], 826:["Lion's Roar","🦁","roar"], 233:["Wolves' Howl","🐺","wolf"],
+  234:["North Atlantic Surge","🌊","ocean"], 246:["Eagle-Owl Swoop","🦉","eagle"], 250:["Gallic Rooster","🐓","rooster"],
+  268:["Crusaders' Charge","⚔️","warhorn"], 276:["Eagle's Talons","🦅","eagle"], 292:["The Rock Falls","🪨","thunder"],
+  300:["Hellenic Phalanx","🛡️","warhorn"], 348:["Turul's Dive","🦅","falcon"], 352:["Viking Thunderclap","⚡","warhorn"],
+  372:["Emerald Storm","☘️","thunder"], 376:["Blue-White Surge","✡️","anthem"], 380:["Azzurri Blitz","🔵","anthem"],
+  398:["Steppe Eagle","🦅","eagle"], 383:["Dardanian Charge","⚔️","warhorn"], 428:["Baltic Storm","⚡","thunder"],
+  438:["Alpine Avalanche","🏔️","thunder"], 440:["Iron Wolf's Howl","🐺","wolf"], 442:["Red Lions' Roar","🦁","roar"],
+  470:["Knights' Charge","⚔️","warhorn"], 498:["Aurochs Charge","🐂","bull"], 499:["Brave Falcon's Dive","🦅","falcon"],
+  807:["Vardar Lions","🦁","roar"], 528:["Oranje Surge","🟠","anthem"], 9003:["Green & White Army","☘️","thunder"],
+  578:["Viking Raid","⚔️","warhorn"], 616:["White Eagle's Talons","🦅","eagle"], 620:["Navigators' Tide","⚓","ocean"],
+  642:["Dacian Wolf","🐺","wolf"], 643:["The Bear's Fury","🐻","roar"], 674:["Three Towers","🏰","thunder"],
+  9001:["Lion Rampant","🦁","roar"], 688:["Serbian Eagles","🦅","eagle"], 703:["Tatra Falcon","🦅","falcon"],
+  705:["Ljubljana Dragon","🐉","dragon"], 724:["La Furia Roja","🐂","bull"], 752:["Three Crowns","👑","warhorn"],
+  756:["Alpine Avalanche","🏔️","thunder"], 792:["Grey Wolf's Howl","🐺","wolf"], 804:["Cossack Charge","⚔️","warhorn"],
+  9002:["Red Dragon's Fire","🐉","dragon"],
+  // ---- CONMEBOL (South America) ----
+  32:["Albiceleste Surge","⚪","anthem"], 68:["Andean Condor","🦅","eagle"], 76:["Samba Fury","🥁","drums"],
+  152:["La Roja Condor","🦅","eagle"], 170:["Cafeteros' Rhythm","☕","drums"], 218:["Galápagos Surge","🐢","ocean"],
+  600:["Guaraní Jaguar","🐆","roar"], 604:["Inca Warriors","⚔️","warhorn"], 858:["Charrúa Charge","🔵","warhorn"],
+  862:["Vinotinto Surge","🍷","anthem"],
+  // ---- CONCACAF (North/Central America & Caribbean) ----
+  660:["Island Tide","🌊","ocean"], 28:["Benna Boys","🥁","drums"], 533:["Aruba Tide","🌊","ocean"],
+  44:["Bahama Surge","🌊","ocean"], 52:["Bajan Trident","🔱","ocean"], 84:["Jaguars' Pounce","🐆","roar"],
+  60:["Gombey Warriors","🥁","drums"], 92:["Island Surge","🌊","ocean"], 124:["Moose Charge","🍁","bull"],
+  136:["Cayman Tide","🌊","ocean"], 188:["Ticos' Rhythm","🥁","drums"], 192:["Caribbean Lions","🦁","roar"],
+  531:["Curaçao Tide","🌊","ocean"], 212:["Nature Isle Surge","🌊","ocean"], 214:["Quisqueya Rhythm","🥁","drums"],
+  222:["Cuscatlán Warriors","⚔️","warhorn"], 308:["Spice Boyz","🌶️","drums"], 320:["Quetzal's Flight","🐦","crane"],
+  328:["Golden Jaguars","🐆","roar"], 332:["Grenadiers' Charge","⚔️","warhorn"], 340:["Catrachos Rhythm","🥁","drums"],
+  388:["Reggae Boyz","🥁","drums"], 484:["Aztec Eagle","🦅","eagle"], 500:["Emerald Isle Tide","🌊","ocean"],
+  558:["Pinoleros Surge","🔵","anthem"], 591:["Red Tide","🌊","ocean"], 630:["Boricua Surge","🌊","ocean"],
+  659:["Sugar Boyz","🥁","drums"], 662:["Piton Surge","🌊","ocean"], 670:["Vincy Heat","🔥","drums"],
+  740:["Natio Jaguar","🐆","roar"], 780:["Soca Warriors","🥁","drums"], 796:["Island Tide","🌊","ocean"],
+  850:["Island Surge","🌊","ocean"], 840:["Bald Eagle Strike","🦅","eagle"],
+  // ---- CAF (Africa) ----
+  12:["Desert Foxes","🦊","wolf"], 24:["Black Antelopes","🦌","bull"], 204:["Écureuils Rhythm","🐿️","drums"],
+  72:["The Zebras","🦓","bull"], 854:["The Stallions","🐎","horse"], 108:["The Swallows","🐦","crane"],
+  132:["Blue Sharks","🦈","ocean"], 120:["Indomitable Lions","🦁","roar"], 140:["Les Fauves","🐆","roar"],
+  148:["Sao Giants","⚔️","warhorn"], 174:["Coelacanths","🐟","ocean"], 178:["Red Devils","😈","warhorn"],
+  180:["The Leopards","🐆","roar"], 262:["Red Sea Riverains","🌊","ocean"], 818:["Pharaoh's Falcon","🦅","falcon"],
+  226:["Nzalang Lightning","⚡","thunder"], 232:["Red Sea Boys","🌊","ocean"], 231:["Walia Ibex","🐐","bull"],
+  266:["The Panthers","🐆","roar"], 270:["The Scorpions","🦂","thunder"], 288:["Black Stars","⭐","bell"],
+  324:["Syli Elephant","🐘","elephant"], 624:["Djurtus Wild Dogs","🐕","wolf"], 384:["The Elephants","🐘","elephant"],
+  404:["Harambee Stars","⭐","bell"], 426:["Likuena Crocodiles","🐊","dragon"], 430:["Lone Star","⭐","bell"],
+  434:["Mediterranean Knights","⚔️","warhorn"], 450:["Barea Zebu","🐂","bull"], 454:["The Flames","🔥","dragon"],
+  466:["The Eagles","🦅","eagle"], 478:["Mourabitounes","⚔️","warhorn"], 480:["The Dodos","🐦","crane"],
+  504:["Atlas Lions","🦁","roar"], 508:["Black Mambas","🐍","dragon"], 516:["Brave Warriors","⚔️","warhorn"],
+  562:["Ménas Lions","🦁","roar"], 566:["Super Eagles","🦅","eagle"], 646:["Amavubi Wasps","🐝","thunder"],
+  678:["Island Tide","🌊","ocean"], 686:["Lions of Teranga","🦁","roar"], 690:["Pirates' Tide","🏴‍☠️","ocean"],
+  694:["Leone Stars","⭐","bell"], 706:["Ocean Stars","🌊","ocean"], 710:["Bafana Bafana","📯","drums"],
+  728:["Bright Stars","⭐","bell"], 729:["Falcons of Jediane","🦅","falcon"], 748:["Sihlangu Shield","🛡️","warhorn"],
+  834:["Taifa Stars","⭐","bell"], 768:["Les Éperviers","🦅","falcon"], 788:["Eagles of Carthage","🦅","eagle"],
+  800:["The Cranes","🕊️","crane"], 894:["Copper Bullets","⚡","thunder"], 716:["The Warriors","⚔️","warhorn"],
+  // ---- AFC (Asia & Australia) ----
+  4:["Lions of Khorasan","🦁","roar"], 36:["Socceroos","🦘","bull"], 48:["Dilmun Falcon","🦅","falcon"],
+  50:["Bengal Tigers","🐅","roar"], 64:["Thunder Dragon","🐉","dragon"], 96:["Tebuan Wasps","🐝","thunder"],
+  116:["Angkor Warriors","⚔️","warhorn"], 156:["Dragon's Roar","🐉","dragon"], 158:["Formosa Storm","⚡","thunder"],
+  316:["Matao Tide","🌊","ocean"], 344:["Dragon Strike","🐉","dragon"], 356:["Blue Tigers","🐅","roar"],
+  360:["Garuda's Wings","🦅","eagle"], 364:["Persian Lions","🦁","roar"], 368:["Lions of Mesopotamia","🦁","roar"],
+  392:["Samurai Blue","🗡️","warhorn"], 400:["Al-Nashama","⚔️","warhorn"], 414:["Desert Falcon","🦅","falcon"],
+  417:["White Falcon","🦅","falcon"], 418:["Million Elephants","🐘","elephant"], 422:["The Cedars","🌲","thunder"],
+  446:["Lotus Storm","🪷","thunder"], 458:["Malayan Tigers","🐅","roar"], 462:["Red Snappers","🐟","ocean"],
+  496:["Blue Wolves","🐺","wolf"], 104:["Chinthe Lions","🦁","roar"], 524:["The Gorkhalis","🗡️","warhorn"],
+  580:["Mariana Tide","🌊","ocean"], 408:["Chollima's Charge","🐎","horse"], 512:["Red Warriors","⚔️","warhorn"],
+  586:["Shaheen Falcons","🦅","falcon"], 275:["Lions of Canaan","🦁","roar"], 608:["The Azkals","🐕","wolf"],
+  634:["The Maroon Oryx","🦌","bull"], 682:["Green Falcons","🦅","falcon"], 702:["The Lions","🦁","roar"],
+  410:["Taeguk Tigers","🐅","roar"], 144:["Sinhala Lions","🦁","roar"], 760:["Qasioun Eagles","🦅","eagle"],
+  762:["Pamir Lions","🦁","roar"], 764:["War Elephants","🐘","elephant"], 626:["Sacred Crocodile","🐊","dragon"],
+  795:["Akhal-Teke Charge","🐎","horse"], 784:["Emirati Falcon","🦅","falcon"], 860:["White Wolves","🐺","wolf"],
+  704:["Golden Dragons","🐉","dragon"], 887:["Arabian Eagle","🦅","eagle"],
+  // ---- OFC (Oceania) ----
+  16:["Island Tide","🌊","ocean"], 184:["Kukis Tide","🌊","ocean"], 242:["Bula Boys","🥁","drums"],
+  540:["The Cagous","🐦","crane"], 554:["Haka Thunder","🥁","drums"], 598:["Birds of Paradise","🐦","crane"],
+  882:["Siva Tau","🥁","drums"], 90:["Bonitos Tide","🐟","ocean"], 258:["Toa Aito Warriors","⚔️","warhorn"],
+  776:["Tongan Warriors","⚔️","warhorn"], 548:["Vanuatu Tide","🌊","ocean"]
 };
+// Real-recording overrides, keyed by archetype. If the file exists it plays;
+// if it 404s (not added yet), the code silently falls back to the synth and
+// won't retry that archetype again this session. Drop matching .mp3 files into
+// /assets/strikes/ (any short, punchy clip) to upgrade a sound with zero code
+// changes. Preloaded ones below are the archetypes the synth handles weakest.
+const FC_STRIKE_MP3 = {
+  wolf:   '/assets/strikes/wolf.mp3',
+  eagle:  '/assets/strikes/eagle.mp3',
+  falcon: '/assets/strikes/falcon.mp3'
+};
+const _fcMp3Bad = {};   // archetypes whose file failed to load — use synth
 const ULT_MAX_TARGETS = 5;
-const ULT_RADIUS      = 2500;   // SVG units — how far the roar reaches.
+const ULT_RADIUS      = 2500;   // SVG units — how far the strike reaches.
+function fcStrikeRow(team){
+  return (team && team.iso!=null && FC_STRIKE[team.iso]) ? FC_STRIKE[team.iso] : null;
+}
 function getUltName(team){
-  if(team && ULTIMATE_NAMES[team.iso]) return ULTIMATE_NAMES[team.iso];
+  const r=fcStrikeRow(team);
+  if(r && r[0]) return r[0];
   try{ return FCLang.t('sim.ult.default'); }catch(e){ return 'Conquest Strike'; }
+}
+function getUltEmoji(team){ const r=fcStrikeRow(team); return (r && r[1]) ? r[1] : '🦁'; }
+function getUltArch(team){ const r=fcStrikeRow(team); return (r && r[2]) ? r[2] : 'roar'; }
+
+// ── Conquest-Strike synth engine ─────────────────────────────────────────
+// A single reused AudioContext + a family of stylised generators. Each
+// archetype is a short, recognisable sonic sketch (a roar, a screech, a horn,
+// a drum roll…) built from oscillators + filtered noise. Kept deliberately
+// lightweight so it never janks the conquest animation.
+let _fcStrikeAC=null;
+function fcStrikeAC(){
+  try{
+    if(!_fcStrikeAC){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null; _fcStrikeAC=new AC(); }
+    if(_fcStrikeAC.state==='suspended'){ _fcStrikeAC.resume().catch(function(){}); }
+    return _fcStrikeAC;
+  }catch(e){ return null; }
+}
+function _fcNoiseSrc(ctx,dur,brown){
+  const n=Math.max(1,Math.floor(ctx.sampleRate*dur));
+  const b=ctx.createBuffer(1,n,ctx.sampleRate), d=b.getChannelData(0);
+  if(brown){ let last=0; for(let i=0;i<n;i++){ const w=Math.random()*2-1; d[i]=(last+0.02*w)/1.02; last=d[i]; d[i]*=3.2; } }
+  else { for(let i=0;i<n;i++) d[i]=Math.random()*2-1; }
+  const s=ctx.createBufferSource(); s.buffer=b; return s;
+}
+function _fcKick(ctx,t0,f0,peak){
+  const o=ctx.createOscillator(); o.type='sine';
+  o.frequency.setValueAtTime(f0,t0); o.frequency.exponentialRampToValueAtTime(Math.max(20,f0*0.35),t0+0.18);
+  const g=ctx.createGain(); g.gain.setValueAtTime(peak,t0); g.gain.exponentialRampToValueAtTime(0.0001,t0+0.22);
+  o.connect(g); g.connect(ctx.destination); o.start(t0); o.stop(t0+0.24);
+}
+function _fcTone(ctx,t0,type,f0,f1,dur,peak,dest,glideExp){
+  const o=ctx.createOscillator(); o.type=type;
+  o.frequency.setValueAtTime(f0,t0);
+  if(f1!=null){ if(glideExp) o.frequency.exponentialRampToValueAtTime(Math.max(1,f1),t0+dur); else o.frequency.linearRampToValueAtTime(f1,t0+dur); }
+  const g=ctx.createGain();
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.exponentialRampToValueAtTime(peak,t0+Math.min(0.04,dur*0.2));
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  o.connect(g); g.connect(dest);
+  o.start(t0); o.stop(t0+dur+0.02);
+  return o;
+}
+// Eagle / hawk scream — the iconic raptor "kee-eeee-arr". The realism comes
+// from a RASPY tremolo (fast square-wave amplitude chop) over a long
+// descending cry, not a pitch buzz. Bandpass keeps it bright + throaty.
+function _fcEagle(ctx,t0){
+  const dur=1.05;
+  const m=ctx.createGain(); m.connect(ctx.destination);
+  m.gain.setValueAtTime(0.0001,t0);
+  m.gain.exponentialRampToValueAtTime(0.5,t0+0.05);
+  m.gain.setValueAtTime(0.42,t0+0.55);
+  m.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  // Raspy tremolo bus — square LFO chops the amplitude to give the scream its
+  // rough, rolled edge instead of a clean synth tone.
+  const trem=ctx.createGain(); trem.gain.value=0.72; trem.connect(m);
+  const tl=ctx.createOscillator(); tl.type='square'; tl.frequency.setValueAtTime(48,t0); tl.frequency.linearRampToValueAtTime(38,t0+dur);
+  const tlg=ctx.createGain(); tlg.gain.value=0.3; tl.connect(tlg); tlg.connect(trem.gain); tl.start(t0); tl.stop(t0+dur);
+  const o=ctx.createOscillator(); o.type='sawtooth';
+  o.frequency.setValueAtTime(1450,t0);
+  o.frequency.linearRampToValueAtTime(1950,t0+0.13);      // quick rise into the scream
+  o.frequency.exponentialRampToValueAtTime(720,t0+dur);   // long descending "…arr"
+  const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2100; bp.Q.value=1.3;
+  o.connect(bp); bp.connect(trem);
+  o.start(t0); o.stop(t0+dur+0.02);
+  const nz=_fcNoiseSrc(ctx,dur,false); const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=3600;
+  const ng=ctx.createGain(); ng.gain.setValueAtTime(0.1,t0); ng.gain.exponentialRampToValueAtTime(0.001,t0+dur);
+  nz.connect(hp); hp.connect(ng); ng.connect(m); nz.start(t0); nz.stop(t0+dur);
+}
+// Falcon — a rapid, sharp, metallic "kak-kak-kak-kak" that steps down in
+// pitch. Short staccato shrieks, much more raptor-like than a smooth glide.
+function _fcFalcon(ctx,t0){
+  const m=ctx.createGain(); m.connect(ctx.destination); m.gain.value=0.5;
+  [0,0.11,0.22,0.33,0.46].forEach(function(off,i){
+    const f=2350-i*150;
+    const o=ctx.createOscillator(); o.type='sawtooth';
+    o.frequency.setValueAtTime(f*1.15,t0+off);
+    o.frequency.exponentialRampToValueAtTime(f*0.82,t0+off+0.09);
+    const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=f; bp.Q.value=3;
+    const g=ctx.createGain();
+    g.gain.setValueAtTime(0.0001,t0+off);
+    g.gain.exponentialRampToValueAtTime(0.45,t0+off+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+off+0.1);
+    o.connect(bp); bp.connect(g); g.connect(m);
+    o.start(t0+off); o.stop(t0+off+0.11);
+  });
+  const nz=_fcNoiseSrc(ctx,0.6,false); const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=4500;
+  const ng=ctx.createGain(); ng.gain.setValueAtTime(0.06,t0); ng.gain.exponentialRampToValueAtTime(0.001,t0+0.5); nz.connect(hp); hp.connect(ng); ng.connect(m); nz.start(t0); nz.stop(t0+0.6);
+}
+function _fcDrums(ctx,t0){
+  [[0,150,0.6],[0.22,150,0.45],[0.36,110,0.55],[0.6,150,0.6],[0.78,200,0.4],[0.92,110,0.5],[1.12,150,0.62]].forEach(function(p){ _fcKick(ctx,t0+p[0],p[1],p[2]); });
+}
+function _fcWarhorn(ctx,t0){
+  const m=ctx.createGain(); m.connect(ctx.destination);
+  m.gain.setValueAtTime(0.0001,t0); m.gain.linearRampToValueAtTime(0.5,t0+0.25); m.gain.setValueAtTime(0.5,t0+0.9); m.gain.exponentialRampToValueAtTime(0.0001,t0+1.5);
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1400; lp.connect(m);
+  [110,110.6,165,220].forEach(function(f,i){
+    const o=ctx.createOscillator(); o.type='sawtooth'; o.frequency.setValueAtTime(f*0.99,t0); o.frequency.linearRampToValueAtTime(f,t0+0.3);
+    const g=ctx.createGain(); g.gain.value=(i===0?0.5:0.28); o.connect(g); g.connect(lp); o.start(t0); o.stop(t0+1.5);
+  });
+}
+// Wolf howl — warm, vocal "aaa-ooo". Old version buzzed like a kazoo because
+// it was a single raw sawtooth with deep vibrato. Rebuilt as a sine
+// fundamental + two softer triangle overtones through a vocal formant filter,
+// gliding up to a held note then falling. Only a shallow, slow vibrato + a
+// breath-noise bed — that's what reads as a real howl rather than a synth.
+function _fcWolf(ctx,t0){
+  const dur=1.95;
+  const m=ctx.createGain(); m.connect(ctx.destination);
+  m.gain.setValueAtTime(0.0001,t0);
+  m.gain.linearRampToValueAtTime(0.55,t0+0.3);   // breathy swell in
+  m.gain.setValueAtTime(0.55,t0+1.35);
+  m.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  const formant=ctx.createBiquadFilter(); formant.type='bandpass'; formant.frequency.value=900; formant.Q.value=2.1; formant.connect(m);
+  const base=330;
+  [1,2,3].forEach(function(h,i){
+    const o=ctx.createOscillator(); o.type=(i===0?'sine':'triangle');
+    o.frequency.setValueAtTime(base*h*0.8,t0);              // start low
+    o.frequency.linearRampToValueAtTime(base*h,t0+0.5);     // glide up
+    o.frequency.setValueAtTime(base*h,t0+1.2);              // hold the note
+    o.frequency.linearRampToValueAtTime(base*h*0.72,t0+dur);// fall off
+    const g=ctx.createGain(); g.gain.value=(i===0?0.5:(i===1?0.26:0.12));
+    o.connect(g); g.connect(formant);
+    o.start(t0); o.stop(t0+dur+0.02);
+    if(i===0){
+      const lfo=ctx.createOscillator(); lfo.type='sine'; lfo.frequency.value=5.2;
+      const lg=ctx.createGain(); lg.gain.value=8; lfo.connect(lg); lg.connect(o.frequency);
+      lfo.start(t0); lfo.stop(t0+dur+0.02);
+    }
+  });
+  const nz=_fcNoiseSrc(ctx,dur,false); const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1100; bp.Q.value=0.7;
+  const ng=ctx.createGain(); ng.gain.setValueAtTime(0.0001,t0); ng.gain.linearRampToValueAtTime(0.05,t0+0.45); ng.gain.exponentialRampToValueAtTime(0.001,t0+dur);
+  nz.connect(bp); bp.connect(ng); ng.connect(m); nz.start(t0); nz.stop(t0+dur);
+}
+function _fcBull(ctx,t0){
+  const nz=_fcNoiseSrc(ctx,1.2,true); const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=180;
+  const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t0); g.gain.linearRampToValueAtTime(0.5,t0+0.2); g.gain.exponentialRampToValueAtTime(0.0001,t0+1.2);
+  nz.connect(lp); lp.connect(g); g.connect(ctx.destination); nz.start(t0); nz.stop(t0+1.2);
+  [0.05,0.2,0.33,0.5,0.66,0.82].forEach(function(o){ _fcKick(ctx,t0+o,90,0.4); });
+  _fcTone(ctx,t0+0.9,'sawtooth',140,70,0.25,0.3,ctx.destination,true);
+}
+function _fcDragon(ctx,t0){
+  const m=ctx.createGain(); m.connect(ctx.destination);
+  m.gain.setValueAtTime(0.0001,t0); m.gain.linearRampToValueAtTime(0.55,t0+0.1); m.gain.setValueAtTime(0.5,t0+1.1); m.gain.exponentialRampToValueAtTime(0.0001,t0+1.8);
+  const nz=_fcNoiseSrc(ctx,1.8,true); const bp=ctx.createBiquadFilter(); bp.type='lowpass';
+  bp.frequency.setValueAtTime(600,t0); bp.frequency.exponentialRampToValueAtTime(140,t0+1.8); nz.connect(bp); bp.connect(m); nz.start(t0); nz.stop(t0+1.8);
+  const sub=ctx.createOscillator(); sub.type='sawtooth'; sub.frequency.setValueAtTime(60,t0); sub.frequency.exponentialRampToValueAtTime(35,t0+1.8);
+  const sg=ctx.createGain(); sg.gain.setValueAtTime(0.25,t0); sg.gain.exponentialRampToValueAtTime(0.0001,t0+1.8); sub.connect(sg); sg.connect(m); sub.start(t0); sub.stop(t0+1.8);
+  const cz=_fcNoiseSrc(ctx,1.6,false); const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=2500;
+  const cg=ctx.createGain(); cg.gain.setValueAtTime(0.0001,t0+0.3); cg.gain.linearRampToValueAtTime(0.14,t0+0.6); cg.gain.exponentialRampToValueAtTime(0.001,t0+1.6); cz.connect(hp); hp.connect(cg); cg.connect(m); cz.start(t0+0.3); cz.stop(t0+1.6);
+}
+function _fcElephant(ctx,t0){
+  const m=ctx.createGain(); m.connect(ctx.destination);
+  m.gain.setValueAtTime(0.0001,t0); m.gain.linearRampToValueAtTime(0.5,t0+0.08); m.gain.setValueAtTime(0.45,t0+0.7); m.gain.exponentialRampToValueAtTime(0.0001,t0+1.1);
+  const o=ctx.createOscillator(); o.type='sawtooth';
+  o.frequency.setValueAtTime(180,t0); o.frequency.exponentialRampToValueAtTime(520,t0+0.25); o.frequency.setValueAtTime(500,t0+0.7); o.frequency.exponentialRampToValueAtTime(300,t0+1.1);
+  const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=900; bp.Q.value=4; o.connect(bp); bp.connect(m);
+  const lfo=ctx.createOscillator(); lfo.type='sine'; lfo.frequency.value=22; const lg=ctx.createGain(); lg.gain.value=40; lfo.connect(lg); lg.connect(o.frequency);
+  o.start(t0); lfo.start(t0); o.stop(t0+1.1); lfo.stop(t0+1.1);
+}
+function _fcOcean(ctx,t0){
+  const nz=_fcNoiseSrc(ctx,2.0,false); const lp=ctx.createBiquadFilter(); lp.type='lowpass';
+  lp.frequency.setValueAtTime(300,t0); lp.frequency.linearRampToValueAtTime(1200,t0+0.9); lp.frequency.linearRampToValueAtTime(250,t0+2.0);
+  const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t0); g.gain.linearRampToValueAtTime(0.5,t0+0.9); g.gain.linearRampToValueAtTime(0.0001,t0+2.0);
+  nz.connect(lp); lp.connect(g); g.connect(ctx.destination); nz.start(t0); nz.stop(t0+2.0);
+}
+function _fcRooster(ctx,t0){
+  const m=ctx.createGain(); m.connect(ctx.destination); m.gain.value=0.45;
+  [[0,700,0.12],[0.14,1050,0.12],[0.3,1300,0.2],[0.54,760,0.26]].forEach(function(n){
+    const o=ctx.createOscillator(); o.type='square';
+    o.frequency.setValueAtTime(n[1],t0+n[0]); o.frequency.linearRampToValueAtTime(n[1]*0.9,t0+n[0]+n[2]);
+    const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t0+n[0]); g.gain.exponentialRampToValueAtTime(0.4,t0+n[0]+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t0+n[0]+n[2]);
+    const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=2200; o.connect(g); g.connect(lp); lp.connect(m); o.start(t0+n[0]); o.stop(t0+n[0]+n[2]+0.02);
+  });
+}
+function _fcCrane(ctx,t0){
+  const m=ctx.createGain(); m.connect(ctx.destination); m.gain.value=0.4;
+  [0,0.12,0.24,0.4,0.52].forEach(function(off,i){
+    const o=ctx.createOscillator(); o.type='triangle'; const f=1600+i*180;
+    o.frequency.setValueAtTime(f,t0+off); o.frequency.exponentialRampToValueAtTime(f*1.6,t0+off+0.06); o.frequency.exponentialRampToValueAtTime(f*0.9,t0+off+0.1);
+    const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t0+off); g.gain.exponentialRampToValueAtTime(0.35,t0+off+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t0+off+0.11);
+    o.connect(g); g.connect(m); o.start(t0+off); o.stop(t0+off+0.12);
+  });
+}
+function _fcBell(ctx,t0){
+  const m=ctx.createGain(); m.connect(ctx.destination); m.gain.value=0.35;
+  [880,1320,1760,2640].forEach(function(f,i){
+    const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=f; const on=t0+i*0.08;
+    const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,on); g.gain.exponentialRampToValueAtTime(0.3/(i+1)+0.05,on+0.01); g.gain.exponentialRampToValueAtTime(0.0001,on+1.2);
+    o.connect(g); g.connect(m); o.start(on); o.stop(on+1.25);
+  });
+  const s=ctx.createOscillator(); s.type='triangle'; s.frequency.setValueAtTime(1200,t0); s.frequency.exponentialRampToValueAtTime(3600,t0+0.6);
+  const sg=ctx.createGain(); sg.gain.setValueAtTime(0.0001,t0); sg.gain.exponentialRampToValueAtTime(0.12,t0+0.05); sg.gain.exponentialRampToValueAtTime(0.0001,t0+0.6); s.connect(sg); sg.connect(m); s.start(t0); s.stop(t0+0.65);
+}
+function _fcThunder(ctx,t0){
+  const nz=_fcNoiseSrc(ctx,1.8,true); const lp=ctx.createBiquadFilter(); lp.type='lowpass';
+  lp.frequency.setValueAtTime(400,t0); lp.frequency.exponentialRampToValueAtTime(80,t0+1.8);
+  const g=ctx.createGain(); g.gain.setValueAtTime(0.6,t0+0.02); g.gain.exponentialRampToValueAtTime(0.15,t0+0.4); g.gain.exponentialRampToValueAtTime(0.0001,t0+1.8);
+  nz.connect(lp); lp.connect(g); g.connect(ctx.destination); nz.start(t0); nz.stop(t0+1.8);
+  const sub=ctx.createOscillator(); sub.type='sine'; sub.frequency.setValueAtTime(70,t0); sub.frequency.exponentialRampToValueAtTime(28,t0+0.9);
+  const sg=ctx.createGain(); sg.gain.setValueAtTime(0.5,t0); sg.gain.exponentialRampToValueAtTime(0.0001,t0+0.9); sub.connect(sg); sg.connect(ctx.destination); sub.start(t0); sub.stop(t0+0.9);
+}
+function _fcAnthem(ctx,t0){
+  const m=ctx.createGain(); m.connect(ctx.destination);
+  m.gain.setValueAtTime(0.0001,t0); m.gain.linearRampToValueAtTime(0.45,t0+0.3); m.gain.setValueAtTime(0.42,t0+1.0); m.gain.exponentialRampToValueAtTime(0.0001,t0+1.7);
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=2000; lp.connect(m);
+  [196,246.9,293.7,392].forEach(function(f,i){
+    const o=ctx.createOscillator(); o.type='sawtooth'; o.frequency.setValueAtTime(f*0.996,t0); o.frequency.linearRampToValueAtTime(f,t0+0.4);
+    const g=ctx.createGain(); g.gain.value=(i===0?0.4:0.24); o.connect(g); g.connect(lp); o.start(t0); o.stop(t0+1.7);
+  });
+}
+function _fcHorse(ctx,t0){
+  [0,0.09,0.16,0.34,0.43,0.5,0.68,0.77,0.84].forEach(function(o){
+    const nz=_fcNoiseSrc(ctx,0.08,false); const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=280; bp.Q.value=2;
+    const g=ctx.createGain(); g.gain.setValueAtTime(0.5,t0+o); g.gain.exponentialRampToValueAtTime(0.0001,t0+o+0.08);
+    nz.connect(bp); bp.connect(g); g.connect(ctx.destination); nz.start(t0+o); nz.stop(t0+o+0.09);
+  });
+  const o=ctx.createOscillator(); o.type='sawtooth'; o.frequency.setValueAtTime(500,t0+0.9); o.frequency.linearRampToValueAtTime(760,t0+1.0); o.frequency.linearRampToValueAtTime(360,t0+1.35);
+  const lfo=ctx.createOscillator(); lfo.type='sine'; lfo.frequency.value=14; const lg=ctx.createGain(); lg.gain.value=45; lfo.connect(lg); lg.connect(o.frequency);
+  const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t0+0.9); g.gain.exponentialRampToValueAtTime(0.4,t0+0.95); g.gain.exponentialRampToValueAtTime(0.0001,t0+1.35);
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=2000; o.connect(g); g.connect(lp); lp.connect(ctx.destination);
+  o.start(t0+0.9); lfo.start(t0+0.9); o.stop(t0+1.4); lfo.stop(t0+1.4);
+}
+function fcSynthStrike(key){
+  const ctx=fcStrikeAC(); if(!ctx) return;
+  const t0=ctx.currentTime+0.02;
+  try{
+    switch(key){
+      case 'roar':     if(typeof playSynthRoar==='function'){ playSynthRoar(); } else { _fcThunder(ctx,t0); } break;
+      case 'eagle':    _fcEagle(ctx,t0); break;
+      case 'falcon':   _fcFalcon(ctx,t0); break;
+      case 'drums':    _fcDrums(ctx,t0); break;
+      case 'warhorn':  _fcWarhorn(ctx,t0); break;
+      case 'wolf':     _fcWolf(ctx,t0); break;
+      case 'bull':     _fcBull(ctx,t0); break;
+      case 'dragon':   _fcDragon(ctx,t0); break;
+      case 'elephant': _fcElephant(ctx,t0); break;
+      case 'ocean':    _fcOcean(ctx,t0); break;
+      case 'rooster':  _fcRooster(ctx,t0); break;
+      case 'crane':    _fcCrane(ctx,t0); break;
+      case 'bell':     _fcBell(ctx,t0); break;
+      case 'thunder':  _fcThunder(ctx,t0); break;
+      case 'anthem':   _fcAnthem(ctx,t0); break;
+      case 'horse':    _fcHorse(ctx,t0); break;
+      default:         _fcThunder(ctx,t0);
+    }
+  }catch(e){}
+}
+// Play a team's strike sound — real recording if one is registered for its
+// archetype, otherwise the live synth.
+function playUltSound(team){
+  const key=getUltArch(team);
+  try{
+    const mp3=(typeof FC_STRIKE_MP3!=='undefined') ? FC_STRIKE_MP3[key] : null;
+    if(mp3 && !_fcMp3Bad[key]){
+      const a=new Audio(mp3); a.volume=0.8;
+      a.play().catch(function(){ _fcMp3Bad[key]=true; fcSynthStrike(key); });   // file missing → synth, don't retry
+      return;
+    }
+  }catch(e){}
+  fcSynthStrike(key);
 }
 // Radial targeting: pick the closest up-to-N weak (OVR<80) enemy teams
 // within ULT_RADIUS of the hero. A roar radiates outward — no direction.
@@ -13089,7 +13451,10 @@ function updateUltBtn(){
   const lblEl=document.getElementById('g-ult-label');
   const costEl=document.getElementById('g-ult-cost');
   const inConquest = GAME && GAME.mode==='conquest' && GAME.active && GAME.attacker;
-  if(lblEl) lblEl.textContent = inConquest ? getUltName(GAME.attacker) : "Lion's Roar";
+  if(lblEl) lblEl.textContent = inConquest ? getUltName(GAME.attacker)
+             : (function(){ try{ return FCLang.t('sim.ult.default'); }catch(e){ return 'Conquest Strike'; } })();
+  const emEl=document.getElementById('g-ult-emoji');
+  if(emEl) emEl.textContent = inConquest ? getUltEmoji(GAME.attacker) : '🦁';
   // Cost indicator is intentionally cleared — the AURA bar above already
   // shows current Aura, and the events panel announces when a roar can/can't
   // be afforded. Keeping it on the button was redundant noise.
@@ -13277,9 +13642,10 @@ function unleashUltimate(){
   const hero=GAME.attacker;
   const aura=GAME.aura||0;
   if(aura < instantWinCost(0)) return;
+  const heroEmoji=getUltEmoji(hero);
   const targets=findUltTargets(hero);
   if(targets.length===0){
-    gLog('🦁 '+FCLang.t('sim.ult.notargets'));
+    gLog(heroEmoji+' '+FCLang.t('sim.ult.notargets'));
     return;
   }
   // Trim to affordable.
@@ -13290,7 +13656,7 @@ function unleashUltimate(){
     afford.push(targets[i]); running+=targets[i].cost;
   }
   if(afford.length===0){
-    gLog('🦁 '+FCLang.t('sim.ult.notenough', {cost: targets[0].cost}));
+    gLog(heroEmoji+' '+FCLang.t('sim.ult.notenough', {cost: targets[0].cost}));
     return;
   }
   // Lock interactions + freeze camera for the cascade.
@@ -13309,10 +13675,12 @@ function unleashUltimate(){
     if(_framePts.length>1 && typeof panToFitPoints==='function') panToFitPoints(_framePts);
   }catch(e){}
   const ultName=getUltName(hero);
-  gLog('🦁 '+FCLang.t('sim.ult.fire', {name:ultName, count:afford.length, cost:running}));
+  // Remember this strike's emoji so the per-country flash pops the right icon.
+  window._fcStrikeEmoji=heroEmoji;
+  gLog(heroEmoji+' '+FCLang.t('sim.ult.fire', {name:ultName, count:afford.length, cost:running}));
   if(typeof refreshConquestHud==='function') refreshConquestHud();
-  // 1. Roar sound + radial shockwave.
-  playUltRoar();
+  // 1. Team-flavoured strike sound + radial shockwave.
+  playUltSound(hero);
   drawUltShockwave(hero);
   // 2. All vibrating strike lines lock onto every target at the same instant.
   drawAllUltStrikes(hero, afford);
@@ -13406,7 +13774,7 @@ function flashUltTargetCountry(team){
   text.setAttribute('dominant-baseline','central');
   text.setAttribute('font-size','170');
   text.style.filter='drop-shadow(0 0 18px #ffd54a)';
-  text.textContent='🦁';
+  text.textContent=(window._fcStrikeEmoji||'🦁');
   wrap.appendChild(text);
   layer.appendChild(wrap);
   let op=1;
@@ -14470,7 +14838,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v147-enclave-hole-rings-2026-07-24';
+  window._FC_CAP_VERSION = 'v149-strike-sfx-tuning-2026-07-24';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
