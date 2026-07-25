@@ -9128,6 +9128,223 @@ function doLoad(){
   };
   input.click();
 }
+// ══════════════════════════════════════════════════════════════════════════
+// v151 — In-game SAVE SLOTS. The old Save button triggered a file DOWNLOAD,
+// which silently does nothing inside the mobile app / iframe (that's the "Save
+// does nothing on mobile" bug). This replaces it with a proper in-game
+// manager: 10 named slots persisted in localStorage — no device files. Save
+// into a slot, name it, load it, rename or delete, all from inside the game.
+// File export/import is preserved as a secondary option in the modal footer.
+// ══════════════════════════════════════════════════════════════════════════
+const FC_SLOTS_KEY='fc-save-slots-v1';
+const FC_SLOT_COUNT=10;
+// Self-contained UI strings (English). Kept out of the i18n dictionary so the
+// manager works even if translations are stale; other locales fall back here.
+const FC_SLOT_STR={
+  'title':'Game Saves','sub':'10 slots · saved on this device','empty':'Empty slot',
+  'save':'Save','load':'Load','close':'Close','export':'⭳ Export file','import':'⭱ Import file',
+  'nogame':'Start or load a game before saving.',
+  'nameprompt':'Name this save:','overwriteprompt':'Overwrite — name this save:',
+  'renameprompt':'Rename this save:','deleteconfirm':'Delete this save slot?',
+  'saved':'Saved to slot {n}','loaded':'Loaded slot {n}','loadfail':'Could not load save:',
+  'full':'Device storage is full. Delete a slot and try again.',
+  'turn':'Turn {n}','countries':'{n} countries','tip':'Saves stay on this device.'
+};
+function sT(k,v){ let s=FC_SLOT_STR[k]||k; if(v) for(const x in v) s=s.split('{'+x+'}').join(v[x]); return s; }
+function fcReadSlots(){
+  let arr=[];
+  try{ const raw=localStorage.getItem(FC_SLOTS_KEY); if(raw){ const o=JSON.parse(raw); if(Array.isArray(o)) arr=o; else if(o&&Array.isArray(o.slots)) arr=o.slots; } }catch(e){}
+  while(arr.length<FC_SLOT_COUNT) arr.push(null);
+  return arr.slice(0,FC_SLOT_COUNT);
+}
+function fcWriteSlots(arr){
+  try{ localStorage.setItem(FC_SLOTS_KEY, JSON.stringify(arr)); return true; }
+  catch(e){ alert(sT('full')); return false; }
+}
+function fcSlotMeta(){
+  const m={mode:(GAME&&GAME.mode)||'', turn:(GAME&&GAME.turn)||0, heroName:'', heroId:null, owned:0, alive:0};
+  try{
+    if(GAME&&GAME.state){
+      m.alive=Object.values(GAME.state).filter(s=>s&&s.alive).length;
+      const hid=GAME.heroTeamId;
+      if(hid!=null && GAME.state[hid]){ m.heroId=hid; m.heroName=GAME.state[hid].name||''; m.owned=GAME.state[hid].ownedIsos?GAME.state[hid].ownedIsos.size:0; }
+      if(!m.heroName && GAME.attacker){ m.heroName=GAME.attacker.name; }
+    }
+  }catch(e){}
+  return m;
+}
+function fcSlotDefaultName(meta){
+  const hero=(meta&&meta.heroName)?(typeof teamDisplayName==='function'?teamDisplayName(meta.heroName):meta.heroName):'Save';
+  return hero + ((meta&&meta.turn)?(' · T'+meta.turn):'');
+}
+function fcBuildSaveEntry(name){
+  const state=captureState();
+  // Trim the event log so a slot stays small in localStorage.
+  try{ if(state.game && Array.isArray(state.game.log)) state.game.log=state.game.log.slice(-60); }catch(e){}
+  return { name:name||'', saved:new Date().toISOString(), meta:fcSlotMeta(),
+           payload:{ version:2, state, undoTrail:(typeof undoStack!=='undefined'?undoStack.slice(-6):[]) } };
+}
+function fcFmtDate(iso){
+  try{ const d=new Date(iso);
+    return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+
+           String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  }catch(e){ return ''; }
+}
+function _fcPrompt(msg,def){ let v; try{ v=prompt(msg,def); }catch(e){ v=def; } if(v===undefined) v=def; return v; }
+function fcSaveToSlot(i){
+  if(!(GAME&&GAME.active)){ alert(sT('nogame')); return; }
+  const slots=fcReadSlots(); const meta=fcSlotMeta(); const existing=slots[i];
+  const def = existing?(existing.name||fcSlotDefaultName(meta)):fcSlotDefaultName(meta);
+  const name=_fcPrompt(existing?sT('overwriteprompt'):sT('nameprompt'), def);
+  if(name===null) return;
+  slots[i]=fcBuildSaveEntry((String(name).trim()||def));
+  if(fcWriteSlots(slots)){ renderSaveSlots(); fcSlotsStatus(sT('saved',{n:i+1})); }
+}
+function fcLoadSlot(i){
+  const slot=fcReadSlots()[i]; if(!slot||!slot.payload||!slot.payload.state) return;
+  try{
+    const prev=captureState(); undoStack.push({type:'reset',prev});
+    restoreState(slot.payload.state);
+    if(Array.isArray(slot.payload.undoTrail)) slot.payload.undoTrail.forEach(op=>undoStack.push(op));
+    if(typeof window.fcHideSplash==='function') window.fcHideSplash();
+    const gp=document.getElementById('game-panel');
+    if(gp&&GAME&&GAME.active){ gp.classList.add('open'); gp.classList.toggle('conquest-mode',GAME.mode==='conquest'); }
+    if(typeof refreshConquestHud==='function') refreshConquestHud();
+    if(typeof updateConquestHud==='function') updateConquestHud();
+    closeSavesModal();
+  }catch(e){ alert(sT('loadfail')+' '+e.message); }
+}
+function fcRenameSlot(i){
+  const slots=fcReadSlots(); if(!slots[i]) return;
+  const nm=_fcPrompt(sT('renameprompt'), slots[i].name||fcSlotDefaultName(slots[i].meta||{}));
+  if(nm===null) return;
+  slots[i].name=String(nm).trim()||slots[i].name;
+  if(fcWriteSlots(slots)) renderSaveSlots();
+}
+function fcDeleteSlot(i){
+  const slots=fcReadSlots(); if(!slots[i]) return;
+  let ok=true; try{ ok=confirm(sT('deleteconfirm')); }catch(e){ ok=true; }
+  if(!ok) return;
+  slots[i]=null; if(fcWriteSlots(slots)) renderSaveSlots();
+}
+function fcSlotsStatus(msg){
+  const el=document.getElementById('fcs-status'); if(!el) return;
+  el.textContent=msg; el.style.opacity='1'; clearTimeout(el._t);
+  el._t=setTimeout(()=>{ el.style.opacity='0'; },1900);
+}
+function ensureSavesModal(){
+  let m=document.getElementById('fc-saves-modal'); if(m) return m;
+  if(!document.getElementById('fc-saves-css')){
+    const st=document.createElement('style'); st.id='fc-saves-css';
+    st.textContent=
+     '#fc-saves-modal{position:fixed;inset:0;z-index:2147483000;display:none;align-items:center;'+
+     'justify-content:center;background:rgba(3,10,20,.74);backdrop-filter:blur(3px);padding:16px;}'+
+     '.fcs-box{width:100%;max-width:460px;max-height:90vh;display:flex;flex-direction:column;'+
+     'background:linear-gradient(160deg,#12273f,#0c1b2c);border:1px solid #274b6b;border-radius:16px;'+
+     'box-shadow:0 24px 60px rgba(0,0,0,.55);overflow:hidden;color:#eaf2fb;'+
+     'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}'+
+     '.fcs-head{display:flex;align-items:center;gap:10px;padding:16px 18px 12px;border-bottom:1px solid #1e3a55;}'+
+     '.fcs-head h3{margin:0;font-size:18px;font-weight:800;letter-spacing:.3px;}'+
+     '.fcs-head .fcs-sub{font-size:11.5px;color:#8fb0cd;margin-top:2px;}'+
+     '.fcs-x{margin-left:auto;background:none;border:0;color:#8fb0cd;font-size:24px;line-height:1;'+
+     'cursor:pointer;padding:2px 6px;border-radius:8px;}'+
+     '.fcs-x:hover{color:#fff;background:#1e3a55;}'+
+     '.fcs-list{overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;-webkit-overflow-scrolling:touch;}'+
+     '.fcs-slot{display:flex;align-items:center;gap:10px;background:#15304c;border:1px solid #244a6a;'+
+     'border-radius:12px;padding:9px 10px;}'+
+     '.fcs-slot.empty{background:#0f2338;border-style:dashed;border-color:#20405d;}'+
+     '.fcs-num{width:22px;text-align:center;font-weight:800;color:#5f86a8;font-size:13px;flex:none;}'+
+     '.fcs-flag{width:38px;height:26px;flex:none;border-radius:5px;border:1px solid #33587a;'+
+     'background:#0a1929 center/cover no-repeat;box-shadow:0 1px 3px rgba(0,0,0,.4);}'+
+     '.fcs-info{flex:1;min-width:0;}'+
+     '.fcs-name{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}'+
+     '.fcs-name.empty{color:#5f86a8;font-weight:600;font-style:italic;}'+
+     '.fcs-meta{font-size:11px;color:#8fb0cd;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}'+
+     '.fcs-actions{display:flex;gap:6px;flex:none;align-items:center;}'+
+     '.fcs-btn{border:0;border-radius:8px;font-size:12.5px;font-weight:700;padding:8px 10px;cursor:pointer;'+
+     'min-height:36px;min-width:36px;color:#0a1929;}'+
+     '.fcs-btn.load{background:#37d67a;}.fcs-btn.load:active{background:#2bb666;}'+
+     '.fcs-btn.save{background:#ffb638;}.fcs-btn.save:active{background:#e6a02c;}'+
+     '.fcs-btn.ghost{background:#24425f;color:#cfe2f2;}.fcs-btn.ghost:active{background:#2e5273;}'+
+     '.fcs-btn.danger{background:#3a1e2a;color:#ff8a9c;}.fcs-btn.danger:active{background:#542634;}'+
+     '.fcs-foot{display:flex;align-items:center;gap:10px;padding:11px 16px;border-top:1px solid #1e3a55;'+
+     'flex-wrap:wrap;}'+
+     '.fcs-foot button{background:none;border:1px solid #2b4d6c;color:#9fc0dc;border-radius:8px;'+
+     'padding:7px 11px;font-size:12px;cursor:pointer;min-height:36px;}'+
+     '.fcs-foot button:active{background:#193150;}'+
+     '.fcs-status{margin-left:auto;font-size:12px;color:#37d67a;opacity:0;transition:opacity .25s;}';
+    document.head.appendChild(st);
+  }
+  m=document.createElement('div'); m.id='fc-saves-modal';
+  m.innerHTML=
+    '<div class="fcs-box" role="dialog" aria-modal="true" aria-label="Game saves">'+
+      '<div class="fcs-head"><div><h3>'+sT('title')+'</h3><div class="fcs-sub">'+sT('sub')+'</div></div>'+
+        '<button class="fcs-x" id="fcs-x" aria-label="'+sT('close')+'">×</button></div>'+
+      '<div class="fcs-list" id="fcs-list"></div>'+
+      '<div class="fcs-foot">'+
+        '<button id="fcs-export" type="button">'+sT('export')+'</button>'+
+        '<button id="fcs-import" type="button">'+sT('import')+'</button>'+
+        '<span class="fcs-status" id="fcs-status"></span>'+
+      '</div>'+
+    '</div>';
+  document.body.appendChild(m);
+  m.addEventListener('click',e=>{ if(e.target===m) closeSavesModal(); });
+  m.querySelector('#fcs-x').addEventListener('click',closeSavesModal);
+  m.querySelector('#fcs-export').addEventListener('click',()=>{ if(typeof doSave==='function') doSave(); });
+  m.querySelector('#fcs-import').addEventListener('click',()=>{ if(typeof doLoad==='function') doLoad(); });
+  // Delegated slot actions.
+  m.querySelector('#fcs-list').addEventListener('click',e=>{
+    const b=e.target.closest('[data-a]'); if(!b) return;
+    const i=parseInt(b.getAttribute('data-i'),10); const a=b.getAttribute('data-a');
+    if(a==='save') fcSaveToSlot(i);
+    else if(a==='load') fcLoadSlot(i);
+    else if(a==='rename') fcRenameSlot(i);
+    else if(a==='del') fcDeleteSlot(i);
+  });
+  return m;
+}
+function renderSaveSlots(){
+  const list=document.getElementById('fcs-list'); if(!list) return;
+  const slots=fcReadSlots(); list.innerHTML='';
+  slots.forEach((slot,i)=>{
+    const row=document.createElement('div'); row.className='fcs-slot'+(slot?'':' empty');
+    const num=document.createElement('div'); num.className='fcs-num'; num.textContent=(i+1); row.appendChild(num);
+    if(slot){
+      const meta=slot.meta||{};
+      const flag=document.createElement('div'); flag.className='fcs-flag';
+      const b64=(meta.heroName&&typeof FLAG_B64!=='undefined')?FLAG_B64[meta.heroName]:null;
+      if(b64) flag.style.backgroundImage='url(data:image/png;base64,'+b64+')';
+      row.appendChild(flag);
+      const info=document.createElement('div'); info.className='fcs-info';
+      const nm=document.createElement('div'); nm.className='fcs-name'; nm.textContent=slot.name||fcSlotDefaultName(meta);
+      const mt=document.createElement('div'); mt.className='fcs-meta';
+      const parts=[];
+      if(meta.turn) parts.push(sT('turn',{n:meta.turn}));
+      if(meta.mode==='conquest'&&meta.owned) parts.push(sT('countries',{n:meta.owned}));
+      parts.push(fcFmtDate(slot.saved));
+      mt.textContent=parts.join(' · ');
+      info.appendChild(nm); info.appendChild(mt); row.appendChild(info);
+      const act=document.createElement('div'); act.className='fcs-actions';
+      act.innerHTML=
+        '<button class="fcs-btn load" data-a="load" data-i="'+i+'">'+sT('load')+'</button>'+
+        '<button class="fcs-btn save" data-a="save" data-i="'+i+'">'+sT('save')+'</button>'+
+        '<button class="fcs-btn ghost" data-a="rename" data-i="'+i+'" aria-label="Rename">✎</button>'+
+        '<button class="fcs-btn danger" data-a="del" data-i="'+i+'" aria-label="Delete">🗑</button>';
+      row.appendChild(act);
+    } else {
+      const info=document.createElement('div'); info.className='fcs-info';
+      const nm=document.createElement('div'); nm.className='fcs-name empty'; nm.textContent=sT('empty')+' '+(i+1);
+      info.appendChild(nm); row.appendChild(info);
+      const act=document.createElement('div'); act.className='fcs-actions';
+      act.innerHTML='<button class="fcs-btn save" data-a="save" data-i="'+i+'">'+sT('save')+'</button>';
+      row.appendChild(act);
+    }
+    list.appendChild(row);
+  });
+}
+function openSavesModal(){ ensureSavesModal(); renderSaveSlots(); const m=document.getElementById('fc-saves-modal'); if(m) m.style.display='flex'; }
+function closeSavesModal(){ const m=document.getElementById('fc-saves-modal'); if(m) m.style.display='none'; }
+window.openSavesModal=openSavesModal;
 // Auto-restore from localStorage on first load IF there's a backup (silent, no prompt needed)
 // Actually, only offer this on demand to avoid unexpected state — user must click Load
 
@@ -9169,8 +9386,8 @@ document.addEventListener('keydown',ev=>{
   else if(k==='z'&&(ev.ctrlKey||ev.metaKey)&&ev.shiftKey){ev.preventDefault();if(typeof doRedo==='function') doRedo();}
   else if(k==='z'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();doUndo();}
   else if(k==='y'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();if(typeof doRedo==='function') doRedo();}
-  else if(k==='s'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();doSave();}
-  else if(k==='o'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();doLoad();}
+  else if(k==='s'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();if(typeof openSavesModal==='function')openSavesModal();else doSave();}
+  else if(k==='o'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();if(typeof openSavesModal==='function')openSavesModal();else doLoad();}
   else if((k==='delete'||k==='backspace')&&mode==='flags'){ev.preventDefault();deleteSelectedFlag();}
 });
 
@@ -14227,11 +14444,13 @@ function openUsernameGate(onDone){
   });
   document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
 
-  // Save game → delegate to the hidden btn-save.
+  // Save game → open the in-game Save Slots manager (10 named localStorage
+  // slots). Replaces the old file-download, which did nothing on mobile.
   const saveItem=document.getElementById('fc-menu-save');
   if(saveItem) saveItem.addEventListener('click',()=>{
     close();
-    if(typeof doSave==='function') doSave();
+    if(typeof openSavesModal==='function') openSavesModal();
+    else if(typeof doSave==='function') doSave();
   });
 
   // Undo → kept off the visible toolbar (a creator tool, hidden during recording).
@@ -14822,7 +15041,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v150-fifa-july2026-rerank-2026-07-24';
+  window._FC_CAP_VERSION = 'v151-ingame-save-slots-2026-07-24';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
