@@ -53,14 +53,16 @@ html,body{height:100%;background:#070e17;-webkit-user-select:none;user-select:no
 #paint-swatch.loaded{border-color:#378add;}
 #paint-label{font-size:10px;color:#7a9bb5;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis;}
 #mwrap{position:relative;flex:1;overflow:hidden;background:#0e2034;touch-action:none;}
-/* v156/v159 — gold the FRONTIER of the player's empire: only the border
-   segments where our land meets a country we don't own. Internal borders
-   (both sides owned) stay faded and coastlines stay plain, so the empire
-   reads as one gold-edged bloc instead of every country double-outlined.
-   non-scaling-stroke keeps it a constant ~2px on screen at any zoom. */
-.border-seg.fc-frontier{stroke:#ffd54a !important;stroke-width:2px !important;
-  stroke-opacity:1 !important;opacity:1 !important;
-  vector-effect:non-scaling-stroke;stroke-linejoin:round;}
+/* v156/v159/v160 — empire perimeter: a single gold outline of the UNION of the
+   player's owned countries — frontiers (our land vs a country we don't own) AND
+   coastlines (our land vs ocean), with internal owned-vs-owned borders skipped.
+   Its `d` is recomputed by fcMarkOwned on each ownership change. Its own path
+   (not a restyled border-seg), so the light theme can't recolour it away.
+   non-scaling-stroke keeps it a constant ~2px at any zoom. */
+.fc-empire-perim{stroke:#ffd54a;stroke-width:2px;stroke-opacity:1;fill:none;
+  vector-effect:non-scaling-stroke;stroke-linejoin:round;stroke-linecap:round;}
+/* Light map: deeper goldenrod so the outline stays visible on the pale ocean. */
+body.map-light .fc-empire-perim{stroke:#b8860b;}
 #msvg{display:block;width:100%;height:100%;position:relative;z-index:1;}
 /* Scattered FC logos behind the map — fills the dead navy negative space. */
 #fc-bg-pattern{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
