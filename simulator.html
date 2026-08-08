@@ -53,11 +53,13 @@ html,body{height:100%;background:#070e17;-webkit-user-select:none;user-select:no
 #paint-swatch.loaded{border-color:#378add;}
 #paint-label{font-size:10px;color:#7a9bb5;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis;}
 #mwrap{position:relative;flex:1;overflow:hidden;background:#0e2034;touch-action:none;}
-/* v156 — outline the player's OWNED countries in gold so the empire reads at
-   any zoom (French blue territory blends into the blue base map otherwise).
-   vector-effect:non-scaling-stroke keeps the outline a constant ~1.6px on
-   screen whether zoomed to one nation or the whole world. */
-.cp.fc-owned{stroke:#ffd54a;stroke-width:1.6px;stroke-opacity:.92;
+/* v156/v159 — gold the FRONTIER of the player's empire: only the border
+   segments where our land meets a country we don't own. Internal borders
+   (both sides owned) stay faded and coastlines stay plain, so the empire
+   reads as one gold-edged bloc instead of every country double-outlined.
+   non-scaling-stroke keeps it a constant ~2px on screen at any zoom. */
+.border-seg.fc-frontier{stroke:#ffd54a !important;stroke-width:2px !important;
+  stroke-opacity:1 !important;opacity:1 !important;
   vector-effect:non-scaling-stroke;stroke-linejoin:round;}
 #msvg{display:block;width:100%;height:100%;position:relative;z-index:1;}
 /* Scattered FC logos behind the map — fills the dead navy negative space. */
@@ -3451,6 +3453,13 @@ body.fc-stat-floated:not(.map-light) #g-stat-stack .g-aura-hbar-fill{
     letter-spacing:0 !important; white-space:normal !important;
   }
 }
+/* v157 — the v129 mobile grid above re-shows .g-slot-stars (vertical flex) and,
+   at equal specificity but later in source, was overriding the .g-mini star-hide
+   — so the COLLAPSED matchup card leaked a vertical star column. This
+   higher-specificity rule (.g-mini.conquest-mode = 3 classes) keeps the mini
+   card to flags + names only on every screen size. */
+#game-panel.g-mini.conquest-mode .g-slot-stars,
+#game-panel.g-mini.conquest-mode .g-slot-overall{ display:none !important; }
 /* With the strip gone from the panel, shorten the Territory/Momentum bars so
    they don't tower above the team flag. */
 body.fc-stat-floated #game-panel.open.conquest-mode .g-tm-bars{ align-items:center; }
@@ -9600,6 +9609,13 @@ fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json')
 function openConquestStartup(){
   const modal=document.getElementById('g-startup-modal');
   if(!modal)return;
+  // v158: clear any open match / result modal first. Bug: hitting New Game while
+  // the Simulate / Double-or-Nothing / Cancel card was up left that modal on top
+  // of the World Conquest / Random Imperialism picker (both share z-index:50, and
+  // the result modal opened later sat above). Force it closed here so the picker
+  // is always the frontmost modal, whatever path opened it.
+  var _rm=document.getElementById('g-result-modal');
+  if(_rm){ _rm.classList.remove('open'); _rm.style.display='none'; }
   // Any entry path to the mode picker should clear the splash first.
   if(typeof window.fcHideSplash==='function') window.fcHideSplash();
   modal.classList.add('open');
@@ -13067,9 +13083,11 @@ document.addEventListener('DOMContentLoaded', function(){
   renderSquadPanel();
 });
 
-// v156 — tag the player's owned countries with .fc-owned so CSS rings them in
-// gold. Called from refreshConquestHud, so it re-syncs on every state change
-// (win, loss, retreat, undo, load) but never on a bare zoom frame.
+// v156/v159 — gold the empire FRONTIER: border segments where exactly one side
+// is ours (our land meeting a country we don't own). Internal owned-vs-owned
+// borders and coastlines are left alone. Called from refreshConquestHud, so it
+// re-syncs on every state change (win, loss, retreat, undo, load), never on a
+// bare zoom frame.
 function fcMarkOwned(){
   try{
     var owned=null;
@@ -13077,11 +13095,19 @@ function fcMarkOwned(){
       var st=GAME.state[GAME.heroTeamId];
       if(st&&st.ownedIsos) owned=st.ownedIsos;
     }
-    document.querySelectorAll('.cp').forEach(function(el){
-      var iso=el.getAttribute('data-iso');
-      var own = !!(owned && iso && (owned.has(iso) || owned.has(+iso) || owned.has(String(iso))));
-      if(own) el.classList.add('fc-owned'); else el.classList.remove('fc-owned');
-    });
+    function isOwned(iso){ return !!(owned && (owned.has(iso) || owned.has(+iso) || owned.has(String(iso)))); }
+    // Border segments are keyed "isoA|isoB" (see borderPaths). A segment is a
+    // frontier when exactly one of its two countries is ours.
+    if(typeof borderPaths!=='undefined' && borderPaths){
+      for(var pair in borderPaths){
+        var el=borderPaths[pair]; if(!el) continue;
+        var parts=pair.split('|');
+        var frontier = !!owned && (isOwned(parts[0]) !== isOwned(parts[1]));
+        if(frontier) el.classList.add('fc-frontier'); else el.classList.remove('fc-frontier');
+      }
+    }
+    // Clear the old per-country outline (v156) in case any lingers.
+    document.querySelectorAll('.cp.fc-owned').forEach(function(el){ el.classList.remove('fc-owned'); });
   }catch(e){}
 }
 function refreshConquestHud(extra){
@@ -15210,7 +15236,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v156-owned-gold-outline-2026-08-06';
+  window._FC_CAP_VERSION = 'v159-frontier-gold-outline-2026-08-06';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
