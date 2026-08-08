@@ -53,6 +53,12 @@ html,body{height:100%;background:#070e17;-webkit-user-select:none;user-select:no
 #paint-swatch.loaded{border-color:#378add;}
 #paint-label{font-size:10px;color:#7a9bb5;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis;}
 #mwrap{position:relative;flex:1;overflow:hidden;background:#0e2034;touch-action:none;}
+/* v156 — outline the player's OWNED countries in gold so the empire reads at
+   any zoom (French blue territory blends into the blue base map otherwise).
+   vector-effect:non-scaling-stroke keeps the outline a constant ~1.6px on
+   screen whether zoomed to one nation or the whole world. */
+.cp.fc-owned{stroke:#ffd54a;stroke-width:1.6px;stroke-opacity:.92;
+  vector-effect:non-scaling-stroke;stroke-linejoin:round;}
 #msvg{display:block;width:100%;height:100%;position:relative;z-index:1;}
 /* Scattered FC logos behind the map — fills the dead navy negative space. */
 #fc-bg-pattern{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
@@ -1075,6 +1081,12 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
    in landscape on tablets, was pulling the card off to the left. */
 #g-startup-modal.open, #g-result-modal.open, #g-username-modal.open{
   display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  /* Offset the top by the toolbar height so the card centres in the visible
+     area BELOW the toolbar. #hdr sits ABOVE the modal (z-index 60 > 50) and
+     stays lit, so centring in the full viewport left the card looking pushed
+     up with extra space at the bottom (off by exactly the toolbar height).
+     --fc-hdr-h is measured live in JS (the toolbar can wrap to two rows). */
+  padding-top:calc(16px + var(--fc-hdr-h, 0px));
 }
 /* v126: center the REVEALED Match Result in the SAME gap the camera focuses on
    — the unobscured area above the bottom UI — not the whole viewport. Reserving
@@ -1102,8 +1114,10 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
      pinned above the fold no matter how short the screen is. */
   margin:auto;
   display:flex;flex-direction:column;
-  max-height:calc(100dvh - 32px);
-  max-height:calc(100vh - 32px);
+  /* Cap to the viewport MINUS the toolbar so the card fits and centres in the
+     visible area below #hdr on short/landscape screens (var measured in JS). */
+  max-height:calc(100dvh - 32px - var(--fc-hdr-h, 0px));
+  max-height:calc(100vh - 32px - var(--fc-hdr-h, 0px));
   overflow:hidden;}
 .g-start-title, .g-result-title{font-size:18px;font-weight:600;color:#7ab8e8;
   letter-spacing:.5px;margin-bottom:18px;text-align:center;}
@@ -2586,8 +2600,8 @@ body.web-build .g-result-card.revealed .g-sim-btn{
    action bar treatment for phones where the modal is much shorter and the
    buttons need to stay pinned. */
 .g-result-card, .g-start-card {
-  max-height: calc(100dvh - 32px);
-  max-height: calc(100vh - 32px); /* fallback for browsers without dvh */
+  max-height: calc(100dvh - 32px - var(--fc-hdr-h, 0px));
+  max-height: calc(100vh - 32px - var(--fc-hdr-h, 0px)); /* fallback for browsers without dvh */
   overflow-y: auto;
 }
 
@@ -3553,6 +3567,7 @@ body.fc-aura-in-panel #game-panel.g-mini .g-body > .g-aura-hbar{ display:none !i
     </div>
     <div class="acts">
       <button class="abtn" id="btn-fs" title="Fullscreen — fills the screen so every control fits at any resolution" onclick="window.fcToggleFS && window.fcToggleFS()">⛶ <span class="fs-label" data-i18n="sim.tb.fullscreen">Fullscreen</span></button>
+      <button class="abtn" id="btn-help" title="How to play — a glossary of every element" onclick="window.openHelpModal && window.openHelpModal()">❓ Help</button>
       <button class="abtn" id="btn-bug" title="Report a bug" onclick="window.fcOpenBugReport && window.fcOpenBugReport()">🐛 <span data-i18n="sim.tb.bug">Report bug</span></button>
       <button type="button" class="abtn sim-hamburger" id="sim-hamburger-btn" title="More" aria-label="Toggle toolbar menu" aria-expanded="false">☰</button>
       <div class="sim-acts-drawer" id="sim-acts-drawer">
@@ -3589,6 +3604,8 @@ body.fc-aura-in-panel #game-panel.g-mini .g-body > .g-aura-hbar{ display:none !i
           <div class="fc-menu-item" id="fc-menu-redo" role="menuitem"><span class="fc-menu-icon">↪</span><span data-i18n="sim.tb.redo">Redo</span><span class="kbadge" style="margin-left:auto;opacity:.6;font-size:9px;">Ctrl+Shift+Z</span></div>
           <div class="fc-menu-item fc-menu-game-only" id="fc-menu-end" role="menuitem"><span class="fc-menu-icon">🎲</span><span data-i18n="sim.tb.menu.newgame">New game</span></div>
           <div class="fc-menu-item" id="fc-menu-hide-ui" role="menuitem"><span class="fc-menu-icon">👁</span><span id="fc-menu-hide-ui-label" data-i18n="sim.tb.menu.hideui">Hide UI</span><span class="kbadge" style="margin-left:auto;opacity:.6;font-size:9px;">H</span></div>
+          <div class="fc-menu-item" id="fc-menu-help" role="menuitem"><span class="fc-menu-icon">❓</span>How to play</div>
+          <div class="fc-menu-item" id="fc-menu-motion" role="menuitem"><span class="fc-menu-icon">🎞️</span><span id="fc-menu-motion-label">Reduce motion: Off</span></div>
           <div class="fc-menu-sep"></div>
           <div class="fc-menu-item danger fc-menu-hide-in-conquest" id="fc-menu-reset" role="menuitem"><span class="fc-menu-icon">⟳</span><span data-i18n="sim.tb.menu.reset">Reset map</span></div>
         </div>
@@ -4007,6 +4024,10 @@ body.fc-aura-in-panel #game-panel.g-mini .g-body > .g-aura-hbar{ display:none !i
         <label class="g-set-row">
           <input type="checkbox" id="set-slowSpins">
           <span><b data-i18n="sim.gp.slowanim.h">Slow animations</b><br><small data-i18n="sim.gp.slowanim.p">3s spin + slower team roulette (for commentary pacing)</small></span>
+        </label>
+        <label class="g-set-row">
+          <input type="checkbox" id="set-reduceMotion">
+          <span><b>Reduce motion</b><br><small>Instant territory takeovers — skips the colour fill and flag march so you can spin the next turn right away</small></span>
         </label>
         <label class="g-set-row">
           <input type="checkbox" id="set-clickToReveal">
@@ -7015,7 +7036,8 @@ window.GAME_SETTINGS={
   slowSpins:false,       // 1.67x longer compass + roulette animations (for video commentary)
   clickToReveal:false,   // require click to reveal score + apply conquest (for video commentary tension)
   excludeMicronations:false, // skip Vatican/San Marino/etc as random attackers
-  lightMap:false         // light ocean / light theme for the map area
+  lightMap:false,        // light ocean / light theme for the map area
+  reduceMotion:false     // instant conquest transitions (skip colour-wave + hero march) so you can spin sooner
 };
 
 const GAME={
@@ -8658,13 +8680,13 @@ function prefersReducedMotion(){
    means the underlying map is already correct at frame zero — undo, save,
    reload or a second conquest can fire mid-animation and the worst case is
    an orphaned overlay, which the cleanup timer removes regardless.        */
-const CONQUEST_WAVE_MS = 1250;   // v98: slowed from 850 — the bleed reads better
+let CONQUEST_WAVE_MS = 1250; const CONQUEST_WAVE_MS_BASE = 1250;   // v98: slowed from 850 — the bleed reads better (let: zeroed by Reduce motion)
 /* v99: beat of stillness between the score vanishing and the map changing.
    The overlay is built and inserted IMMEDIATELY (so the territory keeps
    showing its old colour and nothing visibly snaps), but the expansion is
    held back — otherwise the takeover lands on top of the result and the two
    moments compete. */
-const CONQUEST_WAVE_DELAY_MS = 900;
+let CONQUEST_WAVE_DELAY_MS = 900; const CONQUEST_WAVE_DELAY_MS_BASE = 900;
 
 /* ── v100 HERO MARCH ───────────────────────────────────────────────────
    The flag used to teleport to the conquered country the instant the win
@@ -8680,8 +8702,24 @@ const CONQUEST_WAVE_DELAY_MS = 900;
    Gait comes from a sine bob perpendicular to travel, plus footfalls
    dropped at each step's low point. The bob is what sells it as walking
    rather than sliding; the prints are what make the direction legible. */
-const HERO_WALK_MS = 1000;
+let HERO_WALK_MS = 1000; const HERO_WALK_MS_BASE = 1000;
 const HERO_WALK_STEPS = 5;      // bob cycles across the journey
+// v155 — "Reduce motion" setting. When ON, the conquest colour-wave, the hold
+// beat, and the hero march all collapse to 0ms so the takeover is instant and
+// the player can spin the next turn immediately. Re-applied on every toggle.
+function fcApplyMotion(){
+  var off = !!(window.GAME_SETTINGS && window.GAME_SETTINGS.reduceMotion);
+  CONQUEST_WAVE_MS       = off ? 0 : CONQUEST_WAVE_MS_BASE;
+  CONQUEST_WAVE_DELAY_MS = off ? 0 : CONQUEST_WAVE_DELAY_MS_BASE;
+  HERO_WALK_MS           = off ? 0 : HERO_WALK_MS_BASE;
+  try{ document.body.classList.toggle('fc-reduce-motion', off); }catch(e){}
+  // Keep both entry points in sync: the ☰ menu item (reachable in conquest,
+  // where the ⚙️ gear is hidden) and the ⚙️ settings checkbox.
+  try{ var _l=document.getElementById('fc-menu-motion-label'); if(_l) _l.textContent='Reduce motion: '+(off?'On':'Off'); }catch(e){}
+  try{ var _c=document.getElementById('set-reduceMotion'); if(_c) _c.checked=off; }catch(e){}
+}
+window.fcApplyMotion=fcApplyMotion;
+fcApplyMotion();
 /* v145 juice: a short burst of little particles at a map point — fired when a
    hero flag lands on freshly-conquered ground. Sized to the flag (fm = flag
    width in map units) so it reads consistently at every zoom. Lives in the
@@ -9345,6 +9383,99 @@ function renderSaveSlots(){
 function openSavesModal(){ ensureSavesModal(); renderSaveSlots(); const m=document.getElementById('fc-saves-modal'); if(m) m.style.display='flex'; }
 function closeSavesModal(){ const m=document.getElementById('fc-saves-modal'); if(m) m.style.display='none'; }
 window.openSavesModal=openSavesModal;
+// ══════════════════════════════════════════════════════════════════════════
+// v153 — In-game HELP / GLOSSARY. Explains every HUD + gameplay element for
+// players who didn't learn the game from the YouTube videos. Opened from the
+// ❓ toolbar button and the ☰ menu's "How to play". Content mirrors the public
+// How-to-Play page. English for now; a 10-language i18n pass follows.
+// ══════════════════════════════════════════════════════════════════════════
+const FC_HELP_SECTIONS = [
+  { h:"How to play", rows:[
+    ["🎯","Goal","Conquer the whole world. Every nation starts owning its own home country."],
+    ["🧭","Your turn","Spin the compass to draw a nearby rival, pick a tactic, then play or simulate the match. Win and you take their land."],
+    ["🏁","Winning & losing","You win by owning every country. Your run ends if your hero loses three times to the same opponent."],
+    ["🎲","The odds","Every result is weighted by FIFA ranking, recent form, and the land you already hold. Even a 99% favourite loses about 1 time in 100."]
+  ]},
+  { h:"Your strength (the bars & counters)", rows:[
+    ["🟩","Territory","A rating bonus from the land you hold. It grows with every country you conquer, though each new one adds a little less than the last, and a forced retreat after a loss cuts it right away."],
+    ["🟧","Momentum","A form bonus. It climbs with win streaks, swings harder than Territory, and drops fast after a bad result."],
+    ["⭐","Aura","Energy you bank from wins and spend on boosts, instant wins and Double or Nothing. You earn +1 per win, +2 for an upset, +3 for a boss (+5 for the final boss), and +5 for clearing a continent."],
+    ["📊","Record & Goals","Your wins and losses, plus goals scored and conceded, for this campaign."],
+    ["⏱️","Turn / left","The current turn number, and how many nations are still un-conquered."]
+  ]},
+  { h:"In a match", rows:[
+    ["⚔️","Tactics","Pick Defensive, Balanced or Attacking. It is rock-paper-scissors: Attacking beats Defensive, Defensive beats Balanced, Balanced beats Attacking. The right counter swings the odds your way."],
+    ["💪","Boosts","One-match edges bought with Aura: Park the Bus (2 Aura, cuts the opponent's chances), All-Out Attack (2, lifts yours) and Reinforcements (3, +50 rating)."],
+    ["🎲","Double or Nothing","Opt in before kickoff. Win and your Aura earnings double. Lose and you forfeit your entire Aura bank."],
+    ["⚡","Instant Win","When you are strong, weak nearby teams rated under 80 show a gold ⚡ price tag on the map. Tap it, spend 3 to 6 Aura, and take the land without playing the match."],
+    ["🦁","Conquest Strike","Spend Aura to wipe up to 5 weak nearby teams in a single move. Every nation has its own strike name and sound."]
+  ]},
+  { h:"Events & the wider game", rows:[
+    ["🌀","Twist","About one match in five throws a curveball, like an injury, the weather or derby tension, that shifts the odds or the scoreline."],
+    ["👑","Boss match","Each continent's top-rated side is its champion, and the world's number one is the final boss. Boss games bring steeper odds and bigger Aura."],
+    ["🔥","Nemesis & Revenge","The first team to beat you becomes your nemesis. Draw them again and it becomes a Revenge match: your hero gets a boost, and a win wipes the loss off the books and pays Aura."],
+    ["🌍","Continents","All 212 nations belong to six confederations. Clear an entire continent for a milestone, +1 momentum and +5 Aura."]
+  ]}
+];
+function ensureHelpModal(){
+  let m=document.getElementById('fc-help-modal'); if(m) return m;
+  if(!document.getElementById('fc-help-css')){
+    const st=document.createElement('style'); st.id='fc-help-css';
+    st.textContent=
+     '#fc-help-modal{position:fixed;inset:0;z-index:2147483000;display:none;align-items:center;justify-content:center;background:rgba(3,10,20,.74);backdrop-filter:blur(3px);padding:16px;}'+
+     '.fch-box{width:100%;max-width:540px;max-height:90vh;display:flex;flex-direction:column;background:linear-gradient(160deg,#12273f,#0c1b2c);border:1px solid #274b6b;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.55);overflow:hidden;color:#eaf2fb;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}'+
+     '.fch-head{display:flex;align-items:center;gap:10px;padding:16px 18px 12px;border-bottom:1px solid #1e3a55;}'+
+     '.fch-head h3{margin:0;font-size:18px;font-weight:800;letter-spacing:.3px;}'+
+     '.fch-x{margin-left:auto;background:none;border:0;color:#8fb0cd;font-size:24px;line-height:1;cursor:pointer;padding:2px 6px;border-radius:8px;}'+
+     '.fch-x:hover{color:#fff;background:#1e3a55;}'+
+     '.fch-body{overflow-y:auto;padding:4px 16px 16px;-webkit-overflow-scrolling:touch;}'+
+     '.fch-sec{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#37d67a;margin:16px 0 6px;}'+
+     '.fch-row{display:flex;gap:11px;padding:9px 0;border-top:1px solid #16304c;}'+
+     '.fch-ico{font-size:19px;line-height:1.35;flex:none;width:24px;text-align:center;}'+
+     '.fch-term{font-weight:700;font-size:14px;}'+
+     '.fch-def{font-size:13px;color:#c3d6ea;line-height:1.45;margin-top:1px;}';
+    document.head.appendChild(st);
+  }
+  m=document.createElement('div'); m.id='fc-help-modal';
+  m.innerHTML='<div class="fch-box" role="dialog" aria-modal="true" aria-label="How to play">'+
+    '<div class="fch-head"><h3>❓ How to play</h3><button class="fch-x" id="fch-x" aria-label="Close">×</button></div>'+
+    '<div class="fch-body" id="fch-body"></div></div>';
+  document.body.appendChild(m);
+  m.addEventListener('click',function(e){ if(e.target===m) closeHelpModal(); });
+  m.querySelector('#fch-x').addEventListener('click',closeHelpModal);
+  const body=m.querySelector('#fch-body');
+  FC_HELP_SECTIONS.forEach(function(sec){
+    const h=document.createElement('div'); h.className='fch-sec'; h.textContent=sec.h; body.appendChild(h);
+    sec.rows.forEach(function(r){
+      const row=document.createElement('div'); row.className='fch-row';
+      const ic=document.createElement('div'); ic.className='fch-ico'; ic.textContent=r[0];
+      const tx=document.createElement('div');
+      const t=document.createElement('div'); t.className='fch-term'; t.textContent=r[1];
+      const d=document.createElement('div'); d.className='fch-def'; d.textContent=r[2];
+      tx.appendChild(t); tx.appendChild(d);
+      row.appendChild(ic); row.appendChild(tx); body.appendChild(row);
+    });
+  });
+  return m;
+}
+function openHelpModal(){ ensureHelpModal(); const m=document.getElementById('fc-help-modal'); if(m) m.style.display='flex'; }
+function closeHelpModal(){ const m=document.getElementById('fc-help-modal'); if(m) m.style.display='none'; }
+window.openHelpModal=openHelpModal;
+// v153 — keep --fc-hdr-h in sync with the real toolbar height so the centred
+// modals (matchup, startup, username) sit in the visible area below the toolbar,
+// not the whole viewport. The toolbar can wrap to two rows, so re-measure on
+// resize/orientation and via a ResizeObserver.
+(function(){
+  function setHdrH(){
+    const h=document.getElementById('hdr');
+    const px=(h && h.offsetParent!==null) ? h.offsetHeight : 0;
+    document.documentElement.style.setProperty('--fc-hdr-h', px+'px');
+  }
+  setHdrH();
+  window.addEventListener('resize', setHdrH);
+  window.addEventListener('orientationchange', setHdrH);
+  try{ const h=document.getElementById('hdr'); if(h && window.ResizeObserver){ new ResizeObserver(setHdrH).observe(h); } }catch(e){}
+})();
 // Auto-restore from localStorage on first load IF there's a backup (silent, no prompt needed)
 // Actually, only offer this on demand to avoid unexpected state — user must click Load
 
@@ -12936,8 +13067,26 @@ document.addEventListener('DOMContentLoaded', function(){
   renderSquadPanel();
 });
 
+// v156 — tag the player's owned countries with .fc-owned so CSS rings them in
+// gold. Called from refreshConquestHud, so it re-syncs on every state change
+// (win, loss, retreat, undo, load) but never on a bare zoom frame.
+function fcMarkOwned(){
+  try{
+    var owned=null;
+    if(GAME&&GAME.mode==='conquest'&&GAME.active&&GAME.heroTeamId!=null){
+      var st=GAME.state[GAME.heroTeamId];
+      if(st&&st.ownedIsos) owned=st.ownedIsos;
+    }
+    document.querySelectorAll('.cp').forEach(function(el){
+      var iso=el.getAttribute('data-iso');
+      var own = !!(owned && iso && (owned.has(iso) || owned.has(+iso) || owned.has(String(iso))));
+      if(own) el.classList.add('fc-owned'); else el.classList.remove('fc-owned');
+    });
+  }catch(e){}
+}
 function refreshConquestHud(extra){
   if(GAME.mode!=='conquest')return;
+  if(typeof fcMarkOwned==='function') fcMarkOwned();
   if(typeof renderMetricsPanel==='function') renderMetricsPanel();
   if(typeof updateUltBtn==='function') updateUltBtn();
   if(typeof renderSquadPanel==='function') renderSquadPanel();
@@ -14134,7 +14283,7 @@ if(window.FCLang){
   document.addEventListener('click',e=>{
     if(!pop.contains(e.target)&&e.target!==gear) pop.style.display='none';
   });
-  ['slowSpins','clickToReveal','excludeMicronations','lightMap'].forEach(key=>{
+  ['slowSpins','clickToReveal','excludeMicronations','lightMap','reduceMotion'].forEach(key=>{
     const cb=document.getElementById('set-'+key);
     if(!cb)return;
     cb.checked=!!window.GAME_SETTINGS[key];
@@ -14142,6 +14291,7 @@ if(window.FCLang){
       window.GAME_SETTINGS[key]=cb.checked;
       try{localStorage.setItem('fc-game-settings',JSON.stringify(window.GAME_SETTINGS));}catch(e){}
       if(key==='lightMap') document.body.classList.toggle('map-light',cb.checked);
+      if(key==='reduceMotion' && typeof fcApplyMotion==='function') fcApplyMotion();
     });
   });
   // Wire 'New Game' button
@@ -14170,6 +14320,7 @@ if(window.FCLang){
     });
     // Apply visual modes from persisted settings
     document.body.classList.toggle('map-light',!!window.GAME_SETTINGS.lightMap);
+    if(typeof fcApplyMotion==='function') fcApplyMotion();
   }catch(e){}
 })();
 
@@ -14451,6 +14602,24 @@ function openUsernameGate(onDone){
     close();
     if(typeof openSavesModal==='function') openSavesModal();
     else if(typeof doSave==='function') doSave();
+  });
+
+  // How to play → open the in-game help / glossary modal.
+  const helpItem=document.getElementById('fc-menu-help');
+  if(helpItem) helpItem.addEventListener('click',()=>{
+    close();
+    if(typeof openHelpModal==='function') openHelpModal();
+  });
+
+  // Reduce motion → toggle instant conquest transitions. Lives in the menu so
+  // conquest players can reach it (the ⚙️ gear is hidden in conquest mode).
+  const motionItem=document.getElementById('fc-menu-motion');
+  if(motionItem) motionItem.addEventListener('click',()=>{
+    window.GAME_SETTINGS=window.GAME_SETTINGS||{};
+    window.GAME_SETTINGS.reduceMotion=!window.GAME_SETTINGS.reduceMotion;
+    try{localStorage.setItem('fc-game-settings',JSON.stringify(window.GAME_SETTINGS));}catch(e){}
+    if(typeof fcApplyMotion==='function') fcApplyMotion();
+    close();
   });
 
   // Undo → kept off the visible toolbar (a creator tool, hidden during recording).
@@ -15041,7 +15210,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v151-ingame-save-slots-2026-07-24';
+  window._FC_CAP_VERSION = 'v155b-reduce-motion-in-menu-2026-08-06';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
@@ -15265,7 +15434,7 @@ function openUsernameGate(onDone){
   // false = real inventory. Only ever ship this in a signed release build;
   //         self-clicks on real ads risk suspending the AdMob account, which
   //         shares payments profile 9456-5402-5532 with AdSense and YouTube.
-  var AD_IS_TESTING = true; // DEBUG BATCH (2026-07-19): test ads while iterating locally.
+  var AD_IS_TESTING = false; // PRODUCTION (2026-08-06): real ads for the Play Store release. NEVER click your own ads.
   var INTERSTITIAL_COOLDOWN_MS = 3 * 60 * 1000;
   var interstitialLoaded = false;
   var lastInterstitialShownAt = 0;
