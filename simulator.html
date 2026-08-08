@@ -1009,10 +1009,18 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
   margin-bottom:10px;gap:14px;flex-wrap:wrap;}
 .g-lb-sort-label{display:flex;align-items:center;gap:8px;font-size:11px;
   color:#7a9bb5;text-transform:uppercase;letter-spacing:.4px;font-weight:600;}
-#g-leaderboard-sort{background:#0a1624;color:#fff;border:1px solid #2a3f55;
+#g-leaderboard-sort,#g-leaderboard-country{background:#0a1624;color:#fff;border:1px solid #2a3f55;
   padding:6px 10px;border-radius:6px;font-size:12px;cursor:pointer;
-  font-family:inherit;}
-#g-leaderboard-sort:focus{outline:none;border-color:#7ab8e8;}
+  font-family:inherit;max-width:190px;}
+#g-leaderboard-sort:focus,#g-leaderboard-country:focus{outline:none;border-color:#7ab8e8;}
+/* Country filter pill sits at the far left of the controls row and stays
+   visible on BOTH tabs; the sort selector + user strip are global-only. */
+#g-lb-country-label{margin-right:auto;}
+/* Team-picker fastest-win badge — a single line under the carousel that shows
+   the player's personal best for the highlighted country. */
+.g-team-best{min-height:18px;margin:8px 0 2px;text-align:center;font-size:12px;
+  font-weight:600;letter-spacing:.2px;color:#7a9bb5;}
+.g-team-best.has-win{color:#ffd54a;}
 .g-lb-user-strip{display:flex;align-items:center;gap:10px;font-size:11px;color:#7a9bb5;}
 #g-lb-user-status b{color:#cfdaea;font-weight:600;}
 #g-lb-set-name{padding:5px 10px;font-size:11px;}
@@ -3739,6 +3747,8 @@ body.fc-aura-in-panel #game-panel.g-mini .g-body > .g-aura-hbar{ display:none !i
             <div id="g-team-list" class="g-team-list"></div>
             <button type="button" id="g-team-next" class="g-team-nav-btn next" aria-label="Next teams">›</button>
           </div>
+          <!-- Fastest-win badge for the highlighted country (personal best, local records). -->
+          <div id="g-team-best" class="g-team-best"></div>
           <button id="g-start-conquest" class="g-btn primary" disabled data-i18n="sim.mode.start">Start Conquest</button>
         </div>
       </div>
@@ -3772,9 +3782,17 @@ body.fc-aura-in-panel #game-panel.g-mini .g-body > .g-aura-hbar{ display:none !i
           <button class="g-leaderboard-tab active" data-tab="local"  type="button" role="tab" data-i18n="sim.lb.tab.local">📁 Your Runs</button>
           <button class="g-leaderboard-tab"        data-tab="global" type="button" role="tab" data-i18n="sim.lb.tab.global">🌍 Global Rankings</button>
         </div>
-        <!-- Global-tab controls: sort selector + display-name strip. Hidden on local tab. -->
+        <!-- Controls row. The Country filter shows on BOTH tabs; the sort
+             selector + display-name strip are global-only (toggled by JS). -->
         <div class="g-leaderboard-controls" id="g-leaderboard-controls" style="display:none;">
-          <label class="g-lb-sort-label">
+          <label class="g-lb-sort-label" id="g-lb-country-label">
+            <span data-i18n="sim.lb.country">Country</span>
+            <select id="g-leaderboard-country">
+              <option value="" data-i18n="sim.lb.allcountries">All countries</option>
+              <!-- team options injected by populateLbCountryFilter() -->
+            </select>
+          </label>
+          <label class="g-lb-sort-label" id="g-lb-sort-wrap">
             <span data-i18n="sim.lb.sortby">Sort by</span>
             <select id="g-leaderboard-sort">
               <option value="wins" data-i18n="sim.lb.sort.wins">Most Wins</option>
@@ -3784,7 +3802,7 @@ body.fc-aura-in-panel #game-panel.g-mini .g-body > .g-aura-hbar{ display:none !i
               <option value="recent" data-i18n="sim.lb.sort.recent">Most Recent</option>
             </select>
           </label>
-          <div class="g-lb-user-strip">
+          <div class="g-lb-user-strip" id="g-lb-user-strip">
             <span id="g-lb-user-status"></span>
             <button id="g-lb-set-name" class="g-btn ghost" type="button" data-i18n="sim.lb.setname">Set name</button>
           </div>
@@ -9683,6 +9701,7 @@ function renderTeamList(filter){
       list.querySelectorAll('.g-team-item').forEach(x=>x.classList.remove('selected'));
       el.classList.add('selected');
       document.getElementById('g-start-conquest').disabled=false;
+      if(typeof updateTeamBestBadge==='function') updateTeamBestBadge();
       // v65: explicit scrollLeft math (see the random-team handler for
       // the WebView bug context) — guarantees the picked card lands in
       // the visual center of the carousel on every platform.
@@ -9715,6 +9734,8 @@ function wireStartupModal(){
       const mode=btn.getAttribute('data-mode');
       if(mode==='conquest'){
         document.getElementById('g-conquest-team-picker').style.display='block';
+        const bestEl=document.getElementById('g-team-best');
+        if(bestEl){ bestEl.textContent=''; bestEl.classList.remove('has-win'); }
       } else {
         // Imperialism: start immediately
         startGameInMode('imperialism',null);
@@ -9795,6 +9816,7 @@ function wireStartupModal(){
       }
     }
     if(startBtn) startBtn.disabled=false;
+    if(typeof updateTeamBestBadge==='function') updateTeamBestBadge();
   });
 }
 
@@ -10278,7 +10300,9 @@ function renderLeaderboard(){
   const body=document.getElementById('g-leaderboard-body');
   const count=document.getElementById('g-leaderboard-count');
   if(!body) return;
-  const board=loadLeaderboard();
+  let board=loadLeaderboard();
+  // Country filter (shared with the global tab). '' == all countries.
+  if(_fcLbCountry) board=board.filter(e=>e.heroName===_fcLbCountry);
   if(count) count.textContent=board.length===0?'':FCLang.t(board.length===1?'sim.lb.run':'sim.lb.runs',{n:board.length});
   if(board.length===0){
     body.innerHTML=`<div class="g-leaderboard-empty">
@@ -10326,6 +10350,57 @@ function renderLeaderboard(){
 // remembers between opens. (We could persist to localStorage; v1 doesn't.)
 let _fcLbTab='local';
 let _fcLbGlobalSort='wins';
+// Country filter (by hero/team name) shared across both tabs. '' == all countries.
+let _fcLbCountry='';
+// Fill the country <select> from the team list, alphabetised in the current UI
+// language. Rebuilt on each open so it tracks language changes; re-applies the
+// remembered selection afterwards. Cheap (≈212 options).
+function populateLbCountryFilter(){
+  const sel=document.getElementById('g-leaderboard-country');
+  if(!sel||typeof teams==='undefined') return;
+  const uiLang=(window.FCLang && FCLang.current)?FCLang.current:'en';
+  const sorted=teams.slice().sort((a,b)=>
+    teamDisplayName(a.name).localeCompare(teamDisplayName(b.name),uiLang,{sensitivity:'base'}));
+  const all=FCLang.t('sim.lb.allcountries');
+  sel.innerHTML=`<option value="">${escapeHtml(all)}</option>`+
+    sorted.map(t=>`<option value="${escapeHtml(t.name)}">${escapeHtml(teamDisplayName(t.name))}</option>`).join('');
+  sel.value=_fcLbCountry||'';
+}
+// Show/hide the controls row's children per tab. Country filter is always
+// visible; sort selector + user strip are global-only.
+function applyLbControlsFor(tab){
+  const ctrl=document.getElementById('g-leaderboard-controls');
+  const sortWrap=document.getElementById('g-lb-sort-wrap');
+  const userStrip=document.getElementById('g-lb-user-strip');
+  const clearBtn=document.getElementById('g-leaderboard-clear');
+  if(ctrl) ctrl.style.display='flex';
+  if(sortWrap) sortWrap.style.display=tab==='global'?'flex':'none';
+  if(userStrip) userStrip.style.display=tab==='global'?'flex':'none';
+  if(clearBtn) clearBtn.style.display=tab==='local'?'inline-flex':'none';
+}
+// Player's personal best (fewest turns among Victories) for a given team name,
+// read from local records. Returns null if they've never won with them.
+function fcCountryBestTurns(heroName){
+  if(!heroName) return null;
+  const wins=loadLeaderboard().filter(e=>e.heroName===heroName && e.result==='victory' && typeof e.turns==='number');
+  if(!wins.length) return null;
+  return wins.reduce((m,e)=>Math.min(m,e.turns),Infinity);
+}
+// Update the fastest-win badge under the team carousel for the selected team.
+function updateTeamBestBadge(){
+  const el=document.getElementById('g-team-best');
+  if(!el) return;
+  const t=(typeof teams!=='undefined')?teams.find(x=>x.id===_selectedConquestTeamId):null;
+  if(!t){ el.textContent=''; el.classList.remove('has-win'); return; }
+  const best=fcCountryBestTurns(t.name);
+  if(best==null){
+    el.textContent=FCLang.t('sim.pick.best.none');
+    el.classList.remove('has-win');
+  } else {
+    el.textContent=FCLang.t('sim.pick.best.win',{n:best});
+    el.classList.add('has-win');
+  }
+}
 /* v104: the global board used to show a flat top 50 with no way past it, so
    anyone outside the top 50 had no reason to look. Paged to a depth of 1000
    (20 pages of 50). Page size stays 50 because the modal scrolls on mobile
@@ -10339,10 +10414,8 @@ function openLeaderboardModal(){
   document.querySelectorAll('.g-leaderboard-tab').forEach(b=>{
     b.classList.toggle('active', b.getAttribute('data-tab')===_fcLbTab);
   });
-  document.getElementById('g-leaderboard-controls').style.display=
-    _fcLbTab==='global'?'flex':'none';
-  document.getElementById('g-leaderboard-clear').style.display=
-    _fcLbTab==='local'?'inline-flex':'none';
+  populateLbCountryFilter();
+  applyLbControlsFor(_fcLbTab);
   if(_fcLbTab==='local') renderLeaderboard();
   else { syncUserStrip(); renderGlobalLeaderboard(); }
   m.classList.add('open');
@@ -10376,8 +10449,9 @@ async function renderGlobalLeaderboard(){
   let data;
   try{
     const _off=_fcLbGlobalPage*FC_LB_PAGE_SIZE;
+    const _hero=_fcLbCountry?`&hero=${encodeURIComponent(_fcLbCountry)}`:'';
     const res=await fetch(`${FC_API_BASE}/leaderboard?sort=${encodeURIComponent(_fcLbGlobalSort)}`+
-      `&limit=${FC_LB_PAGE_SIZE}&offset=${_off}`);
+      `&limit=${FC_LB_PAGE_SIZE}&offset=${_off}${_hero}`);
     if(!res.ok) throw new Error('HTTP '+res.status);
     data=await res.json();
   }catch(err){
@@ -10520,10 +10594,7 @@ function wireLeaderboardModal(){
       document.querySelectorAll('.g-leaderboard-tab').forEach(b=>{
         b.classList.toggle('active', b.getAttribute('data-tab')===t);
       });
-      document.getElementById('g-leaderboard-controls').style.display=
-        t==='global'?'flex':'none';
-      document.getElementById('g-leaderboard-clear').style.display=
-        t==='local'?'inline-flex':'none';
+      applyLbControlsFor(t);
       if(t==='local') renderLeaderboard();
       else { syncUserStrip(); renderGlobalLeaderboard(); }
     });
@@ -10534,6 +10605,14 @@ function wireLeaderboardModal(){
     _fcLbGlobalSort=sortSel.value;
     _fcLbGlobalPage=0;   // a new sort is a new board — never land on a stale page
     renderGlobalLeaderboard();
+  });
+  // Country filter — shared across both tabs. Re-renders whichever is active.
+  const countrySel=document.getElementById('g-leaderboard-country');
+  if(countrySel) countrySel.addEventListener('change',()=>{
+    _fcLbCountry=countrySel.value||'';
+    _fcLbGlobalPage=0;   // a new filter is a new board
+    if(_fcLbTab==='local') renderLeaderboard();
+    else renderGlobalLeaderboard();
   });
   // Set/change display name — uses a plain prompt() for v1.
   const setNameBtn=document.getElementById('g-lb-set-name');
