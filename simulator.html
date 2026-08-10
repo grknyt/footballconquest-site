@@ -684,13 +684,51 @@ body.web-build .g-recruit-modal{display:none!important;}
    (moved there by gStats) so it flows directly UNDER the Events dropdown and
    reflows when Events expands/collapses. order:10 keeps it last; align-self
    right-aligns it to the Events box's right edge; text is uppercased. */
-#g-imp-turn{display:none;order:10;align-self:flex-end;margin-top:6px;
-  background:linear-gradient(135deg,#1e3452 0%,#0e1a2c 50%,#050c17 100%);
-  border:1px solid #254c3e;border-radius:10px;padding:8px 13px;white-space:nowrap;
-  font-size:15px;font-weight:700;letter-spacing:1px;color:#7a9bb5;text-transform:uppercase;
-  box-shadow:0 6px 18px rgba(0,0,0,.4);pointer-events:none;}
-#g-imp-turn b{color:#fff;font-weight:800;}
-#g-imp-turn .sep{color:#4a6a80;margin:0 6px;}
+/* v193: the Random Imperialism "TURN X · N ALIVE" badge is now a collapsible
+   dropdown — same dimensions as the Events panel — whose body is a live power
+   ranking of every surviving nation (strongest⇄weakest, toggled by a sort
+   button). Mirrors #g-events-panel so the two boxes line up. Imperialism-only:
+   shown via the :not(.conquest-mode) rule below. */
+#g-imp-turn{order:10;width:300px;background:rgba(7,14,23,.97);
+  border:1px solid #2a3f55;border-radius:10px;display:none;flex-direction:column;
+  overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.4);
+  max-height:280px;transition:max-height .25s ease;}
+/* Only surface it in imperialism mode, once the panel is open. */
+#game-panel.open:not(.conquest-mode) ~ #g-left-stack #g-imp-turn{display:flex;}
+#g-imp-turn.collapsed{max-height:38px;}
+#g-imp-turn-header{padding:9px 13px;font-size:12px;color:#7ab8e8;font-weight:700;
+  letter-spacing:.5px;cursor:pointer;display:flex;justify-content:space-between;
+  align-items:center;gap:10px;border-bottom:1px solid #1a2f40;user-select:none;
+  background:#0a1624;text-transform:uppercase;}
+#g-imp-turn-header:hover{background:#0d1c2e;}
+.g-imp-turn-summary{flex:1;font-size:12px;font-weight:700;letter-spacing:.6px;
+  color:#cfdaea;text-transform:uppercase;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;}
+.g-imp-turn-summary b{color:#fff;}
+.g-imp-turn-summary .sep{color:#4a6a80;margin:0 6px;}
+#g-imp-rank-sort{background:transparent;border:1px solid #2a3f55;color:#7ab8e8;
+  font-size:13px;line-height:1;padding:3px 7px;border-radius:5px;cursor:pointer;
+  flex-shrink:0;-webkit-tap-highlight-color:transparent;}
+#g-imp-rank-sort:hover{background:#0d1c2e;color:#fff;}
+#g-imp-turn-toggle{color:#7ab8e8;transition:transform .25s;font-size:11px;flex-shrink:0;}
+#g-imp-turn.collapsed #g-imp-turn-toggle{transform:rotate(-90deg);}
+#g-imp-turn.collapsed #g-imp-turn-header{border-bottom:none;}
+#g-imp-rank-list{flex:1;min-height:0;overflow-y:auto;padding:4px 0;}
+#g-imp-turn:not(.collapsed) #g-imp-rank-list{min-height:60px;}
+.g-rank-row{display:flex;align-items:center;gap:9px;padding:5px 13px;
+  font-size:12px;color:#cfdaea;border-bottom:1px solid rgba(26,47,64,.5);}
+.g-rank-row:last-child{border-bottom:none;}
+.g-rank-pos{flex-shrink:0;width:22px;text-align:right;color:#6f8aa3;
+  font-weight:700;font-variant-numeric:tabular-nums;}
+.g-rank-flag{flex-shrink:0;width:26px;height:17px;border-radius:2px;
+  background-size:cover;background-position:center;background-color:#16283a;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);}
+.g-rank-name{flex:1;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;}
+.g-rank-val{flex-shrink:0;text-align:right;font-weight:800;color:#7ab8e8;
+  font-variant-numeric:tabular-nums;display:flex;flex-direction:column;
+  align-items:flex-end;line-height:1.15;}
+.g-rank-val small{font-weight:600;color:#6f8aa3;font-size:10px;letter-spacing:.3px;}
 body.fc-splash-active #g-imp-turn,
 body.fc-ui-hidden #g-imp-turn{display:none !important;}
 /* Turn summary chip — small pill sitting between the "Events" label and the
@@ -2348,11 +2386,11 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     z-index: 26;
     gap: 4px !important;
   }
-  #g-campaign-panel, #g-events-panel, #g-squad-panel {
+  #g-campaign-panel, #g-events-panel, #g-squad-panel, #g-imp-turn {
     width: 200px !important;
     max-width: calc(100vw - 12px) !important;
   }
-  #g-campaign-header, #g-events-header, #g-squad-header {
+  #g-campaign-header, #g-events-header, #g-squad-header, #g-imp-turn-header {
     padding: 6px 10px !important;
     font-size: 10px !important;
   }
@@ -2517,7 +2555,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     align-items: flex-start !important;
     gap: 6px !important;
   }
-  #g-campaign-panel, #g-events-panel, #g-squad-panel {
+  #g-campaign-panel, #g-events-panel, #g-squad-panel, #g-imp-turn {
     /* v43: reverted to full-width split-row layout since Continents +
        Events are separate again. Each takes 50% of the row. */
     width: auto !important;
@@ -2525,7 +2563,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     min-width: 0 !important;
     max-width: none !important;
   }
-  #g-campaign-header, #g-events-header, #g-squad-header {
+  #g-campaign-header, #g-events-header, #g-squad-header, #g-imp-turn-header {
     padding: 4px 6px !important;
     font-size: 8px !important;
     letter-spacing: 0 !important;
@@ -2646,7 +2684,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     align-items: flex-start !important;
   }
   /* Each panel takes half the row via flex:1 */
-  #g-campaign-panel, #g-events-panel, #g-squad-panel {
+  #g-campaign-panel, #g-events-panel, #g-squad-panel, #g-imp-turn {
     /* v43: reverted to full-width split-row layout since Continents +
        Events are separate again. Each takes 50% of the row. */
     width: auto !important;
@@ -2655,7 +2693,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
     max-width: none !important;
   }
   /* Restore header padding + font to a comfortable touch size */
-  #g-campaign-header, #g-events-header, #g-squad-header {
+  #g-campaign-header, #g-events-header, #g-squad-header, #g-imp-turn-header {
     padding: 6px 10px !important;
     font-size: 10px !important;
     letter-spacing: 0.3px !important;
@@ -2706,7 +2744,7 @@ body.web-build .g-result-card.revealed .g-sim-btn{
   #g-events-panel  { order: 1 !important; }
   #g-campaign-panel{ order: 2 !important; }
   #g-squad-panel   { order: 3 !important; }
-  #g-campaign-panel, #g-events-panel, #g-squad-panel {
+  #g-campaign-panel, #g-events-panel, #g-squad-panel, #g-imp-turn {
     width: 280px !important;
     flex: 0 0 auto !important;
     min-width: 0 !important;
@@ -2933,11 +2971,11 @@ body.web-build .g-result-card.revealed .g-sim-btn{
   }
   /* Events + Continents dropdown panels: base 300 px → 375 px (+25%),
      header font +25% for consistency */
-  #g-campaign-panel, #g-events-panel, #g-squad-panel {
+  #g-campaign-panel, #g-events-panel, #g-squad-panel, #g-imp-turn {
     width: 375px !important;
     max-width: calc(100vw - 12px) !important;
   }
-  #g-campaign-header, #g-events-header, #g-squad-header {
+  #g-campaign-header, #g-events-header, #g-squad-header, #g-imp-turn-header {
     font-size: 15px !important;
     padding: 8px 13px !important;
   }
@@ -3521,7 +3559,7 @@ body.fc-stat-floated:not(.map-light) #g-stat-stack .g-aura-hbar-fill{
     width:calc(50vw - 8px) !important;
     flex-direction:column !important; align-items:stretch !important; gap:4px !important;
   }
-  #g-campaign-panel, #g-events-panel, #g-squad-panel{
+  #g-campaign-panel, #g-events-panel, #g-squad-panel, #g-imp-turn{
     width:100% !important; flex:0 0 auto !important; min-width:0 !important; max-width:none !important;
   }
   /* Right-size the collapsed headers (were 16px via the touch rule) so they're
@@ -3554,7 +3592,7 @@ body.fc-stat-floated:not(.map-light) #g-stat-stack .g-aura-hbar-fill{
     width:calc(50vw - 15px) !important; max-width:440px !important;
     flex-direction:column !important; align-items:stretch !important; gap:8px !important;
   }
-  #g-campaign-panel, #g-events-panel, #g-squad-panel{
+  #g-campaign-panel, #g-events-panel, #g-squad-panel, #g-imp-turn{
     width:100% !important; flex:0 0 auto !important; min-width:0 !important; max-width:none !important;
   }
   /* Loss warning + event toast below the top cards. */
@@ -3815,7 +3853,14 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
     <div id="g-turn-badge"></div>
     <!-- v187: Random Imperialism top-left "Turn X · N alive" badge (mirrors the
          conquest turn card). Populated + shown/hidden by gStats(). -->
-    <div id="g-imp-turn"></div>
+    <div id="g-imp-turn" class="collapsed">
+      <div id="g-imp-turn-header">
+        <span class="g-imp-turn-summary" id="g-imp-turn-summary"></span>
+        <button type="button" id="g-imp-rank-sort" data-i18n-attr="title:sim.rank.sort" title="Sort strongest / weakest">⬇</button>
+        <span id="g-imp-turn-toggle">▼</span>
+      </div>
+      <div id="g-imp-rank-list"></div>
+    </div>
     <!-- Floating loss warning pill — sits below the Continents/Events dropdowns
          at the top of the map. Was previously a strip inside the game panel,
          but that made the panel too tall vertically per Gürkan v34 polish. -->
@@ -4383,8 +4428,8 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 <!-- Localization: shared dictionary + i18n engine (EN/TR). FCLang.t() drives
      the simulator's dynamic strings; data-i18n attributes drive static ones. -->
-<script src="/js/translations.js?v=20260810rimini"></script>
-<script src="/js/i18n.js?v=20260810rimini"></script>
+<script src="/js/translations.js?v=20260810rirank"></script>
+<script src="/js/i18n.js?v=20260810rirank"></script>
 <script>
 const FLAG_B64={
 'Albania':'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',
@@ -7345,19 +7390,82 @@ function gStats(){
   // under the Events dropdown (moved into #g-left-stack so it reflows with it).
   try{
     const _it=document.getElementById('g-imp-turn');
-    if(_it){
-      if(GAME.active && GAME.mode==='imperialism'){
-        const _ls=document.getElementById('g-left-stack');
-        if(_ls && _it.parentNode!==_ls) _ls.appendChild(_it);
-        _it.innerHTML=FCLang.t('sim.gp.turn',{n:'<b>'+GAME.turn+'</b>'})+
-          '<span class="sep">·</span>'+FCLang.t('sim.gp.alive',{n:'<b>'+alive+'</b>'});
-        _it.style.display='block';
-      } else {
-        _it.style.display='none';
-      }
+    if(_it && GAME.active && GAME.mode==='imperialism'){
+      // Keep the dropdown docked at the bottom of #g-left-stack (below Events)
+      // so the two same-width boxes line up and reflow together.
+      const _ls=document.getElementById('g-left-stack');
+      if(_ls && _it.parentNode!==_ls) _ls.appendChild(_it);
+      const _sum=document.getElementById('g-imp-turn-summary');
+      if(_sum) _sum.innerHTML=FCLang.t('sim.gp.turn',{n:'<b>'+GAME.turn+'</b>'})+
+        '<span class="sep">·</span>'+FCLang.t('sim.gp.alive',{n:'<b>'+alive+'</b>'});
+      // Refresh the live power ranking (only meaningful work when expanded).
+      if(typeof fcRenderImpRankings==='function') fcRenderImpRankings();
     }
+    // Visibility is handled purely by CSS (the :not(.conquest-mode) rule),
+    // so no inline display toggling here — that let a stale block/none stick.
   }catch(e){}
 }
+// ── Random Imperialism live power rankings ──────────────────────────────
+// Sort order for the rankings dropdown. false = strongest first (default),
+// true = weakest first. Toggled by the ⬇/⬆ sort button in the box header.
+window._fcRankAsc=false;
+// "Power" mirrors the battle weighting used in gameResolve (FIFA points plus a
+// territory bonus of +5 per owned iso), so the list reflects who would actually
+// win fights right now — empires that have swallowed land climb the table.
+function fcImpPower(st){
+  const terr=(st.ownedIsos&&st.ownedIsos.size)||0;
+  const fifa=(typeof fifaRating==='function')?fifaRating(st.name):0;
+  return {terr,fifa,power:Math.round(fifa+terr*5)};
+}
+function fcRenderImpRankings(){
+  const list=document.getElementById('g-imp-rank-list');
+  if(!list) return;
+  if(!GAME||!GAME.active||GAME.mode!=='imperialism'||!GAME.state){ list.innerHTML=''; return; }
+  const rows=Object.values(GAME.state).filter(t=>t.alive).map(st=>{
+    const p=fcImpPower(st);
+    return {id:st.id,name:st.name,terr:p.terr,power:p.power};
+  });
+  rows.sort((a,b)=> window._fcRankAsc ? (a.power-b.power)||(a.terr-b.terr) : (b.power-a.power)||(b.terr-a.terr));
+  const terrLbl=(typeof FCLang!=='undefined')?FCLang.t('sim.rank.terr'):'terr';
+  list.innerHTML=rows.map((r,i)=>{
+    const b64=(typeof FLAG_B64!=='undefined')?FLAG_B64[r.name]:null;
+    const flag=b64?`background-image:url(data:image/png;base64,${b64})`:'';
+    const nm=(typeof teamDisplayName==='function')?teamDisplayName(r.name):r.name;
+    return '<div class="g-rank-row">'+
+      '<span class="g-rank-pos">'+(i+1)+'</span>'+
+      '<span class="g-rank-flag" style="'+flag+'"></span>'+
+      '<span class="g-rank-name">'+escapeHtml(nm)+'</span>'+
+      '<span class="g-rank-val">'+r.power+'<small>'+r.terr+' '+terrLbl+'</small></span>'+
+    '</div>';
+  }).join('');
+}
+// Wire the box header (expand/collapse) + the sort toggle. Deferred so the DOM
+// exists; guarded so it only binds once.
+(function(){
+  function wireImpRank(){
+    const hdr=document.getElementById('g-imp-turn-header');
+    const panel=document.getElementById('g-imp-turn');
+    const sortBtn=document.getElementById('g-imp-rank-sort');
+    if(!hdr||!panel||!sortBtn){ return setTimeout(wireImpRank,300); }
+    if(panel._fcWired) return;
+    panel._fcWired=true;
+    hdr.addEventListener('click',function(e){
+      if(e.target.closest('#g-imp-rank-sort')) return; // sort handles itself
+      panel.classList.toggle('collapsed');
+      if(!panel.classList.contains('collapsed')) fcRenderImpRankings();
+    });
+    sortBtn.addEventListener('click',function(e){
+      e.stopPropagation();
+      window._fcRankAsc=!window._fcRankAsc;
+      sortBtn.textContent=window._fcRankAsc?'⬆':'⬇';
+      // Expand on first sort tap so the effect is visible.
+      if(panel.classList.contains('collapsed')) panel.classList.remove('collapsed');
+      fcRenderImpRankings();
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',wireImpRank);
+  else wireImpRank();
+})();
 function gSlots(){
   const a=GAME.attacker,d=GAME.defender;
   document.getElementById('g-attacker').textContent=a?teamDisplayName(a.name):'—';
@@ -8819,8 +8927,18 @@ function gameResolve(){
       }catch(e){}
     }
   };
-  if(window.GAME_SETTINGS?.clickToReveal){
-    // Conquest applies when user clicks the "reveal" prompt
+  // "Click to reveal" defers the conquest until the user triggers the reveal —
+  // a Creator-Build commentary feature. But `window._deferredConquest` has NO
+  // caller anywhere, and on the public web build the whole reveal/settings
+  // control is hidden (and the setting persists in localStorage), so honouring
+  // it here silently swallowed every Random Imperialism conquest: the merge was
+  // stored and never applied — the reported "territorial changes aren't
+  // happening on the web" bug. The World Conquest result modal was already
+  // patched for exactly this (see the isWebBuild guard there); this mirrors it.
+  // On the web build we ALWAYS apply immediately.
+  const _isWebBuild = document.body && document.body.classList.contains('web-build');
+  if(!_isWebBuild && window.GAME_SETTINGS?.clickToReveal){
+    // Offline Creator Build only: conquest applies when the user reveals it.
     window._deferredConquest=applyConquest;
   } else {
     applyConquest();
@@ -15063,7 +15181,13 @@ function openUsernameGate(onDone){
   const loadBtn=document.getElementById('fc-splash-load');
   if(loadBtn){
     loadBtn.addEventListener('click',()=>{
-      if(typeof doLoad==='function') doLoad();
+      // v193: open the built-in save-slot list (localStorage saves), NOT the
+      // native OS file picker. doLoad() popped a "choose a file" dialog on both
+      // web and app — confusing, since the game's own saves live in slots, not
+      // on disk. openSavesModal shows those slots; file-import stays available
+      // as a secondary option in that modal's footer.
+      if(typeof openSavesModal==='function') openSavesModal();
+      else if(typeof doLoad==='function') doLoad();
     });
   }
 
@@ -15777,7 +15901,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v191-ri-collapsed-expand-pill-2026-08-10';
+  window._FC_CAP_VERSION = 'v193-ri-power-rankings-dropdown-splash-load-slots-2026-08-10';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
