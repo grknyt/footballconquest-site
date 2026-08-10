@@ -135,9 +135,36 @@ display:flex;flex-direction:row;align-items:center;justify-content:space-between
 .g-head .g-stats{display:flex;gap:4px;}
 /* Redundant in lower HUD now that top floating HUD shows turn/remaining. */
 #game-panel.conquest-mode .g-head .g-stats{display:none;}
+/* v187: Random Imperialism now has its own top-left "Turn · N alive" badge, so
+   the bottom head no longer needs the turn/alive copy or the "FC Imperialism"
+   title. Hide both to reclaim vertical space. On the public build the head is
+   then empty (bug/settings already hidden) — collapse it entirely; the Creator
+   Build keeps the head for its settings cog. */
+#game-panel.open:not(.conquest-mode) .g-head .g-stats{display:none;}
+#g-mode-title{display:none !important;}
+body.web-build #game-panel.open:not(.conquest-mode) .g-head{display:none !important;}
 /* Settings gear hidden in conquest mode (user-flagged as unused). Settings still
    reachable for non-conquest sessions in case existing imperialism users rely on it. */
 #game-panel.conquest-mode #game-settings{display:none;}
+/* v185: public (web/app) build cleanup. The settings cog (slow animations, skip
+   micronations, click-to-reveal, light map, new game) and the bottom-UI bug
+   icon are either creator-only commentary tools or redundant with the top
+   toolbar — hide them on the public build. The Creator Build has no web-build
+   class, so it keeps the cog for its commentary features. */
+body.web-build #game-settings,
+body.web-build #g-head-bug{ display:none !important; }
+/* v185: the "My Team / World" recenter pill is meaningless in Random Imperialism
+   (there is no hero to recenter on) — hide it there. Conquest keeps it. */
+#game-panel.open:not(.conquest-mode) ~ #g-left-stack #zr{ display:none !important; }
+/* v185: imperialism bottom panel should HUG its content (with padding) rather
+   than stretch the full screen width. Tablets/desktop only (≥700px) so phones
+   keep their tuned full-width layout. Conquest width rules are untouched. */
+@media (min-width: 700px){
+  #game-panel.open:not(.conquest-mode){
+    width:auto !important;
+    max-width:min(94vw, 640px) !important;
+  }
+}
 /* v72/v74: collapse arrow is a panel-level absolute button (top-right
    corner) so it renders in BOTH imperialism (head visible) and conquest
    (head hidden). z-index 3 floats it over head bar / body content.
@@ -653,6 +680,18 @@ body.web-build .g-recruit-modal{display:none!important;}
 #g-turn-badge.visible{display:inline-block;}
 #g-turn-badge b{color:#fff;}
 #g-turn-badge .sep{color:#4a6a80;margin:0 6px;}
+/* v187: Random Imperialism "Turn X · N alive" badge — the imperialism twin of
+   conquest's top-left "Turn · left" card. Same card styling; pinned top-left
+   under the toolbar. Shown/hidden + populated by gStats() (imperialism only). */
+#g-imp-turn{position:absolute;top:calc(var(--fc-hdr-h,52px) + 12px);left:12px;z-index:24;
+  display:none;background:linear-gradient(135deg,#1e3452 0%,#0e1a2c 50%,#050c17 100%);
+  border:1px solid #254c3e;border-radius:10px;padding:8px 13px;white-space:nowrap;
+  font-size:15px;font-weight:700;letter-spacing:1px;color:#7a9bb5;
+  box-shadow:0 6px 18px rgba(0,0,0,.4);pointer-events:none;}
+#g-imp-turn b{color:#fff;font-weight:800;}
+#g-imp-turn .sep{color:#4a6a80;margin:0 6px;}
+body.fc-splash-active #g-imp-turn,
+body.fc-ui-hidden #g-imp-turn{display:none !important;}
 /* Turn summary chip — small pill sitting between the "Events" label and the
    toggle chevron. Stays visible even when the panel is collapsed so the
    player can read "Turn 9 · 203 LEFT" at a glance from anywhere. */
@@ -3574,9 +3613,12 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
    screen. Rather than perfect a cramped phone-landscape layout, we block it: a
    full-screen "rotate to portrait" prompt shows ONLY on short landscape
    viewports (max-height:500px = a phone on its side). Tablets and desktop have
-   taller landscape viewports, so they never see it and keep both orientations. */
+   taller landscape viewports, so they never see it and keep both orientations.
+   v182: also require a TOUCH-primary pointer AND a narrow (≤1024px) viewport, so
+   a computer/Chromebook with a short window — where the embedded game iframe can
+   dip under 500px tall — never trips a gate that's only meant for phones. */
 #fc-rotate-lock{ display:none; }
-@media (orientation: landscape) and (max-height: 500px) {
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 1024px) and (pointer: coarse) {
   #fc-rotate-lock{
     display:flex; position:fixed; inset:0; z-index:9999;
     background:#070e17; align-items:center; justify-content:center;
@@ -3662,6 +3704,7 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
       <button type="button" class="abtn sim-hamburger" id="sim-hamburger-btn" title="More" aria-label="Toggle toolbar menu" aria-expanded="false">☰</button>
       <div class="sim-acts-drawer" id="sim-acts-drawer">
         <button class="abtn drawer-relay" id="drawer-save" type="button" onclick="var e=document.getElementById('fc-menu-save'); if(e) e.click();">💾 <span data-i18n="sim.tb.menu.save">Save game</span></button>
+        <button class="abtn drawer-relay" id="drawer-load" type="button" onclick="var e=document.getElementById('fc-menu-load'); if(e) e.click();">📂 <span data-i18n="sim.tb.menu.load">Load game</span></button>
         <button class="abtn drawer-relay" id="drawer-newgame" type="button" onclick="var e=document.getElementById('fc-menu-end'); if(e) e.click();">🎲 <span data-i18n="sim.tb.menu.newgame">New game</span></button>
         <button class="abtn drawer-relay" id="drawer-hideui" type="button" onclick="var e=document.getElementById('fc-menu-hide-ui'); if(e) e.click();">👁 <span data-i18n="sim.tb.menu.hideui">Hide UI</span></button>
         <button class="abtn drawer-relay" id="drawer-motion" type="button" onclick="var e=document.getElementById('fc-menu-motion'); if(e) e.click();">🎞️ <span id="drawer-motion-label">Reduce motion: Off</span></button>
@@ -3691,6 +3734,7 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
         <button class="abtn fc-menu-btn" id="fc-menu-btn" type="button" aria-label="Menu" aria-haspopup="true" aria-expanded="false">☰</button>
         <div class="fc-menu-popover" id="fc-menu" role="menu">
           <div class="fc-menu-item" id="fc-menu-save" role="menuitem"><span class="fc-menu-icon">💾</span><span data-i18n="sim.tb.menu.save">Save game</span></div>
+          <div class="fc-menu-item" id="fc-menu-load" role="menuitem"><span class="fc-menu-icon">📂</span><span data-i18n="sim.tb.menu.load">Load game</span></div>
           <div class="fc-menu-item" id="fc-menu-undo" role="menuitem"><span class="fc-menu-icon">↩</span><span data-i18n="sim.tb.undo">Undo</span><span class="kbadge" style="margin-left:auto;opacity:.6;font-size:9px;">Ctrl+Z</span></div>
           <div class="fc-menu-item" id="fc-menu-redo" role="menuitem"><span class="fc-menu-icon">↪</span><span data-i18n="sim.tb.redo">Redo</span><span class="kbadge" style="margin-left:auto;opacity:.6;font-size:9px;">Ctrl+Shift+Z</span></div>
           <div class="fc-menu-item fc-menu-game-only" id="fc-menu-end" role="menuitem"><span class="fc-menu-icon">🎲</span><span data-i18n="sim.tb.menu.newgame">New game</span></div>
@@ -3732,6 +3776,9 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
     <div id="flag-handles" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;"></div>
     <div id="hint" data-i18n="sim.map.hint">Scroll/pinch to zoom · Drag to pan</div>
     <div id="g-turn-badge"></div>
+    <!-- v187: Random Imperialism top-left "Turn X · N alive" badge (mirrors the
+         conquest turn card). Populated + shown/hidden by gStats(). -->
+    <div id="g-imp-turn"></div>
     <!-- Floating loss warning pill — sits below the Continents/Events dropdowns
          at the top of the map. Was previously a strip inside the game panel,
          but that made the panel too tall vertically per Gürkan v34 polish. -->
@@ -4299,8 +4346,8 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 <!-- Localization: shared dictionary + i18n engine (EN/TR). FCLang.t() drives
      the simulator's dynamic strings; data-i18n attributes drive static ones. -->
-<script src="/js/translations.js?v=20260808twistfit"></script>
-<script src="/js/i18n.js?v=20260808twistfit"></script>
+<script src="/js/translations.js?v=20260808loadgame"></script>
+<script src="/js/i18n.js?v=20260808loadgame"></script>
 <script>
 const FLAG_B64={
 'Albania':'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',
@@ -7257,6 +7304,19 @@ function gStats(){
   const alive=Object.values(GAME.state).filter(t=>t.alive).length;
   document.getElementById('g-turn').textContent=FCLang.t('sim.gp.turn',{n:GAME.turn});
   document.getElementById('g-remaining').textContent=FCLang.t('sim.gp.alive',{n:alive});
+  // v187: mirror the count into the top-left imperialism badge (imperialism only).
+  try{
+    const _it=document.getElementById('g-imp-turn');
+    if(_it){
+      if(GAME.active && GAME.mode==='imperialism'){
+        _it.innerHTML=FCLang.t('sim.gp.turn',{n:'<b>'+GAME.turn+'</b>'})+
+          '<span class="sep">·</span>'+FCLang.t('sim.gp.alive',{n:'<b>'+alive+'</b>'});
+        _it.style.display='inline-block';
+      } else {
+        _it.style.display='none';
+      }
+    }
+  }catch(e){}
 }
 function gSlots(){
   const a=GAME.attacker,d=GAME.defender;
@@ -8649,6 +8709,25 @@ function gameResolve(){
     const loserBadge=document.querySelector(`.fbadge[data-badge-id="${loser.id}"]`);
     if(loserBadge) loserBadge.remove();
     gameRender();
+    // v184/v186: Random Imperialism — the WINNER's flag (whether the attacker or
+    // the defender) advances to the spot the battle was fought over (the attacked
+    // territory, GAME.defenderIso). Attacker wins → moves into the enemy shore it
+    // just took; defender wins → rallies to the shore it just defended. Either way
+    // flags advance to the front instead of staying home. Requested by players:
+    // "if England attacks the eastern shore of the USA, the winner's flag should
+    // end up on the eastern shore."
+    if(GAME.mode==='imperialism'){
+      try{
+        const _wb=document.querySelector(`.fbadge[data-badge-id="${winner.id}"]`);
+        if(_wb){
+          const _from=teamCentroid(winner.id) ||
+            [parseFloat(_wb.getAttribute('data-cx'))||0, parseFloat(_wb.getAttribute('data-cy'))||0];
+          let _spot=(GAME.defenderIso!=null)?isoInteriorPoint(GAME.defenderIso,_from,true):null;
+          if(!_spot && conqueredIsos.length) _spot=isoInteriorPoint(conqueredIsos[0],_from,true);
+          if(_spot && typeof walkHeroFlagTo==='function') walkHeroFlagTo(_wb, winner.id, _from, _spot, 0);
+        }
+      }catch(e){}
+    }
   };
   if(window.GAME_SETTINGS?.clickToReveal){
     // Conquest applies when user clicks the "reveal" prompt
@@ -9362,6 +9441,8 @@ function fcSlotDefaultName(meta){
   const hero=(meta&&meta.heroName)?(typeof teamDisplayName==='function'?teamDisplayName(meta.heroName):meta.heroName):'Save';
   return hero + ((meta&&meta.turn)?(' · T'+meta.turn):'');
 }
+// Short mode tag for save slots: WC = World Conquest, RI = Random Imperialism.
+function fcModeTag(mode){ return mode==='imperialism'?'RI':(mode==='conquest'?'WC':''); }
 function fcBuildSaveEntry(name){
   const state=captureState();
   // Trim the event log so a slot stays small in localStorage.
@@ -9394,8 +9475,19 @@ function fcLoadSlot(i){
     if(typeof window.fcHideSplash==='function') window.fcHideSplash();
     const gp=document.getElementById('game-panel');
     if(gp&&GAME&&GAME.active){ gp.classList.add('open'); gp.classList.toggle('conquest-mode',GAME.mode==='conquest'); }
+    // Close any lingering startup/splash so the loaded game IS what's shown.
+    var _sm=document.getElementById('g-startup-modal'); if(_sm){ _sm.classList.remove('open'); _sm.style.display='none'; }
+    // v188: full mode re-sync so nothing from the previously-shown mode lingers,
+    // no matter what was on screen — the loaded game's mode wins completely.
+    try{
+      if(GAME.mode!=='conquest' && window._fcPerim && window._fcPerim.el) window._fcPerim.el.setAttribute('d','');
+      var _cl=document.getElementById('g-conquest-loss'); if(_cl){ _cl.style.display='none'; _cl.classList.remove('warn','danger'); }
+      var _lf=document.getElementById('g-loss-float'); if(_lf){ _lf.classList.remove('visible','warn','danger'); }
+    }catch(e){}
     if(typeof refreshConquestHud==='function') refreshConquestHud();
     if(typeof updateConquestHud==='function') updateConquestHud();
+    if(typeof gStats==='function') gStats();   // refresh imperialism turn/alive badge + hide it in conquest
+    if(typeof gSlots==='function') gSlots();    // refresh the matchup slots
     closeSavesModal();
   }catch(e){ alert(sT('loadfail')+' '+e.message); }
 }
@@ -9457,7 +9549,10 @@ function ensureSavesModal(){
      '.fcs-foot button{background:none;border:1px solid #2b4d6c;color:#9fc0dc;border-radius:8px;'+
      'padding:7px 11px;font-size:12px;cursor:pointer;min-height:36px;}'+
      '.fcs-foot button:active{background:#193150;}'+
-     '.fcs-status{margin-left:auto;font-size:12px;color:#37d67a;opacity:0;transition:opacity .25s;}';
+     '.fcs-status{margin-left:auto;font-size:12px;color:#37d67a;opacity:0;transition:opacity .25s;}'+
+     '.fcs-mode{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.5px;padding:1px 5px;border-radius:5px;margin-right:5px;vertical-align:middle;}'+
+     '.fcs-mode.wc{background:rgba(122,184,232,.18);color:#7ab8e8;border:1px solid rgba(122,184,232,.45);}'+
+     '.fcs-mode.ri{background:rgba(212,169,54,.18);color:#e0b64a;border:1px solid rgba(212,169,54,.45);}';
     document.head.appendChild(st);
   }
   m=document.createElement('div'); m.id='fc-saves-modal';
@@ -9501,7 +9596,10 @@ function renderSaveSlots(){
       if(b64) flag.style.backgroundImage='url(data:image/png;base64,'+b64+')';
       row.appendChild(flag);
       const info=document.createElement('div'); info.className='fcs-info';
-      const nm=document.createElement('div'); nm.className='fcs-name'; nm.textContent=slot.name||fcSlotDefaultName(meta);
+      const nm=document.createElement('div'); nm.className='fcs-name';
+      const _tag=fcModeTag(meta.mode);
+      if(_tag){ const chip=document.createElement('span'); chip.className='fcs-mode '+(meta.mode==='imperialism'?'ri':'wc'); chip.textContent=_tag; nm.appendChild(chip); }
+      nm.appendChild(document.createTextNode(slot.name||fcSlotDefaultName(meta)));
       const mt=document.createElement('div'); mt.className='fcs-meta';
       const parts=[];
       if(meta.turn) parts.push(sT('turn',{n:meta.turn}));
@@ -9569,6 +9667,44 @@ const FC_HELP_SECTIONS = [
     ["🔊","Sound","Turns the ambient stadium crowd and the game's sound effects on or off. Your choice is saved and remembered next time you play."]
   ]}
 ];
+// v187: Random Imperialism has its own rules, so it gets its own glossary rather
+// than reusing the World Conquest one (no hero, no Aura, no boss runs).
+const FC_HELP_SECTIONS_IMP = [
+  { h:"How Random Imperialism works", rows:[
+    ["🌍","The world at war","All 212 nations start owning their home country. Each turn two nations are drawn and fight — the winner takes ALL of the loser's land. It runs until one nation rules the whole map."],
+    ["🎯","A turn","Spin to draw the attacker, spin the arrow to pick a nearby target, then Play Match (or let it auto-resolve). No hero, no Aura — just nation versus nation."],
+    ["🏁","Winning","The last nation standing wins the world. There is no 'three losses and you're out' — this is a battle royale you watch and steer, not a single team you defend."],
+    ["🎲","The odds","Every result is weighted by FIFA ranking and how much land each side already holds. Bigger empires punch a little harder, but upsets still happen."]
+  ]},
+  { h:"On the map", rows:[
+    ["🚩","Flags advance","When a nation wins, its flag marches to the territory it just fought for — so you can watch empires push across the map, turn by turn."],
+    ["🎨","Territory colour","Conquered land takes the winner's colour and merges into their empire. The flag marks where that nation currently stands."],
+    ["⚔️","Tactics","Before a match, pick Defensive, Balanced or Attacking to nudge the odds. Rock-paper-scissors: Attacking beats Defensive, Defensive beats Balanced, Balanced beats Attacking."],
+    ["🌀","Twists","About one match in five throws a curveball — an injury, the weather, a grudge match — that shifts the odds or the scoreline."]
+  ]},
+  { h:"Reading a matchup", rows:[
+    ["⭐","OVR & stars","Each nation shows an overall rating and a star tier drawn from its FIFA ranking — a quick read on who is favoured."],
+    ["🔢","FIFA ranking","The small number by each flag is that nation's FIFA world ranking. Lower is stronger."],
+    ["⏱️","Turn / alive","The top-left badge shows the current turn and how many nations are still un-conquered."]
+  ]}
+];
+// Fill a help modal body from a sections array (shared by both modes).
+function fcBuildHelpBody(body, sections){
+  if(!body) return;
+  body.innerHTML='';
+  sections.forEach(function(sec){
+    const h=document.createElement('div'); h.className='fch-sec'; h.textContent=sec.h; body.appendChild(h);
+    sec.rows.forEach(function(r){
+      const row=document.createElement('div'); row.className='fch-row';
+      const ic=document.createElement('div'); ic.className='fch-ico'; ic.textContent=r[0];
+      const tx=document.createElement('div');
+      const t=document.createElement('div'); t.className='fch-term'; t.textContent=r[1];
+      const d=document.createElement('div'); d.className='fch-def'; d.textContent=r[2];
+      tx.appendChild(t); tx.appendChild(d);
+      row.appendChild(ic); row.appendChild(tx); body.appendChild(row);
+    });
+  });
+}
 function ensureHelpModal(){
   let m=document.getElementById('fc-help-modal'); if(m) return m;
   if(!document.getElementById('fc-help-css')){
@@ -9595,22 +9731,20 @@ function ensureHelpModal(){
   document.body.appendChild(m);
   m.addEventListener('click',function(e){ if(e.target===m) closeHelpModal(); });
   m.querySelector('#fch-x').addEventListener('click',closeHelpModal);
-  const body=m.querySelector('#fch-body');
-  FC_HELP_SECTIONS.forEach(function(sec){
-    const h=document.createElement('div'); h.className='fch-sec'; h.textContent=sec.h; body.appendChild(h);
-    sec.rows.forEach(function(r){
-      const row=document.createElement('div'); row.className='fch-row';
-      const ic=document.createElement('div'); ic.className='fch-ico'; ic.textContent=r[0];
-      const tx=document.createElement('div');
-      const t=document.createElement('div'); t.className='fch-term'; t.textContent=r[1];
-      const d=document.createElement('div'); d.className='fch-def'; d.textContent=r[2];
-      tx.appendChild(t); tx.appendChild(d);
-      row.appendChild(ic); row.appendChild(tx); body.appendChild(row);
-    });
-  });
+  // Body is (re)filled per-mode on each open by openHelpModal → fcBuildHelpBody.
   return m;
 }
-function openHelpModal(){ ensureHelpModal(); const m=document.getElementById('fc-help-modal'); if(m) m.style.display='flex'; }
+function openHelpModal(){
+  const m=ensureHelpModal();
+  if(!m) return;
+  // v187: pick the glossary for the CURRENT mode so imperialism no longer shows
+  // World Conquest's hero/Aura/boss content.
+  const imp=(typeof GAME!=='undefined' && GAME.mode==='imperialism');
+  const titleEl=m.querySelector('.fch-head h3');
+  if(titleEl) titleEl.textContent=imp?'❓ How to play — Random Imperialism':'❓ How to play';
+  fcBuildHelpBody(m.querySelector('#fch-body'), imp?FC_HELP_SECTIONS_IMP:FC_HELP_SECTIONS);
+  m.style.display='flex';
+}
 function closeHelpModal(){ const m=document.getElementById('fc-help-modal'); if(m) m.style.display='none'; }
 window.openHelpModal=openHelpModal;
 // v153 — keep --fc-hdr-h in sync with the real toolbar height so the centred
@@ -9967,6 +10101,23 @@ function startGameInMode(mode,heroId){
   // warning row stays visible after a loss, instead of vanishing until the
   // next spin happens to land on the same team. Cleared by any conquest win.
   GAME.lastLossOppId=null;
+  // v183: proactively clear any leftover loss-warning pills from the PREVIOUS
+  // run. The data above is reset, but these pills are persistent DOM elements
+  // that only get hidden when refreshConquestHud() runs — which it never does
+  // in imperialism mode. Without this, a finished conquest run's "Losses to X:
+  // 3/3" pill bled onto the next game (reported by a player). Mode-agnostic.
+  try{
+    var _clEl=document.getElementById('g-conquest-loss');
+    if(_clEl){ _clEl.style.display='none'; _clEl.classList.remove('warn','danger'); }
+    var _lfEl=document.getElementById('g-loss-float');
+    if(_lfEl){ _lfEl.classList.remove('visible','warn','danger'); }
+    // v184: clear the gold empire-perimeter outline. It's a conquest-only
+    // feature (only fcMarkOwned draws it, and only in conquest mode), but the
+    // path was never cleared when LEAVING a conquest run — so a stale, broken
+    // gold outline bled into Random Imperialism. Imperialism never redraws it,
+    // so clearing here keeps it off for the whole mode.
+    if(window._fcPerim && window._fcPerim.el){ window._fcPerim.el.setAttribute('d',''); }
+  }catch(e){}
   // Consecutive win counter for the momentum-bonus formula. Bumps each
   // conquest-win, resets to 0 on any conquest-loss. Stored on the win op
   // for clean undo. Caps inside getHeroMomentumBonus().
@@ -14871,6 +15022,15 @@ function openUsernameGate(onDone){
     if(typeof openSavesModal==='function') openSavesModal();
     else if(typeof doSave==='function') doSave();
   });
+  // Load game → same Save Slots manager (every slot has a Load button, tagged
+  // WC/RI). Loading a slot restores that saved game's mode regardless of what's
+  // currently on screen.
+  const loadItem=document.getElementById('fc-menu-load');
+  if(loadItem) loadItem.addEventListener('click',()=>{
+    close();
+    if(typeof openSavesModal==='function') openSavesModal();
+    else if(typeof doLoad==='function') doLoad();
+  });
 
   // How to play → open the in-game help / glossary modal.
   const helpItem=document.getElementById('fc-menu-help');
@@ -15516,7 +15676,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v181-match-modal-fit-twist-flag-padding-2026-08-08';
+  window._FC_CAP_VERSION = 'v188-load-game-menu-mode-tagged-saves-2026-08-08';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
