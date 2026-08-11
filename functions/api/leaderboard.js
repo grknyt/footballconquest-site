@@ -35,6 +35,13 @@ export async function onRequestGet({ request, env }) {
 
   const heroFilter = url.searchParams.get('hero');
   const deviceFilter = url.searchParams.get('device_id');
+  // Date filter: `since` is an ISO-8601 UTC timestamp; only runs submitted at or
+  // after it are returned. Powers the Today / Last 7 days / Last 30 days views.
+  // The client computes the cutoff from its own local clock (so "Today" tracks
+  // the player's day). Parameterised, so no injection risk; we only sanity-cap
+  // the length. submitted_at is stored as new Date().toISOString(), so a plain
+  // string comparison is a correct chronological compare (and hits idx_runs_submitted).
+  const sinceParam = url.searchParams.get('since');
 
   const orderBy = {
     wins:            'wins DESC, gd DESC, id DESC',
@@ -49,6 +56,7 @@ export async function onRequestGet({ request, env }) {
   if (sort === 'fastest_victory') where.push(`result = 'victory'`);
   if (heroFilter) { where.push(`hero_name = ?`); params.push(heroFilter.slice(0, MAX_HERO_NAME_LEN)); }
   if (deviceFilter) { where.push(`device_id = ?`); params.push(deviceFilter.slice(0, 100)); }
+  if (sinceParam) { where.push(`submitted_at >= ?`); params.push(String(sinceParam).slice(0, 40)); }
   const whereClause = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
   const sql = `
