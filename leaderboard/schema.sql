@@ -17,6 +17,9 @@ CREATE TABLE IF NOT EXISTS runs (
   turns INTEGER NOT NULL,
   territories_owned INTEGER NOT NULL,
   eliminated_by TEXT,
+  -- v203: World Conquest difficulty — losses to the same opponent that end the
+  -- run (easy 5 / medium 3 / hard 1). Leaderboards are split per difficulty.
+  difficulty TEXT NOT NULL DEFAULT 'medium' CHECK(difficulty IN ('easy','medium','hard')),
   -- Plausibility: server-recorded receipt time + client-claimed campaign duration.
   client_dt_ms INTEGER NOT NULL DEFAULT 0,
   submitted_at TEXT NOT NULL,
@@ -41,3 +44,5 @@ CREATE INDEX IF NOT EXISTS idx_runs_device ON runs(device_id, submitted_at DESC)
 CREATE INDEX IF NOT EXISTS idx_runs_hero ON runs(hero_name, wins DESC);
 -- Recent submissions firehose (for moderation / new-run feed).
 CREATE INDEX IF NOT EXISTS idx_runs_submitted ON runs(submitted_at DESC);
+-- v203: per-difficulty leaderboards.
+CREATE INDEX IF NOT EXISTS idx_runs_difficulty ON runs(difficulty, wins DESC, gd DESC);

@@ -42,6 +42,9 @@ export async function onRequestGet({ request, env }) {
   // the length. submitted_at is stored as new Date().toISOString(), so a plain
   // string comparison is a correct chronological compare (and hits idx_runs_submitted).
   const sinceParam = url.searchParams.get('since');
+  // v203: difficulty filter (easy/medium/hard). Runs are split per difficulty
+  // since more losses allowed = easier to complete = incomparable boards.
+  const diffParam = url.searchParams.get('difficulty');
 
   const orderBy = {
     wins:            'wins DESC, gd DESC, id DESC',
@@ -57,12 +60,13 @@ export async function onRequestGet({ request, env }) {
   if (heroFilter) { where.push(`hero_name = ?`); params.push(heroFilter.slice(0, MAX_HERO_NAME_LEN)); }
   if (deviceFilter) { where.push(`device_id = ?`); params.push(deviceFilter.slice(0, 100)); }
   if (sinceParam) { where.push(`submitted_at >= ?`); params.push(String(sinceParam).slice(0, 40)); }
+  if (diffParam && ['easy','medium','hard'].includes(diffParam)) { where.push(`difficulty = ?`); params.push(diffParam); }
   const whereClause = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
   const sql = `
     SELECT id, device_id, username, hero_name, result,
            wins, losses, gf, ga, gd, turns, territories_owned,
-           eliminated_by, submitted_at
+           eliminated_by, submitted_at, difficulty
     FROM runs
     ${whereClause}
     ORDER BY ${orderBy}

@@ -84,6 +84,12 @@ export function validateSubmission(body) {
   const turns  = toInt(body.turns);
   const tOwned = toInt(body.territoriesOwned);
   const clientDtMs = toInt(body.clientDtMs ?? 0);
+  // v203: difficulty — losses to the SAME opponent that end the run.
+  // easy 5 / medium 3 (default, legacy) / hard 1. Governs the min-losses check
+  // for an eliminated run below, and splits the leaderboards.
+  const difficulty = ['easy','medium','hard'].includes(String(body.difficulty))
+    ? String(body.difficulty) : 'medium';
+  const minElimLosses = { easy:5, medium:3, hard:1 }[difficulty];
 
   if ([wins, losses, gf, ga, turns, tOwned].some(n => n < 0 || Number.isNaN(n))) {
     return { error: 'bad_numeric_value' };
@@ -107,7 +113,7 @@ export function validateSubmission(body) {
     return { error: 'victory_without_full_map', detail: `tOwned=${tOwned}` };
   }
   if (result === 'eliminated') {
-    if (losses < 3) return { error: 'eliminated_without_3_losses' };
+    if (losses < minElimLosses) return { error: 'eliminated_without_enough_losses', detail: `${losses}<${minElimLosses}` };
     if (!body.eliminatedBy || typeof body.eliminatedBy !== 'string') {
       return { error: 'missing_eliminated_by' };
     }
@@ -127,7 +133,7 @@ export function validateSubmission(body) {
     row: {
       device_id: deviceId, username, hero_name: heroName, result,
       wins, losses, gf, ga, turns, territories_owned: tOwned,
-      eliminated_by: eliminatedBy, client_dt_ms: clientDtMs
+      eliminated_by: eliminatedBy, client_dt_ms: clientDtMs, difficulty
     }
   };
 }

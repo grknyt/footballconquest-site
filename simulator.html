@@ -1273,6 +1273,19 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
   display:flex;flex-direction:column;}
 #g-conquest-team-picker > *{flex:0 0 auto;}
 .g-pick-label{font-size:11px;color:#7a9bb5;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+/* v203: World Conquest difficulty picker (Easy/Medium/Hard). */
+#g-diff-picker{margin:10px 0 12px;}
+.g-diff-btns{display:flex;gap:6px;}
+.g-diff-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:8px 6px;border-radius:8px;cursor:pointer;
+  background:#0e1c2e;border:1.5px solid #2a3f55;color:#cfdaea;
+  transition:border-color .15s,background .15s,color .15s;-webkit-tap-highlight-color:transparent;}
+.g-diff-btn b{font-size:13px;font-weight:800;letter-spacing:.3px;}
+.g-diff-btn small{font-size:10px;color:#7a9bb5;font-weight:600;}
+.g-diff-btn:hover{background:#13233a;}
+.g-diff-btn.active{border-color:#3ddc84;background:#13291f;color:#fff;
+  box-shadow:0 0 0 1px rgba(61,220,132,.35);}
+.g-diff-btn.active small{color:#8fe6b4;}
 .g-team-search{width:100%;background:#0e2034;border:1px solid #1a2f40;border-radius:6px;
   padding:8px 10px;color:#fff;font-size:13px;margin-bottom:8px;box-sizing:border-box;}
 .g-team-search:focus{outline:none;border-color:#7ab8e8;}
@@ -3987,6 +4000,16 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
           </div>
           <!-- Fastest-win badge for the highlighted country (personal best, local records). -->
           <div id="g-team-best" class="g-team-best"></div>
+          <!-- v203: difficulty picker — losses allowed to the same opponent
+               before the run ends. Medium (3) is the historical default. -->
+          <div id="g-diff-picker">
+            <div class="g-pick-label" data-i18n="sim.diff.label">Difficulty:</div>
+            <div class="g-diff-btns">
+              <button type="button" class="g-diff-btn" data-diff="easy"><b data-i18n="sim.diff.easy">Easy</b><small data-i18n="sim.diff.easy.sub">5 losses</small></button>
+              <button type="button" class="g-diff-btn active" data-diff="medium"><b data-i18n="sim.diff.medium">Medium</b><small data-i18n="sim.diff.medium.sub">3 losses</small></button>
+              <button type="button" class="g-diff-btn" data-diff="hard"><b data-i18n="sim.diff.hard">Hard</b><small data-i18n="sim.diff.hard.sub">1 loss</small></button>
+            </div>
+          </div>
           <button id="g-start-conquest" class="g-btn primary" disabled data-i18n="sim.mode.start">Start Conquest</button>
         </div>
       </div>
@@ -4047,6 +4070,14 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
               <option value="today" data-i18n="sim.lb.period.today">Today</option>
               <option value="7d" data-i18n="sim.lb.period.7d">Last 7 days</option>
               <option value="30d" data-i18n="sim.lb.period.30d">Last 30 days</option>
+            </select>
+          </label>
+          <label class="g-lb-sort-label" id="g-lb-diff-wrap">
+            <span data-i18n="sim.lb.difficulty">Difficulty</span>
+            <select id="g-leaderboard-difficulty">
+              <option value="easy" data-i18n="sim.diff.easy">Easy</option>
+              <option value="medium" selected data-i18n="sim.diff.medium">Medium</option>
+              <option value="hard" data-i18n="sim.diff.hard">Hard</option>
             </select>
           </label>
           <div class="g-lb-user-strip" id="g-lb-user-strip">
@@ -4474,8 +4505,8 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 <!-- Localization: shared dictionary + i18n engine (EN/TR). FCLang.t() drives
      the simulator's dynamic strings; data-i18n attributes drive static ones. -->
-<script src="/js/translations.js?v=20260810hideui"></script>
-<script src="/js/i18n.js?v=20260810hideui"></script>
+<script src="/js/translations.js?v=20260810difficulty"></script>
+<script src="/js/i18n.js?v=20260810difficulty"></script>
 <script>
 const FLAG_B64={
 'Albania':'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',
@@ -6262,6 +6293,7 @@ function captureState(){
       // Full conquest state — needed so undo can rewind losses + the redo
       // system can restore every relevant field.
       mode:GAME.mode,
+      difficulty:GAME.difficulty||'medium',   // v203
       heroTeamId:GAME.heroTeamId,
       conquestStack:JSON.parse(JSON.stringify(GAME.conquestStack||[])),
       lossCounts:{...(GAME.lossCounts||{})},
@@ -6367,6 +6399,7 @@ function restoreState(s){
     GAME.defender=s.game.defenderId!=null?teams.find(t=>t.id===s.game.defenderId):null;
     // Restore the extended conquest fields if present in the snapshot.
     if('mode' in s.game)                 GAME.mode=s.game.mode;
+    if('difficulty' in s.game){          GAME.difficulty=s.game.difficulty||'medium'; GAME.lossLimit=FC_DIFF_LOSSES[GAME.difficulty]||3; }
     if('heroTeamId' in s.game)           GAME.heroTeamId=s.game.heroTeamId;
     if(Array.isArray(s.game.conquestStack)) GAME.conquestStack=s.game.conquestStack.slice();
     if(s.game.lossCounts)                GAME.lossCounts={...s.game.lossCounts};
@@ -10317,6 +10350,15 @@ function wireStartupModal(){
     // Initial state
     setTimeout(updateBtns, 100);
   })();
+  // v203: difficulty picker buttons — set the pending difficulty + highlight.
+  document.querySelectorAll('#g-diff-picker .g-diff-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      window._fcSelectedDifficulty=b.getAttribute('data-diff')||'medium';
+      document.querySelectorAll('#g-diff-picker .g-diff-btn').forEach(function(x){
+        x.classList.toggle('active', x===b);
+      });
+    });
+  });
   const startBtn=document.getElementById('g-start-conquest');
   if(startBtn) startBtn.addEventListener('click',()=>{
     if(_selectedConquestTeamId==null)return;
@@ -10356,6 +10398,12 @@ function wireStartupModal(){
   });
 }
 
+// v203: World Conquest difficulty — how many losses to the SAME opponent end
+// the run. Easy 5 / Medium 3 (the historical default) / Hard 1. Chosen on the
+// WC start screen; recorded with the run so leaderboards can split by it.
+const FC_DIFF_LOSSES = { easy:5, medium:3, hard:1 };
+window._fcSelectedDifficulty = window._fcSelectedDifficulty || 'medium';
+function fcLossLimit(){ return FC_DIFF_LOSSES[(typeof GAME!=='undefined'&&GAME.difficulty)||'medium'] || 3; }
 function startGameInMode(mode,heroId){
   // Splash should disappear the moment we know a game is starting.
   if(typeof window.fcHideSplash==='function') window.fcHideSplash();
@@ -10372,6 +10420,10 @@ function startGameInMode(mode,heroId){
   }
   GAME.mode=mode;
   GAME.heroTeamId=mode==='conquest'?heroId:null;
+  // v203: lock in the difficulty for this run. Conquest reads the player's
+  // pick from the start screen; imperialism has no loss-limit so it's inert.
+  GAME.difficulty = (mode==='conquest') ? (window._fcSelectedDifficulty||'medium') : (GAME.difficulty||'medium');
+  GAME.lossLimit  = FC_DIFF_LOSSES[GAME.difficulty] || 3;
   GAME.conquestStack=[];
   GAME.lossCounts={};
   // Campaign tally — fresh per run. Mutated by handleConquestWin / handleConquestLoss,
@@ -10567,6 +10619,7 @@ function saveConquestRun(){
       flagScales:{...flagScales},
       // GAME core
       mode:GAME.mode,
+      difficulty:GAME.difficulty||'medium',   // v203: resume the correct loss-limit
       heroTeamId:GAME.heroTeamId,
       turn:GAME.turn||0,
       phase:GAME.phase||'idle',
@@ -10622,6 +10675,8 @@ function loadConquestRun(){
     if(typeof resetMapVisuals==='function') resetMapVisuals();
     // ── Restore GAME core ──
     GAME.mode=s.mode||'conquest';
+    GAME.difficulty=s.difficulty||'medium';   // v203
+    GAME.lossLimit=FC_DIFF_LOSSES[GAME.difficulty]||3;
     GAME.heroTeamId=(s.heroTeamId!=null)?s.heroTeamId:null;
     GAME.active=!!s.active;
     GAME.turn=s.turn||0;
@@ -10818,7 +10873,8 @@ function recordCampaignResult(result, extras){
     ga:stats.ga,
     turns:GAME.turn||0,
     territoriesOwned:territoriesOwned,
-    eliminatedBy:(extras&&extras.eliminatedBy)||null
+    eliminatedBy:(extras&&extras.eliminatedBy)||null,
+    difficulty:GAME.difficulty||'medium'   // v203: split leaderboards by difficulty
   };
   const board=loadLeaderboard();
   board.unshift(entry);
@@ -10849,6 +10905,7 @@ function submitRunToGlobalLeaderboard(entry, extras){
     turns:entry.turns,
     territoriesOwned:entry.territoriesOwned,
     eliminatedBy:entry.eliminatedBy,
+    difficulty:entry.difficulty||'medium',   // v203
     clientDtMs:GAME.campaignStartMs?Date.now()-GAME.campaignStartMs:0
   };
   fetch(FC_API_BASE+'/submit',{
@@ -10918,6 +10975,9 @@ let _fcLbGlobalSort='wins';
 let _fcLbCountry='';
 // Date filter for the global board. 'all' | 'today' | '7d' | '30d'. Default all.
 let _fcLbPeriod='all';
+// Difficulty filter for the global board. 'easy' | 'medium' | 'hard'. Default
+// medium (the historical board — legacy runs backfill to medium server-side).
+let _fcLbDifficulty='medium';
 // Turn the selected period into an ISO cutoff for the API's `since` param. The
 // cutoff is computed from the player's LOCAL clock so "Today" means their day.
 // '' == no filter (all time).
@@ -10956,6 +11016,11 @@ function applyLbControlsFor(tab){
   if(periodWrap) periodWrap.style.display=tab==='global'?'flex':'none';
   const periodSel=document.getElementById('g-leaderboard-period');
   if(periodSel) periodSel.value=_fcLbPeriod;
+  // Difficulty filter — global-board only.
+  const diffWrap=document.getElementById('g-lb-diff-wrap');
+  if(diffWrap) diffWrap.style.display=tab==='global'?'flex':'none';
+  const diffSel=document.getElementById('g-leaderboard-difficulty');
+  if(diffSel) diffSel.value=_fcLbDifficulty;
   if(userStrip) userStrip.style.display=tab==='global'?'flex':'none';
   if(clearBtn) clearBtn.style.display=tab==='local'?'inline-flex':'none';
 }
@@ -11033,8 +11098,9 @@ async function renderGlobalLeaderboard(){
     const _hero=_fcLbCountry?`&hero=${encodeURIComponent(_fcLbCountry)}`:'';
     const _sinceIso=fcLbSinceISO(_fcLbPeriod);
     const _since=_sinceIso?`&since=${encodeURIComponent(_sinceIso)}`:'';
+    const _diff=_fcLbDifficulty?`&difficulty=${encodeURIComponent(_fcLbDifficulty)}`:'';
     const res=await fetch(`${FC_API_BASE}/leaderboard?sort=${encodeURIComponent(_fcLbGlobalSort)}`+
-      `&limit=${FC_LB_PAGE_SIZE}&offset=${_off}${_hero}${_since}`);
+      `&limit=${FC_LB_PAGE_SIZE}&offset=${_off}${_hero}${_since}${_diff}`);
     if(!res.ok) throw new Error('HTTP '+res.status);
     data=await res.json();
   }catch(err){
@@ -11194,6 +11260,13 @@ function wireLeaderboardModal(){
   if(periodSel) periodSel.addEventListener('change',()=>{
     _fcLbPeriod=periodSel.value||'all';
     _fcLbGlobalPage=0;   // a new date window is a new board
+    renderGlobalLeaderboard();
+  });
+  // Difficulty filter on global tab — Easy / Medium / Hard.
+  const diffSel=document.getElementById('g-leaderboard-difficulty');
+  if(diffSel) diffSel.addEventListener('change',()=>{
+    _fcLbDifficulty=diffSel.value||'medium';
+    _fcLbGlobalPage=0;   // each difficulty is its own board
     renderGlobalLeaderboard();
   });
   // Country filter — shared across both tabs. Re-renders whichever is active.
@@ -12572,7 +12645,7 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
       gLog('💔 ' + FCLang.t(_keepFrac === 0.5 ? 'sim.boost.aurahalf' : 'sim.boost.auracut'));
     }
   }
-  if(losses>=3){
+  if(losses>=(GAME.lossLimit||3)){
     // Encapsulated game-over sequence so both the normal path AND the
     // rewarded-ad "One More Chance" fallback can invoke it. Moved into a
     // local closure to avoid duplicating the 6-line teardown.
@@ -13145,9 +13218,11 @@ function updateConquestHud(state){
     if(state&&state.lossOpponent&&state.lossCount>0){
       conquestLossEl.style.display='block';
       conquestLossEl.classList.remove('warn','danger');
-      if(state.lossCount===1) conquestLossEl.classList.add('warn');
-      if(state.lossCount>=2) conquestLossEl.classList.add('danger');
-      conquestLossEl.innerHTML=FCLang.t('sim.hud.losses',{opp:teamDisplayName(state.lossOpponent),n:state.lossCount});
+      // v203: danger tier = the LAST life for the chosen difficulty (limit-1),
+      // so Easy (5) doesn't flash red at 2, and Medium (3) still does at 2.
+      var _lim=(GAME.lossLimit||3);
+      if(state.lossCount>=_lim-1) conquestLossEl.classList.add('danger'); else conquestLossEl.classList.add('warn');
+      conquestLossEl.innerHTML=FCLang.t('sim.hud.losses',{opp:teamDisplayName(state.lossOpponent),n:state.lossCount,max:_lim});
     } else {
       conquestLossEl.style.display='none';
     }
@@ -13161,13 +13236,13 @@ function updateConquestHud(state){
   if(lossFloatEl){
     if(state&&state.lossOpponent&&state.lossCount>0){
       lossFloatEl.classList.remove('warn','danger');
-      if(state.lossCount===1) lossFloatEl.classList.add('warn');
-      if(state.lossCount>=2) lossFloatEl.classList.add('danger');
+      var _limF=(GAME.lossLimit||3);
+      if(state.lossCount>=_limF-1) lossFloatEl.classList.add('danger'); else lossFloatEl.classList.add('warn');
       lossFloatEl.classList.add('visible');
       // v71: no prepended '⚠ ' — the translation string already leads with
       // the ⚠️ emoji, so the pill was showing two warning triangles (one
       // monochrome, one emoji). Keep just the emoji from the string.
-      lossFloatEl.innerHTML=FCLang.t('sim.hud.losses',{opp:teamDisplayName(state.lossOpponent),n:state.lossCount});
+      lossFloatEl.innerHTML=FCLang.t('sim.hud.losses',{opp:teamDisplayName(state.lossOpponent),n:state.lossCount,max:_limF});
     } else {
       lossFloatEl.classList.remove('visible','warn','danger');
     }
@@ -16022,7 +16097,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v202-hide-ui-reenabled-longpress-restore-2026-08-10';
+  window._FC_CAP_VERSION = 'v203-wc-difficulty-easy-medium-hard-split-leaderboards-2026-08-10';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
@@ -16424,7 +16499,7 @@ function openUsernameGate(onDone){
               try { GAME.lossCounts[opp.id] = Math.max(0, (GAME.lossCounts[opp.id]||0) - 1); } catch(e){}
               GAME.continuesUsed = 1;
               try { if (typeof refreshConquestHud === 'function') refreshConquestHud(); } catch(e){}
-              try { if (typeof gLog === 'function') gLog('▶ +1 chance vs ' + oppName + '. Losses now ' + (GAME.lossCounts[opp.id]||0) + '/3.'); } catch(e){}
+              try { if (typeof gLog === 'function') gLog('▶ +1 chance vs ' + oppName + '. Losses now ' + (GAME.lossCounts[opp.id]||0) + '/' + (GAME.lossLimit||3) + '.'); } catch(e){}
             });
           } else {
             // User bailed out of the ad OR the video failed to complete.

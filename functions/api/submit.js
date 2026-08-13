@@ -47,13 +47,13 @@ export async function onRequestPost({ request, env }) {
   await env.DB.prepare(`
     INSERT INTO runs
       (device_id, username, hero_name, result, wins, losses, gf, ga,
-       turns, territories_owned, eliminated_by, client_dt_ms, submitted_at, ip_hash)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       turns, territories_owned, eliminated_by, client_dt_ms, submitted_at, ip_hash, difficulty)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     v.row.device_id, v.row.username, v.row.hero_name, v.row.result,
     v.row.wins, v.row.losses, v.row.gf, v.row.ga,
     v.row.turns, v.row.territories_owned, v.row.eliminated_by,
-    v.row.client_dt_ms, submittedAt, ipHash
+    v.row.client_dt_ms, submittedAt, ipHash, v.row.difficulty
   ).run();
 
   return json({ ok: true, submitted_at: submittedAt });
