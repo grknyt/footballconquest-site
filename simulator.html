@@ -1611,6 +1611,24 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-boost-btn[data-boost="bus"]{background:linear-gradient(180deg,#1a2c40 0%,#0b1826 100%);}
 .g-boost-btn[data-boost="attack"]{background:linear-gradient(180deg,#3a2612 0%,#180d05 100%);border-color:#5a3a1a;}
 .g-boost-btn[data-boost="reinforce"]{background:linear-gradient(180deg,#0f2a1a 0%,#050f08 100%);border-color:#1c4a2c;}
+/* v240: tone-based variants so EVERY pooled boost (incl. rotating newcomers)
+   is themed even without a per-id rule. def=steel, off=amber, mix=green —
+   mirror the three originals so bus/attack/reinforce look unchanged. */
+.g-boost-btn[data-tone="def"] .g-boost-ic{
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.45) 0%,rgba(255,255,255,.06) 40%,transparent 70%),
+             radial-gradient(circle at 50% 60%,#c9d3dc 0%,#5a6a7c 55%,#2c3a4a 100%);
+  color:#0a1220;}
+.g-boost-btn[data-tone="off"] .g-boost-ic{
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.45) 0%,rgba(255,220,140,.08) 40%,transparent 70%),
+             radial-gradient(circle at 50% 60%,#ffb84a 0%,#e67e22 55%,#8a3c14 100%);
+  color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.4);}
+.g-boost-btn[data-tone="mix"] .g-boost-ic{
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.4) 0%,rgba(255,255,255,.05) 40%,transparent 70%),
+             radial-gradient(circle at 50% 60%,#4ecb7a 0%,#2a8a4a 55%,#0f4022 100%);
+  color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.4);}
+.g-boost-btn[data-tone="def"]{background:linear-gradient(180deg,#1a2c40 0%,#0b1826 100%);}
+.g-boost-btn[data-tone="off"]{background:linear-gradient(180deg,#3a2612 0%,#180d05 100%);border-color:#5a3a1a;}
+.g-boost-btn[data-tone="mix"]{background:linear-gradient(180deg,#0f2a1a 0%,#050f08 100%);border-color:#1c4a2c;}
 .g-boost-nm{font-size:12px;font-weight:700;text-align:center;line-height:1.2;color:#e8eef5;}
 .g-boost-cost{font-size:11px;font-weight:800;color:#f4d77a;letter-spacing:.4px;}
 .g-boost-don{display:flex;align-items:center;gap:8px;margin-top:11px;cursor:pointer;
@@ -4677,9 +4695,9 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 <!-- Localization: shared dictionary + i18n engine (EN/TR). FCLang.t() drives
      the simulator's dynamic strings; data-i18n attributes drive static ones. -->
-<script src="/js/translations.js?v=20260817ri-bottomui7"></script>
-<script src="/js/i18n.js?v=20260817ri-bottomui7"></script>
-<script src="/js/help-content.js?v=20260817ri-bottomui7"></script>
+<script src="/js/translations.js?v=20260817boosts-rotate-stack"></script>
+<script src="/js/i18n.js?v=20260817boosts-rotate-stack"></script>
+<script src="/js/help-content.js?v=20260817boosts-rotate-stack"></script>
 <script>
 const FLAG_B64={
 'Albania':'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',
@@ -6473,6 +6491,8 @@ function captureState(){
       stats:{...(GAME.stats||{})},
       aura:GAME.aura||0,
       matchBoost:GAME.matchBoost||null,
+      activeBoosts:GAME.activeBoosts||[],
+      matchBoostChoices:GAME.matchBoostChoices||null,
       doubleOrNothing:!!GAME.doubleOrNothing,
       biggestWin:GAME.biggestWin||null,
       continentsMilestoned:{...(GAME.continentsMilestoned||{})},
@@ -6579,6 +6599,8 @@ function restoreState(s){
     if(s.game.stats)                     GAME.stats={...s.game.stats};
     if('aura' in s.game)                 GAME.aura=s.game.aura;
     if('matchBoost' in s.game)           GAME.matchBoost=s.game.matchBoost;
+    GAME.activeBoosts=Array.isArray(s.game.activeBoosts)?s.game.activeBoosts:(s.game.matchBoost&&s.game.matchBoost.key?[s.game.matchBoost.key]:[]);
+    GAME.matchBoostChoices=Array.isArray(s.game.matchBoostChoices)?s.game.matchBoostChoices:null;
     if('doubleOrNothing' in s.game)      GAME.doubleOrNothing=s.game.doubleOrNothing;
     if('biggestWin' in s.game)           GAME.biggestWin=s.game.biggestWin;
     if(s.game.continentsMilestoned)      GAME.continentsMilestoned={...s.game.continentsMilestoned};
@@ -10569,6 +10591,40 @@ fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json')
 
 // ── WORLD CONQUEST MODE ────────────────────────────────────────
 // Open the startup modal when the Game tab is activated
+// v238: Fit the whole start card into the vertical viewport on EVERY device
+// rather than letting it scroll. We measure the card's natural (unscaled)
+// height, compare it to the space available below the toolbar, and scale the
+// entire card with `zoom` so the mode buttons, team picker, difficulty row and
+// Start button all fit on screen — no internal scrolling, whatever the height.
+// Never enlarges past the desktop 1.1×; floors at 0.5× so it stays legible.
+// Re-runs on open, mode change, window resize and orientation change so it
+// behaves relative to vertical space identically on a 6" or a 10" tablet.
+function fcFitStartCard(){
+  const modal=document.getElementById('g-startup-modal');
+  if(!modal || !modal.classList.contains('open')) return;
+  const card=modal.querySelector('.g-start-card');
+  if(!card) return;
+  try{
+    // Let the card take its full natural height so nothing is clipped/scrolled.
+    card.style.maxHeight='none';
+    card.style.overflow='visible';
+    // Measure at zoom 1 (inline beats the CSS zoom rules), then reflow-read.
+    card.style.zoom='1';
+    const natural=card.offsetHeight;
+    if(!natural) return;
+    const cs=getComputedStyle(modal);
+    const padTop=parseFloat(cs.paddingTop)||0;
+    const padBot=parseFloat(cs.paddingBottom)||0;
+    const avail=window.innerHeight - padTop - padBot - 6; // small safety gap
+    let scale=avail/natural;
+    if(scale>1.1) scale=1.1;   // don't grow past the intended desktop size
+    if(scale<0.5) scale=0.5;   // legibility floor
+    card.style.zoom=scale;
+  }catch(_e){ /* fall back to the CSS scroll behaviour */ }
+}
+// Keep the card fitted as the viewport changes (rotate a tablet, resize a window).
+window.addEventListener('resize', function(){ fcFitStartCard(); });
+window.addEventListener('orientationchange', function(){ setTimeout(fcFitStartCard,120); });
 function openConquestStartup(){
   const modal=document.getElementById('g-startup-modal');
   if(!modal)return;
@@ -10592,6 +10648,9 @@ function openConquestStartup(){
   if(typeof updateResumeButton==='function') updateResumeButton();
   // Build the team list
   renderTeamList('');
+  // Scale the card to fit the viewport height (after layout settles).
+  requestAnimationFrame(fcFitStartCard);
+  setTimeout(fcFitStartCard, 60);
 }
 function closeConquestStartup(){
   const modal=document.getElementById('g-startup-modal');
@@ -10670,6 +10729,9 @@ function wireStartupModal(){
         document.getElementById('g-conquest-team-picker').style.display='block';
         const bestEl=document.getElementById('g-team-best');
         if(bestEl){ bestEl.textContent=''; bestEl.classList.remove('has-win'); }
+        // The picker just added a lot of height — re-fit the card to the screen.
+        requestAnimationFrame(fcFitStartCard);
+        setTimeout(fcFitStartCard, 60);
       } else {
         // Imperialism: start immediately
         startGameInMode('imperialism',null);
@@ -10838,6 +10900,7 @@ function startGameInMode(mode,heroId){
   // for clean undo via op.prevMomentumProgress.
   GAME.momentumProgress=0;
   GAME.aura=0; GAME.matchBoost=null; GAME.doubleOrNothing=false; GAME.biggestWin=null;
+  GAME.activeBoosts=[];
   GAME.continentsMilestoned={}; GAME.matchEvent=null; GAME._matchEventKey=null;
   // v1 monetization: reset the one-per-run rewarded-ad continue AND the
   // one-per-match free-boost flag whenever a fresh conquest starts.
@@ -11006,6 +11069,8 @@ function saveConquestRun(){
       stats:{...(GAME.stats||{wins:0,losses:0,gf:0,ga:0})},
       aura:GAME.aura||0,
       matchBoost:GAME.matchBoost||null,
+      activeBoosts:GAME.activeBoosts||[],
+      matchBoostChoices:GAME.matchBoostChoices||null,
       doubleOrNothing:!!GAME.doubleOrNothing,
       biggestWin:GAME.biggestWin||null,
       continentsMilestoned:{...(GAME.continentsMilestoned||{})},
@@ -11067,6 +11132,8 @@ function loadConquestRun(){
     GAME.stats={...(s.stats||{wins:0,losses:0,gf:0,ga:0})};
     GAME.aura=s.aura||0;
     GAME.matchBoost=s.matchBoost||null;
+    GAME.activeBoosts=Array.isArray(s.activeBoosts)?s.activeBoosts:(s.matchBoost&&s.matchBoost.key?[s.matchBoost.key]:[]);
+    GAME.matchBoostChoices=Array.isArray(s.matchBoostChoices)?s.matchBoostChoices:null;
     GAME.doubleOrNothing=!!s.doubleOrNothing;
     GAME.biggestWin=s.biggestWin||null;
     GAME.continentsMilestoned={...(s.continentsMilestoned||{})};
@@ -11990,6 +12057,12 @@ function rollMatchEvent(){
   if(GAME._matchEventKey===key) return;
   GAME._matchEventKey=key;
   GAME.matchBoost=null; GAME.doubleOrNothing=false;
+  GAME.activeBoosts=[];
+  // v240: fresh matchup → empty the stacked boosts and draw a new random 3 from
+  // the pool (rotating boosts). Stable for this matchup (rollMatchEvent is keyed
+  // per turn+defender), re-rolls when the opponent changes.
+  GAME.activeBoosts=[];
+  GAME.matchBoostChoices=fcRollBoostChoices(3);
   // v1 monetization: reset per-match rewarded-ad "free boost" cap so each
   // fresh matchup gets exactly one free-boost opportunity via Reward #2.
   GAME._matchFreeBoostUsed=false;
@@ -12210,26 +12283,49 @@ function renderCampaignPanel(){
 // Earned by winning (handleConquestWin) and by clearing continents. Spent in
 // the result modal on a one-match boost. Boosts reuse the same modifier
 // fields as twist/boss events and stack on top via GAME.matchBoost.
+// Aura boost POOL. Each match draws a random 3 of these (fully rotated), and
+// the player may STACK any number they can afford — costs are additive. Effect
+// knobs: heroEffDelta (+ = hero stronger), oppEffDelta (- = opponent weaker),
+// heroLambdaMult (>1 = score more), oppLambdaMult (<1 = concede less). `tone`
+// drives the button colour (def=steel, off=amber, mix=green); `i18n` is the
+// name key and `en` the built-in English fallback.
 const BOOSTS={
-  bus:      {cost:2, oppLambdaMult:0.60},
-  attack:   {cost:2, heroLambdaMult:1.40},
-  reinforce:{cost:3, heroEffDelta:50}
+  bus:      {cost:2, oppLambdaMult:0.60,                     icon:'🛡️', tone:'def', i18n:'sim.boost.bus',       en:'Park the Bus'},
+  attack:   {cost:2, heroLambdaMult:1.40,                    icon:'⚡',  tone:'off', i18n:'sim.boost.attack',    en:'All-Out Attack'},
+  reinforce:{cost:3, heroEffDelta:50,                        icon:'💪', tone:'mix', i18n:'sim.boost.reinforce', en:'Reinforcements'},
+  counter:  {cost:2, heroLambdaMult:1.20, oppLambdaMult:0.85, icon:'🔄', tone:'mix', i18n:'sim.boost.counter',   en:'Counter-Attack'},
+  wall:     {cost:3, oppLambdaMult:0.45,                     icon:'🧱', tone:'def', i18n:'sim.boost.wall',      en:'Iron Wall'},
+  talisman: {cost:3, heroEffDelta:35, heroLambdaMult:1.15,     icon:'🍀', tone:'mix', i18n:'sim.boost.talisman',  en:'Talisman'},
+  press:    {cost:2, oppEffDelta:-40,                        icon:'🏃', tone:'off', i18n:'sim.boost.press',     en:'High Press'},
+  blitz:    {cost:4, heroLambdaMult:1.65,                    icon:'🚀', tone:'off', i18n:'sim.boost.blitz',     en:'Blitz'}
 };
+const BOOST_POOL_KEYS=Object.keys(BOOSTS);
+// Resolve a boost's localized display name (English fallback).
+function boostName(key){ const b=BOOSTS[key]; if(!b) return ''; try{ return FCLang.t(b.i18n); }catch(e){ return b.en||key; } }
+// Draw n distinct random boost keys for a fresh matchup.
+function fcRollBoostChoices(n){
+  const keys=BOOST_POOL_KEYS.slice();
+  for(let i=keys.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=keys[i]; keys[i]=keys[j]; keys[j]=t; }
+  return keys.slice(0, n||3);
+}
 // Buy / toggle / switch the active boost for this match.
 function applyBoost(key){
   if(!GAME||GAME.mode!=='conquest') return;
   const b=BOOSTS[key]; if(!b) return;
-  const cur=GAME.matchBoost;
-  if(cur&&cur.key===key){
-    GAME.aura=(GAME.aura||0)+b.cost;          // click active boost again -> refund
-    GAME.matchBoost=null;
+  GAME.activeBoosts=GAME.activeBoosts||[];
+  const idx=GAME.activeBoosts.indexOf(key);
+  if(idx>=0){
+    // Toggle OFF -> refund this boost's cost.
+    GAME.activeBoosts.splice(idx,1);
+    GAME.aura=(GAME.aura||0)+b.cost;
   } else {
-    const refund=cur&&BOOSTS[cur.key]?BOOSTS[cur.key].cost:0;
-    if(((GAME.aura||0)+refund)<b.cost) return;            // can't afford
-    GAME.aura=(GAME.aura||0)+refund-b.cost;
-    GAME.matchBoost={key:key,heroEffDelta:b.heroEffDelta||0,oppEffDelta:b.oppEffDelta||0,
-      heroLambdaMult:b.heroLambdaMult||1,oppLambdaMult:b.oppLambdaMult||1};
+    // Toggle ON -> STACKS on top of anything already active; must afford it.
+    if((GAME.aura||0) < b.cost) return;
+    GAME.aura=(GAME.aura||0)-b.cost;
+    GAME.activeBoosts.push(key);
   }
+  // Legacy single-boost field points at the last pick, for save-compat readers.
+  GAME.matchBoost = GAME.activeBoosts.length ? {key:GAME.activeBoosts[GAME.activeBoosts.length-1]} : null;
   renderBoostPanel();
   if(typeof updateResultPreview==='function') updateResultPreview();
 }
@@ -12245,16 +12341,29 @@ function renderBoostPanel(){
   const aura=(GAME&&GAME.aura)||0;
   const bal=document.getElementById('g-boost-bal');
   if(bal) bal.textContent=aura+' ⭐';
-  const cur=GAME&&GAME.matchBoost;
+  const active=(GAME&&GAME.activeBoosts)||[];
+  // The three boosts drawn for this matchup (rotating pool). Fall back to the
+  // first three keys if a matchup hasn't rolled yet (e.g. an old save).
+  const choices=(GAME&&GAME.matchBoostChoices&&GAME.matchBoostChoices.length)
+    ? GAME.matchBoostChoices : BOOST_POOL_KEYS.slice(0,3);
   const freeAvail = (typeof window._fcRewardedAvailable === 'function' && window._fcRewardedAvailable())
                     && !(GAME && GAME._matchFreeBoostUsed);
-  panel.querySelectorAll('.g-boost-btn').forEach(function(btn){
-    const key=btn.getAttribute('data-boost');
-    const b=BOOSTS[key]; if(!b) return;
-    const active=!!(cur&&cur.key===key);
-    btn.classList.toggle('active',active);
-    const refund=cur&&BOOSTS[cur.key]?BOOSTS[cur.key].cost:0;
-    const cannotAfford = !active && ((aura+refund) < b.cost);
+  panel.querySelectorAll('.g-boost-btn').forEach(function(btn,i){
+    const key=choices[i];
+    const b=key&&BOOSTS[key];
+    if(!b){ btn.style.display='none'; return; }
+    btn.style.display='';
+    // Paint this slot as its drawn boost (icon / name / cost / colour tone).
+    btn.setAttribute('data-boost',key);
+    btn.setAttribute('data-tone',b.tone||'mix');
+    const ic=btn.querySelector('.g-boost-ic'); if(ic) ic.textContent=b.icon||'⭐';
+    const nm=btn.querySelector('.g-boost-nm'); if(nm){ nm.removeAttribute('data-i18n'); nm.textContent=boostName(key); }
+    const co=btn.querySelector('.g-boost-cost'); if(co) co.textContent=b.cost+'⭐';
+    const isActive=active.indexOf(key)>=0;
+    btn.classList.toggle('active',isActive);
+    // Affordable if already active (toggle-off) or aura covers its own cost —
+    // aura already reflects everything currently stacked.
+    const cannotAfford = !isActive && (aura < b.cost);
     if (cannotAfford && freeAvail) {
       btn.disabled = false;
       btn.classList.add('free-eligible');
@@ -12305,13 +12414,12 @@ function renderBoostPanel(){
 function fcApplyBoostFree(key){
   if(!GAME||GAME.mode!=='conquest') return;
   const b=BOOSTS[key]; if(!b) return;
-  const cur=GAME.matchBoost;
-  const refund=cur&&BOOSTS[cur.key]?BOOSTS[cur.key].cost:0;
-  if(refund) GAME.aura=(GAME.aura||0)+refund;
-  GAME.matchBoost={key:key,heroEffDelta:b.heroEffDelta||0,oppEffDelta:b.oppEffDelta||0,
-    heroLambdaMult:b.heroLambdaMult||1,oppLambdaMult:b.oppLambdaMult||1,_free:true};
+  GAME.activeBoosts=GAME.activeBoosts||[];
+  // Free = stacks on without deducting Aura (one free boost per match).
+  if(GAME.activeBoosts.indexOf(key)<0) GAME.activeBoosts.push(key);
+  GAME.matchBoost={key:key};
   GAME._matchFreeBoostUsed=true;
-  try { if(typeof gLog==='function') gLog('▶ Free boost: ' + b.name + ' (via ad).'); } catch(e){}
+  try { if(typeof gLog==='function') gLog('▶ ' + boostName(key) + ' (via ad).'); } catch(e){}
   renderBoostPanel();
   if(typeof updateResultPreview==='function') updateResultPreview();
 }
@@ -12342,7 +12450,9 @@ function computeMatchModel(tactic){
   let oppEff=oppFifa+oppSize*5;
   // Pre-match modifiers — twist/boss event + the player's chosen Aura boost.
   // A flat effective-rating shift moves BOTH win-prob and xG.
-  const _mods=[GAME.matchEvent,GAME.matchBoost].filter(Boolean);
+  // Stacked Aura boosts: sum every active boost's effects (plus any twist event).
+  const _boostMods=((GAME&&GAME.activeBoosts)||[]).map(function(k){ return BOOSTS[k]; }).filter(Boolean);
+  const _mods=[GAME.matchEvent].concat(_boostMods).filter(Boolean);
   _mods.forEach(function(m){ heroEff+=m.heroEffDelta||0; oppEff+=m.oppEffDelta||0; });
   const avg=(heroEff+oppEff)/2;
   // baseLambda 1.3 → ~2.6 total goals in an even match (realistic). The
@@ -13035,6 +13145,7 @@ function handleConquestWin(hero,opp,heroScore,oppScore,suffix){
   // Match resolved — clear the one-match boost + gamble so neither can
   // carry over into the next match (e.g. a same-opponent revenge match).
   GAME.matchBoost=null; GAME.doubleOrNothing=false;
+  GAME.activeBoosts=[];
   // Push undo record for this win. heroScore/oppScore stored explicitly so
   // undoConquestWin can rewind the stats tally cleanly (no string parsing).
   // prevWinStreak captures the streak value BEFORE this win so undo restores
@@ -13120,6 +13231,7 @@ function handleConquestLoss(hero,opp,heroScore,oppScore,suffix){
   // Match resolved — clear the one-match boost + gamble so neither can
   // carry over into the next match (e.g. a same-opponent revenge match).
   GAME.matchBoost=null; GAME.doubleOrNothing=false;
+  GAME.activeBoosts=[];
   // ── Momentum penalty for the loss ────────────────────────────────────
   // Snapshot streak BEFORE we reset it so the penalty calc sees how high
   // we were riding.
@@ -16679,7 +16791,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v237-landscape-tablet-start-btn-sticky-2026-08-17';
+  window._FC_CAP_VERSION = 'v240-aura-boosts-rotate-pool-plus-stacking-2026-08-17';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
