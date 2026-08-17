@@ -343,6 +343,10 @@ window.FC_TRANSLATIONS = {
     /* A — toolbar */
     "sim.tb.view": "View",
     "sim.tb.help": "Help",
+    "sim.ri.win.title": "World Conquered!",
+    "sim.ri.win.sub": "Conquered the world in {n} turns",
+    "sim.ri.win.new": "New Game",
+    "sim.ri.win.map": "View Map",
     "sim.tb.erase": "Erase",
     "sim.tb.paint": "Paint",
     "sim.tb.flags": "Flags",
@@ -1273,7 +1277,11 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.theme": "A\u00e7\u0131k/koyu harita",
     "sim.tb.undo": "Geri al",
     "sim.tb.view": "G\u00f6r\u00fcnt\u00fcle",
-    "sim.tb.help": "Yard\u0131m"
+    "sim.tb.help": "Yard\u0131m",
+    "sim.ri.win.title": "Dünya Fethedildi!",
+    "sim.ri.win.sub": "Dünya {n} turda fethedildi",
+    "sim.ri.win.new": "Yeni Oyun",
+    "sim.ri.win.map": "Haritayı Gör"
   },
   es: {
     "sim.tb.bug": "Reportar error",
@@ -1902,7 +1910,11 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.theme": "Cambiar mapa claro/oscuro",
     "sim.tb.undo": "Deshacer",
     "sim.tb.view": "Ver",
-    "sim.tb.help": "Ayuda"
+    "sim.tb.help": "Ayuda",
+    "sim.ri.win.title": "¡Mundo Conquistado!",
+    "sim.ri.win.sub": "Conquistó el mundo en {n} turnos",
+    "sim.ri.win.new": "Nuevo Juego",
+    "sim.ri.win.map": "Ver Mapa"
   },
   pt: {
     "sim.tb.bug": "Reportar erro",
@@ -2531,7 +2543,11 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.theme": "Trocar mapa claro/escuro",
     "sim.tb.undo": "Desfazer",
     "sim.tb.view": "Ver",
-    "sim.tb.help": "Ajuda"
+    "sim.tb.help": "Ajuda",
+    "sim.ri.win.title": "Mundo Conquistado!",
+    "sim.ri.win.sub": "Conquistou o mundo em {n} turnos",
+    "sim.ri.win.new": "Novo Jogo",
+    "sim.ri.win.map": "Ver Mapa"
   },
   fr: {
     "sim.tb.bug": "Signaler un bug",
@@ -3160,7 +3176,11 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.theme": "Carte claire/sombre",
     "sim.tb.undo": "Annuler",
     "sim.tb.view": "Vue",
-    "sim.tb.help": "Aide"
+    "sim.tb.help": "Aide",
+    "sim.ri.win.title": "Monde Conquis !",
+    "sim.ri.win.sub": "A conquis le monde en {n} tours",
+    "sim.ri.win.new": "Nouvelle Partie",
+    "sim.ri.win.map": "Voir la Carte"
   },
   de: {
     "sim.tb.bug": "Fehler melden",
@@ -3789,7 +3809,11 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.theme": "Helle/dunkle Karte",
     "sim.tb.undo": "R\u00fcckg\u00e4ngig",
     "sim.tb.view": "Ansicht",
-    "sim.tb.help": "Hilfe"
+    "sim.tb.help": "Hilfe",
+    "sim.ri.win.title": "Welt Erobert!",
+    "sim.ri.win.sub": "Die Welt in {n} Zügen erobert",
+    "sim.ri.win.new": "Neues Spiel",
+    "sim.ri.win.map": "Karte Ansehen"
   },
   it: {
     "sim.tb.bug": "Segnala bug",
@@ -4217,7 +4241,11 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.theme": "Mappa chiara/scura",
     "sim.tb.undo": "Annulla",
     "sim.tb.view": "Vista",
-    "sim.tb.help": "Aiuto"
+    "sim.tb.help": "Aiuto",
+    "sim.ri.win.title": "Mondo Conquistato!",
+    "sim.ri.win.sub": "Ha conquistato il mondo in {n} turni",
+    "sim.ri.win.new": "Nuova Partita",
+    "sim.ri.win.map": "Vedi Mappa"
   },
   nl: {
     "sim.tb.bug": "Bug melden",
@@ -4645,7 +4673,11 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.theme": "Licht/donker kaart",
     "sim.tb.undo": "Ongedaan",
     "sim.tb.view": "Weergave",
-    "sim.tb.help": "Help"
+    "sim.tb.help": "Help",
+    "sim.ri.win.title": "Wereld Veroverd!",
+    "sim.ri.win.sub": "Veroverde de wereld in {n} beurten",
+    "sim.ri.win.new": "Nieuw Spel",
+    "sim.ri.win.map": "Kaart Bekijken"
   },
   no: {
     "sim.tb.bug": "Rapporter feil",
@@ -5073,7 +5105,11 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.theme": "Lyst/m\u00f8rkt kart",
     "sim.tb.undo": "Angre",
     "sim.tb.view": "Vis",
-    "sim.tb.help": "Hjelp"
+    "sim.tb.help": "Hjelp",
+    "sim.ri.win.title": "Verden Erobret!",
+    "sim.ri.win.sub": "Erobret verden på {n} runder",
+    "sim.ri.win.new": "Nytt Spill",
+    "sim.ri.win.map": "Se Kart"
   },
   sv: {
     "sim.tb.bug": "Rapportera bugg",
@@ -5501,6 +5537,10 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.theme": "Ljus/m\u00f6rk karta",
     "sim.tb.undo": "\u00c5ngra",
     "sim.tb.view": "Vy",
-    "sim.tb.help": "Hj\u00e4lp"
+    "sim.tb.help": "Hj\u00e4lp",
+    "sim.ri.win.title": "Världen Erövrad!",
+    "sim.ri.win.sub": "Erövrade världen på {n} omgångar",
+    "sim.ri.win.new": "Nytt Spel",
+    "sim.ri.win.map": "Visa Karta"
   }
 };
