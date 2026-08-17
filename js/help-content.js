@@ -50,7 +50,7 @@ window.FC_HELP_I18N = {
         ["⚔️","Taktikler","Maçtan önce ihtimalleri dürtmek için Defansif, Dengeli ya da Ofansif seç. Taş-kağıt-makas: Ofansif Defansif'i, Defansif Dengeli'yi, Dengeli Ofansif'i yener."],
         ["🌀","Sürprizler","Yaklaşık beş maçta bir bir sürpriz çıkar — bir sakatlık, hava durumu, bir husumet maçı — ihtimalleri ya da skoru değiştirir."]
       ]},
-      { h: "Bir eşleşmeyi okumak", rows: [
+      { h: "Sıralama Mantığı", rows: [
         ["⭐","OVR ve yıldızlar","Her ulus, FIFA sıralamasından türetilen bir genel puan ve bir yıldız kademesi gösterir — kimin favori olduğuna dair hızlı bir okuma."],
         ["🔢","Canlı sıralama (# rozeti)","Her bayrağın yanındaki küçük sayı, o ulusun sabit bir FIFA sırası değil, sıralamadaki ŞU ANKİ yeridir. Bir ulus toprak fethettikçe ve galibiyetleri arka arkaya dizdikçe yükselir. Daha düşük olan daha güçlüdür."],
         ["📊","Güç puanı","Sıra · Yaşayan kutusundaki sıralama listesi, hayatta kalan her ulusu canlı bir güç puanına göre sıralar. En çok toprak sayılır (elde tutulan ülke başına yaklaşık 10 puan), mevcut form üstüne eklenir (arka arkaya kazanılan her savaş için +3) ve başlangıç FIFA puanı yalnızca küçük bir tohumdur (9 puanın altında) ve başlama vuruşunda sadece eşitlikleri bozar. Yani tabloyu toprak ve momentum belirler — FIFA yalnızca açılış sırasını kurar, sonra imparatorluklar büyüdükçe geri çekilir."],
