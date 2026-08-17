@@ -342,6 +342,7 @@ window.FC_TRANSLATIONS = {
     /* ════════ SIMULATOR (simulator.html) ════════ */
     /* A — toolbar */
     "sim.tb.view": "View",
+    "sim.tb.help": "Help",
     "sim.tb.erase": "Erase",
     "sim.tb.paint": "Paint",
     "sim.tb.flags": "Flags",
@@ -1271,7 +1272,8 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.swatch": "Etkin renk \u2014 temizlemek i\u00e7in dokun",
     "sim.tb.tip.theme": "A\u00e7\u0131k/koyu harita",
     "sim.tb.undo": "Geri al",
-    "sim.tb.view": "G\u00f6r\u00fcnt\u00fcle"
+    "sim.tb.view": "G\u00f6r\u00fcnt\u00fcle",
+    "sim.tb.help": "Yard\u0131m"
   },
   es: {
     "sim.tb.bug": "Reportar error",
@@ -1899,7 +1901,8 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.swatch": "Color activo \u2014 toca para borrar",
     "sim.tb.tip.theme": "Cambiar mapa claro/oscuro",
     "sim.tb.undo": "Deshacer",
-    "sim.tb.view": "Ver"
+    "sim.tb.view": "Ver",
+    "sim.tb.help": "Ayuda"
   },
   pt: {
     "sim.tb.bug": "Reportar erro",
@@ -2527,7 +2530,8 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.swatch": "Cor ativa \u2014 toque para limpar",
     "sim.tb.tip.theme": "Trocar mapa claro/escuro",
     "sim.tb.undo": "Desfazer",
-    "sim.tb.view": "Ver"
+    "sim.tb.view": "Ver",
+    "sim.tb.help": "Ajuda"
   },
   fr: {
     "sim.tb.bug": "Signaler un bug",
@@ -3155,7 +3159,8 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.swatch": "Couleur active \u2014 touche pour effacer",
     "sim.tb.tip.theme": "Carte claire/sombre",
     "sim.tb.undo": "Annuler",
-    "sim.tb.view": "Vue"
+    "sim.tb.view": "Vue",
+    "sim.tb.help": "Aide"
   },
   de: {
     "sim.tb.bug": "Fehler melden",
@@ -3783,7 +3788,8 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.swatch": "Aktive Farbe \u2014 tippen zum L\u00f6schen",
     "sim.tb.tip.theme": "Helle/dunkle Karte",
     "sim.tb.undo": "R\u00fcckg\u00e4ngig",
-    "sim.tb.view": "Ansicht"
+    "sim.tb.view": "Ansicht",
+    "sim.tb.help": "Hilfe"
   },
   it: {
     "sim.tb.bug": "Segnala bug",
@@ -4210,7 +4216,8 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.swatch": "Colore attivo \u2014 tocca per pulire",
     "sim.tb.tip.theme": "Mappa chiara/scura",
     "sim.tb.undo": "Annulla",
-    "sim.tb.view": "Vista"
+    "sim.tb.view": "Vista",
+    "sim.tb.help": "Aiuto"
   },
   nl: {
     "sim.tb.bug": "Bug melden",
@@ -4637,7 +4644,8 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.swatch": "Actieve kleur \u2014 tik om te wissen",
     "sim.tb.tip.theme": "Licht/donker kaart",
     "sim.tb.undo": "Ongedaan",
-    "sim.tb.view": "Weergave"
+    "sim.tb.view": "Weergave",
+    "sim.tb.help": "Help"
   },
   no: {
     "sim.tb.bug": "Rapporter feil",
@@ -5064,7 +5072,8 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.swatch": "Aktiv farge \u2014 trykk for \u00e5 t\u00f8mme",
     "sim.tb.tip.theme": "Lyst/m\u00f8rkt kart",
     "sim.tb.undo": "Angre",
-    "sim.tb.view": "Vis"
+    "sim.tb.view": "Vis",
+    "sim.tb.help": "Hjelp"
   },
   sv: {
     "sim.tb.bug": "Rapportera bugg",
@@ -5491,6 +5500,7 @@ window.FC_TRANSLATIONS = {
     "sim.tb.tip.swatch": "Aktiv f\u00e4rg \u2014 tryck f\u00f6r att rensa",
     "sim.tb.tip.theme": "Ljus/m\u00f6rk karta",
     "sim.tb.undo": "\u00c5ngra",
-    "sim.tb.view": "Vy"
+    "sim.tb.view": "Vy",
+    "sim.tb.help": "Hj\u00e4lp"
   }
 };
