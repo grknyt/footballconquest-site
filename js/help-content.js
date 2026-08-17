@@ -108,7 +108,7 @@ window.FC_HELP_I18N = {
         ["⚔️","Tácticas","Antes de un partido, elige Defensivo, Equilibrado u Ofensivo para inclinar las probabilidades. Piedra-papel-tijera: Ofensivo vence a Defensivo, Defensivo vence a Equilibrado, Equilibrado vence a Ofensivo."],
         ["🌀","Giros","Aproximadamente uno de cada cinco partidos lanza una sorpresa — una lesión, el clima, un partido de rencor — que cambia las probabilidades o el marcador."]
       ]},
-      { h: "Leer un enfrentamiento", rows: [
+      { h: "Lógica de Clasificación", rows: [
         ["⭐","OVR y estrellas","Cada nación muestra una valoración general y un nivel de estrellas extraído de su ranking FIFA — una lectura rápida de quién es favorito."],
         ["🔢","Ranking en vivo (la insignia #)","El pequeño número junto a cada bandera es el puesto ACTUAL de esa nación en la clasificación, no un ranking FIFA fijo. Sube a medida que una nación conquista territorio y encadena victorias. Más bajo es más fuerte."],
         ["📊","Puntuación de poder","La lista de clasificación en el recuadro Turno · Vivas ordena cada nación superviviente por una puntuación de poder en vivo. El territorio cuenta más (unos 10 puntos por país poseído), la forma actual suma encima (+3 por cada batalla ganada seguida) y la valoración FIFA inicial es solo una pequeña semilla (menos de 9 puntos) que apenas desempata al inicio. Así que el territorio y el impulso deciden la tabla — FIFA solo fija el orden de salida y luego cede a medida que crecen los imperios."],
@@ -166,7 +166,7 @@ window.FC_HELP_I18N = {
         ["⚔️","Táticas","Antes de uma partida, escolha Defensivo, Equilibrado ou Ofensivo para inclinar as probabilidades. Pedra-papel-tesoura: Ofensivo vence Defensivo, Defensivo vence Equilibrado, Equilibrado vence Ofensivo."],
         ["🌀","Reviravoltas","Cerca de uma partida em cada cinco lança uma surpresa — uma lesão, o clima, um jogo de rivalidade — que muda as probabilidades ou o placar."]
       ]},
-      { h: "Lendo um confronto", rows: [
+      { h: "Lógica de Classificação", rows: [
         ["⭐","OVR e estrelas","Cada nação mostra um rating geral e um nível de estrelas tirado do seu ranking FIFA — uma leitura rápida de quem é favorito."],
         ["🔢","Ranking ao vivo (o selo #)","O pequeno número ao lado de cada bandeira é a posição ATUAL daquela nação na classificação, não um ranking FIFA fixo. Sobe conforme uma nação conquista território e emenda vitórias. Menor é mais forte."],
         ["📊","Pontuação de poder","A lista de classificação na caixa Turno · Vivas ordena cada nação sobrevivente por uma pontuação de poder ao vivo. O território conta mais (cerca de 10 pontos por país possuído), a forma atual soma por cima (+3 por cada batalha vencida em sequência) e o rating FIFA inicial é apenas uma pequena semente (menos de 9 pontos) que só desempata no início. Então território e momento decidem a tabela — o FIFA só define a ordem de abertura e depois cede à medida que os impérios crescem."],
@@ -224,7 +224,7 @@ window.FC_HELP_I18N = {
         ["⚔️","Tactiques","Avant un match, choisis Défensif, Équilibré ou Offensif pour infléchir les probabilités. Pierre-feuille-ciseaux : Offensif bat Défensif, Défensif bat Équilibré, Équilibré bat Offensif."],
         ["🌀","Rebondissements","Environ un match sur cinq lance une surprise — une blessure, la météo, un match de rancune — qui change les probabilités ou le score."]
       ]},
-      { h: "Lire une confrontation", rows: [
+      { h: "Logique de Classement", rows: [
         ["⭐","OVR et étoiles","Chaque nation affiche une note globale et un niveau d'étoiles tirés de son classement FIFA — une lecture rapide de qui est favori."],
         ["🔢","Classement en direct (le badge #)","Le petit nombre à côté de chaque drapeau est la place ACTUELLE de cette nation au classement, pas un rang FIFA figé. Il monte à mesure qu'une nation conquiert du territoire et enchaîne les victoires. Plus bas est plus fort."],
         ["📊","Score de puissance","La liste de classement dans l'encadré Tour · En vie trie chaque nation survivante par un score de puissance en direct. Le territoire compte le plus (environ 10 points par pays détenu), la forme actuelle s'ajoute par-dessus (+3 pour chaque bataille gagnée d'affilée) et la note FIFA de départ n'est qu'une petite graine (moins de 9 points) qui ne fait que départager au coup d'envoi. Donc le territoire et l'élan décident du tableau — le FIFA ne fixe que l'ordre d'ouverture, puis s'efface à mesure que les empires grandissent."],
@@ -282,7 +282,7 @@ window.FC_HELP_I18N = {
         ["⚔️","Taktiken","Wähle vor einem Spiel Defensiv, Ausgeglichen oder Offensiv, um die Chancen zu beeinflussen. Schere-Stein-Papier: Offensiv schlägt Defensiv, Defensiv schlägt Ausgeglichen, Ausgeglichen schlägt Offensiv."],
         ["🌀","Wendungen","Etwa jedes fünfte Spiel wirft eine Überraschung — eine Verletzung, das Wetter, ein Duell mit alter Rechnung — die die Chancen oder den Spielstand verschiebt."]
       ]},
-      { h: "Ein Duell lesen", rows: [
+      { h: "Ranglisten-Logik", rows: [
         ["⭐","OVR & Sterne","Jede Nation zeigt eine Gesamtwertung und eine Sternstufe aus ihrem FIFA-Rang — ein schneller Blick, wer favorisiert ist."],
         ["🔢","Live-Rang (das #-Abzeichen)","Die kleine Zahl neben jeder Flagge ist der AKTUELLE Platz dieser Nation in der Tabelle, kein fester FIFA-Rang. Sie steigt, während eine Nation Land erobert und Siege aneinanderreiht. Niedriger ist stärker."],
         ["📊","Machtwert","Die Ranglistenliste im Kasten Zug · Am Leben sortiert jede überlebende Nation nach einem Live-Machtwert. Land zählt am meisten (etwa 10 Punkte pro gehaltenem Land), die aktuelle Form kommt obendrauf (+3 für jede in Folge gewonnene Schlacht) und die Start-FIFA-Wertung ist nur ein kleiner Startwert (unter 9 Punkten), der beim Anpfiff lediglich Gleichstände auflöst. Also entscheiden Land und Schwung die Tabelle — FIFA legt nur die Startreihenfolge fest und tritt dann zurück, während die Reiche wachsen."],
@@ -340,7 +340,7 @@ window.FC_HELP_I18N = {
         ["⚔️","Tattiche","Prima di una partita, scegli Difensivo, Equilibrato o Offensivo per sbilanciare le probabilità. Carta-sasso-forbici: Offensivo batte Difensivo, Difensivo batte Equilibrato, Equilibrato batte Offensivo."],
         ["🌀","Colpi di scena","Circa una partita su cinque lancia una sorpresa — un infortunio, il meteo, una partita di rivalità — che sposta le probabilità o il punteggio."]
       ]},
-      { h: "Leggere una sfida", rows: [
+      { h: "Logica della Classifica", rows: [
         ["⭐","OVR e stelle","Ogni nazione mostra un rating complessivo e un livello di stelle tratti dal suo ranking FIFA — una lettura rapida di chi è favorito."],
         ["🔢","Classifica in tempo reale (il badge #)","Il piccolo numero accanto a ogni bandiera è la posizione ATTUALE di quella nazione in classifica, non un rango FIFA fisso. Sale man mano che una nazione conquista territorio e infila vittorie. Più basso è più forte."],
         ["📊","Punteggio di potenza","La lista della classifica nel riquadro Turno · Vive ordina ogni nazione sopravvissuta per un punteggio di potenza in tempo reale. Il territorio conta di più (circa 10 punti per paese posseduto), la forma attuale si aggiunge sopra (+3 per ogni battaglia vinta di fila) e il rating FIFA iniziale è solo un piccolo seme (sotto i 9 punti) che serve solo a rompere la parità al fischio d'inizio. Quindi territorio e slancio decidono la tabella — il FIFA fissa solo l'ordine di partenza, poi cede man mano che gli imperi crescono."],
@@ -398,7 +398,7 @@ window.FC_HELP_I18N = {
         ["⚔️","Tactieken","Kies vóór een wedstrijd Defensief, Gebalanceerd of Aanvallend om de kansen te sturen. Steen-papier-schaar: Aanvallend verslaat Defensief, Defensief verslaat Gebalanceerd, Gebalanceerd verslaat Aanvallend."],
         ["🌀","Twists","Ongeveer één op de vijf wedstrijden gooit een verrassing op — een blessure, het weer, een grudge-wedstrijd — die de kansen of de score verschuift."]
       ]},
-      { h: "Een duel lezen", rows: [
+      { h: "Ranglijstlogica", rows: [
         ["⭐","OVR & sterren","Elke natie toont een algemene rating en een sterrenniveau afgeleid van zijn FIFA-ranking — een snelle blik op wie de favoriet is."],
         ["🔢","Live ranglijst (de #-badge)","Het kleine getal naast elke vlag is de HUIDIGE plaats van die natie in de stand, geen vaste FIFA-rang. Het klimt naarmate een natie land verovert en overwinningen aaneenrijgt. Lager is sterker."],
         ["📊","Machtscore","De ranglijst in het vak Beurt · In leven sorteert elke overlevende natie op een live machtscore. Land telt het zwaarst (ongeveer 10 punten per bezeten land), de huidige vorm komt er bovenop (+3 voor elke op rij gewonnen slag) en de start-FIFA-rating is slechts een kleine kiem (onder de 9 punten) die bij de aftrap alleen gelijke standen doorbreekt. Dus land en momentum bepalen de tabel — FIFA stelt enkel de openingsvolgorde in en maakt daarna plaats naarmate de rijken groeien."],
@@ -456,7 +456,7 @@ window.FC_HELP_I18N = {
         ["⚔️","Taktikker","Før en kamp, velg Defensiv, Balansert eller Offensiv for å vippe oddsen. Stein-saks-papir: Offensiv slår Defensiv, Defensiv slår Balansert, Balansert slår Offensiv."],
         ["🌀","Vrier","Omtrent én av fem kamper kaster inn en overraskelse — en skade, været, en hevnkamp — som endrer oddsen eller resultatet."]
       ]},
-      { h: "Lese et oppgjør", rows: [
+      { h: "Rangeringslogikk", rows: [
         ["⭐","OVR og stjerner","Hver nasjon viser en samlet vurdering og et stjernenivå hentet fra FIFA-rangeringen — en rask avlesning av hvem som er favoritt."],
         ["🔢","Sanntidsrangering (#-merket)","Det lille tallet ved hvert flagg er nasjonens NÅVÆRENDE plass på tabellen, ikke en fast FIFA-rangering. Den klatrer når en nasjon erobrer land og radler opp seire. Lavere er sterkere."],
         ["📊","Maktpoeng","Rangeringslisten i Runde · I live-boksen sorterer hver overlevende nasjon etter en maktpoengsum i sanntid. Land teller mest (omtrent 10 poeng per land som holdes), nåværende form legges på toppen (+3 for hver kamp vunnet på rad) og start-FIFA-vurderingen er bare et lite frø (under 9 poeng) som kun bryter uavgjort ved avspark. Så land og moment avgjør tabellen — FIFA setter bare startrekkefølgen og viker så etter hvert som imperiene vokser."],
@@ -514,7 +514,7 @@ window.FC_HELP_I18N = {
         ["⚔️","Taktiker","Före en match, välj Defensiv, Balanserad eller Offensiv för att tippa oddsen. Sten-sax-påse: Offensiv slår Defensiv, Defensiv slår Balanserad, Balanserad slår Offensiv."],
         ["🌀","Vändningar","Ungefär var femte match kastar in en överraskning — en skada, vädret, en revanschmatch — som förskjuter oddsen eller resultatet."]
       ]},
-      { h: "Läsa ett möte", rows: [
+      { h: "Rankningslogik", rows: [
         ["⭐","OVR och stjärnor","Varje nation visar ett totalbetyg och en stjärnnivå hämtade från dess FIFA-ranking — en snabb avläsning av vem som är favorit."],
         ["🔢","Live-ranking (#-märket)","Den lilla siffran vid varje flagga är den nationens NUVARANDE plats i tabellen, inte en fast FIFA-rankning. Den klättrar när en nation erövrar land och radar upp segrar. Lägre är starkare."],
         ["📊","Maktpoäng","Rankningslistan i rutan Omgång · Vid liv sorterar varje överlevande nation efter en maktpoäng i realtid. Land räknas mest (ungefär 10 poäng per land som hålls), den aktuella formen läggs ovanpå (+3 för varje strid vunnen i rad) och start-FIFA-betyget är bara ett litet frö (under 9 poäng) som bara skiljer vid lika läge vid avspark. Så land och tempo avgör tabellen — FIFA sätter bara öppningsordningen och lämnar sedan plats i takt med att imperierna växer."],
