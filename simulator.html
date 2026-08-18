@@ -1631,14 +1631,31 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-boost-btn[data-tone="mix"]{background:linear-gradient(180deg,#0f2a1a 0%,#050f08 100%);border-color:#1c4a2c;}
 .g-boost-nm{font-size:12px;font-weight:700;text-align:center;line-height:1.2;color:#e8eef5;}
 .g-boost-cost{font-size:11px;font-weight:800;color:#f4d77a;letter-spacing:.4px;}
-/* v242: effect legend under the boost buttons — one row per drawn boost so the
-   player can read exactly what each does (auto-built from the numbers). */
-.g-boost-legend{margin-top:9px;display:flex;flex-direction:column;gap:4px;}
-.g-boost-leg-row{display:flex;align-items:baseline;gap:7px;font-size:10.5px;line-height:1.3;}
-.g-boost-leg-ic{font-size:12px;flex-shrink:0;width:16px;text-align:center;}
-.g-boost-leg-nm{font-weight:700;color:#cfe0f0;flex-shrink:0;min-width:84px;}
-.g-boost-leg-fx{color:#8aa5bd;}
-.g-boost-leg-hint{margin-top:6px;font-size:9.5px;color:#6a8598;font-style:italic;text-align:center;}
+/* v244: ⓘ info toggle in the boost header + explainer that swaps IN PLACE of
+   the three boost buttons (same footprint), so nothing shifts on the card. */
+.g-boost-head-r{display:flex;align-items:center;gap:9px;}
+.g-boost-info-btn{background:transparent;border:1px solid #2a3f55;color:#7ab8e8;
+  width:20px;height:20px;border-radius:50%;font-size:12px;line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;transition:background .15s,color .15s,border-color .15s;}
+.g-boost-info-btn:hover{background:#0d1c2e;color:#fff;border-color:#7ab8e8;}
+.g-result-boosts.show-info .g-boost-info-btn{background:#7ab8e8;color:#0a1220;border-color:#7ab8e8;}
+/* Swap: while the explainer is open, hide the buttons and show the info list. */
+.g-boost-info{display:none;}
+.g-result-boosts.show-info .g-boost-btns{display:none;}
+.g-result-boosts.show-info .g-boost-info{display:flex;flex-direction:column;gap:6px;}
+/* Explainer rows — one per drawn boost, auto-built from its numbers. */
+.g-boost-info-row{display:flex;align-items:flex-start;gap:9px;background:#0e2034;
+  border:1px solid #1a2f40;border-radius:7px;padding:7px 9px;}
+.g-boost-info-row[data-tone="def"]{border-left:3px solid #7f94a8;}
+.g-boost-info-row[data-tone="off"]{border-left:3px solid #e67e22;}
+.g-boost-info-row[data-tone="mix"]{border-left:3px solid #2a8a4a;}
+.g-boost-info-ic{font-size:15px;flex-shrink:0;width:20px;text-align:center;line-height:1.3;}
+.g-boost-info-body{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.g-boost-info-nm{font-weight:700;color:#e8eef5;font-size:12px;}
+.g-boost-info-cost{color:#f4d77a;font-weight:800;font-size:11px;margin-left:4px;}
+.g-boost-info-fx{color:#8aa5bd;font-size:10.5px;line-height:1.3;}
+.g-boost-leg-hint{margin-top:4px;font-size:9.5px;color:#6a8598;font-style:italic;text-align:center;}
 .g-boost-don{display:flex;align-items:center;gap:8px;margin-top:11px;cursor:pointer;
   font-size:11px;color:#9fb4c8;-webkit-tap-highlight-color:transparent;}
 .g-boost-don input{width:15px;height:15px;accent-color:#c8102e;cursor:pointer;flex-shrink:0;}
@@ -4402,7 +4419,10 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
         <div class="g-result-boosts" id="g-result-boosts">
           <div class="g-boost-head">
             <span data-i18n="sim.boost.title">⭐ Aura Boosts</span>
-            <span class="g-boost-bal" id="g-boost-bal">0 ⭐</span>
+            <span class="g-boost-head-r">
+              <button type="button" class="g-boost-info-btn" id="g-boost-info-btn" data-i18n-attr="title:sim.boost.infotip" title="What do these do?" aria-label="Info">ⓘ</button>
+              <span class="g-boost-bal" id="g-boost-bal">0 ⭐</span>
+            </span>
           </div>
           <div class="g-boost-btns" id="g-boost-btns">
             <button class="g-boost-btn" type="button" data-boost="bus">
@@ -4421,10 +4441,11 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
               <span class="g-boost-cost">3⭐</span>
             </button>
           </div>
-          <!-- Effect legend: plain-language breakdown of the three boosts drawn
-               for this match, auto-built from each boost's numbers. Tells the
-               player exactly what each one does + that they stack. -->
-          <div class="g-boost-legend" id="g-boost-legend"></div>
+          <!-- Effect explainer: toggled by the ⓘ button, it swaps IN PLACE of
+               the three boost buttons (same footprint, nothing shifts) and shows
+               a plain-language breakdown of each drawn boost, auto-built from its
+               numbers, plus the stack limit. -->
+          <div class="g-boost-info" id="g-boost-info"></div>
           <!--
             Legacy Double or Nothing opt-in checkbox — kept in the DOM (with
             display:none via CSS) so existing save-game payloads that mention
@@ -4707,9 +4728,9 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 <!-- Localization: shared dictionary + i18n engine (EN/TR). FCLang.t() drives
      the simulator's dynamic strings; data-i18n attributes drive static ones. -->
-<script src="/js/translations.js?v=20260817boost-stacklimit"></script>
-<script src="/js/i18n.js?v=20260817boost-stacklimit"></script>
-<script src="/js/help-content.js?v=20260817boost-stacklimit"></script>
+<script src="/js/translations.js?v=20260817boost-infopanel"></script>
+<script src="/js/i18n.js?v=20260817boost-infopanel"></script>
+<script src="/js/help-content.js?v=20260817boost-infopanel"></script>
 <script>
 const FLAG_B64={
 'Albania':'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',
@@ -11988,6 +12009,8 @@ function openResultModal(){
   // BEFORE updateResultPreview so the win-% / xG already reflect the event.
   rollMatchEvent();
   renderMatchEventCard();
+  // Always open on the buttons view, not the ⓘ explainer, for a fresh matchup.
+  var _bp=document.getElementById('g-result-boosts'); if(_bp) _bp.classList.remove('show-info');
   if(typeof renderBoostPanel==='function') renderBoostPanel();
   // Refresh live preview (win prob + xG + tactic-button active state) for the
   // new matchup. Reads GAME.matchTactic which was reset to 'balanced' on spin.
@@ -12412,18 +12435,21 @@ function renderBoostPanel(){
       btn.classList.remove('free-eligible');
     }
   });
-  // Effect legend: one plain-language row per drawn boost, plus a stack hint.
-  const legend=document.getElementById('g-boost-legend');
-  if(legend){
+  // Effect explainer (behind the ⓘ toggle): one card per drawn boost — icon,
+  // name, cost and its plain-language effect — plus the stack limit.
+  const info=document.getElementById('g-boost-info');
+  if(info){
     let html=choices.map(function(k){
       const b=BOOSTS[k]; if(!b) return '';
-      return '<div class="g-boost-leg-row"><span class="g-boost-leg-ic">'+(b.icon||'⭐')+'</span>'
-        +'<span class="g-boost-leg-nm">'+boostName(k)+'</span>'
-        +'<span class="g-boost-leg-fx">'+fcBoostDesc(k)+'</span></div>';
+      return '<div class="g-boost-info-row" data-tone="'+(b.tone||'mix')+'">'
+        +'<span class="g-boost-info-ic">'+(b.icon||'⭐')+'</span>'
+        +'<span class="g-boost-info-body">'
+        +'<span class="g-boost-info-nm">'+boostName(k)+'<span class="g-boost-info-cost">'+b.cost+'⭐</span></span>'
+        +'<span class="g-boost-info-fx">'+fcBoostDesc(k)+'</span></span></div>';
     }).join('');
     let hint=''; try{ hint=FCLang.t('sim.boost.stackhint',{n:stackLimit}); }catch(e){}
     if(hint) html+='<div class="g-boost-leg-hint">'+hint+'</div>';
-    legend.innerHTML=html;
+    info.innerHTML=html;
   }
   const donChk=document.getElementById('g-boost-don-check');
   if(donChk) donChk.checked=!!(GAME&&GAME.doubleOrNothing);
@@ -12456,6 +12482,12 @@ function renderBoostPanel(){
   const don=document.getElementById('g-boost-don-check');
   if(don) don.addEventListener('change',function(){
     if(GAME) GAME.doubleOrNothing=don.checked;
+  });
+  // ⓘ toggle: swap the boost buttons for the effect explainer (same footprint).
+  const infoBtn=document.getElementById('g-boost-info-btn');
+  if(infoBtn) infoBtn.addEventListener('click',function(){
+    const p=document.getElementById('g-result-boosts');
+    if(p) p.classList.toggle('show-info');
   });
 })();
 
@@ -16844,7 +16876,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v243-boost-stack-limit-by-difficulty-2026-08-17';
+  window._FC_CAP_VERSION = 'v244-boost-info-toggle-panel-2026-08-17';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
