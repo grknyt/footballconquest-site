@@ -1121,6 +1121,21 @@ background:#0a1624;border-radius:5px;padding:8px 11px;line-height:1.55;}
 .g-ri-flag{width:26px;height:17px;border-radius:2px;background-size:cover;background-position:center;
   background-color:#16283a;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);flex-shrink:0;}
 .g-ri-flag.champ{width:40px;height:27px;box-shadow:0 0 0 2px #f4d77a,0 2px 8px rgba(0,0,0,.5);}
+/* v264: Imperialism sub-tabs (Recent / Champions / Power) + aggregate rows. */
+.g-ri-subtabs{display:flex;gap:6px;margin-bottom:12px;}
+.g-ri-subtab{flex:1;padding:8px 6px;border-radius:8px;border:1px solid #24405c;background:#0c1b2c;
+  color:#8fb0cd;font-size:11px;font-weight:700;cursor:pointer;text-transform:uppercase;
+  letter-spacing:.6px;-webkit-tap-highlight-color:transparent;transition:all .15s;}
+.g-ri-subtab:hover{color:#cfdaea;border-color:#35597c;}
+.g-ri-subtab.active{background:#16324e;color:#fff;border-color:#7ab8e8;}
+.g-ri-user{color:#6dd86d;font-weight:600;font-size:11px;}
+.g-ri-rank{display:flex;align-items:center;gap:11px;padding:9px 4px;border-bottom:1px solid #14283a;}
+.g-ri-rank:last-child{border-bottom:none;}
+.g-ri-rank-num{width:26px;text-align:center;font-weight:800;color:#7a9bb5;font-size:13px;flex-shrink:0;}
+.g-ri-rank-flag{width:36px;height:24px;border-radius:2px;background-size:cover;background-position:center;
+  background-color:#16283a;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);flex-shrink:0;}
+.g-ri-rank-name{flex:1;font-size:13px;font-weight:700;color:#eaf2fb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.g-ri-rank-val{font-size:13px;font-weight:800;color:#f4d77a;flex-shrink:0;font-variant-numeric:tabular-nums;}
 .g-leaderboard-controls{display:flex;justify-content:space-between;align-items:center;
   margin-bottom:10px;gap:14px;flex-wrap:wrap;}
 .g-lb-sort-label{display:flex;align-items:center;gap:8px;font-size:11px;
@@ -4774,9 +4789,9 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 <!-- Localization: shared dictionary + i18n engine (EN/TR). FCLang.t() drives
      the simulator's dynamic strings; data-i18n attributes drive static ones. -->
-<script src="/js/translations.js?v=20260818impresult-i18n"></script>
-<script src="/js/i18n.js?v=20260818impresult-i18n"></script>
-<script src="/js/help-content.js?v=20260818impresult-i18n"></script>
+<script src="/js/translations.js?v=20260818i18n-audit-headings"></script>
+<script src="/js/i18n.js?v=20260818i18n-audit-headings"></script>
+<script src="/js/help-content.js?v=20260818i18n-audit-headings"></script>
 <script>
 const FLAG_B64={
 'Albania':'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',
@@ -10619,7 +10634,7 @@ function fcBuildHelpBody(body, sections){
   if(!body) return;
   body.innerHTML='';
   sections.forEach(function(sec){
-    const h=document.createElement('div'); h.className='fch-sec'; h.textContent=sec.h; body.appendChild(h);
+    const h=document.createElement('div'); h.className=sec.mode?'fch-sec fch-mode':'fch-sec'; h.textContent=sec.h; body.appendChild(h);
     sec.rows.forEach(function(r){
       const row=document.createElement('div'); row.className='fch-row';
       const ic=document.createElement('div'); ic.className='fch-ico'; ic.textContent=r[0];
@@ -10644,6 +10659,10 @@ function ensureHelpModal(){
      '.fch-x:hover{color:#fff;background:#1e3a55;}'+
      '.fch-body{overflow-y:auto;padding:4px 16px 16px;-webkit-overflow-scrolling:touch;}'+
      '.fch-sec{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#37d67a;margin:16px 0 6px;}'+
+     /* v263: mode-divider heading (World Conquest / Random Imperialism) in the
+        combined launcher guide — larger, centred, cream (distinct from the green
+        subheadings) with a top rule so each mode's section reads as a new block. */
+     '.fch-mode{font-size:17px;color:#f4ead5;text-align:center;letter-spacing:2px;margin:24px 0 12px;padding-top:16px;border-top:1px solid #274b6b;}'+
      '.fch-row{display:flex;gap:11px;padding:9px 0;border-top:1px solid #16304c;}'+
      '.fch-ico{font-size:19px;line-height:1.35;flex:none;width:24px;text-align:center;}'+
      '.fch-term{font-weight:700;font-size:14px;}'+
@@ -10686,7 +10705,7 @@ function openHelpModal(){
     var _T=(window.FCLang&&FCLang.t)?function(k){return FCLang.t(k);}:function(k){return k;};
     function _relabelFirst(secs, header){
       if(!secs||!secs.length) return secs;
-      var out=secs.slice(); out[0]={h:header, rows:secs[0].rows}; return out;
+      var out=secs.slice(); out[0]={h:header, rows:secs[0].rows, mode:true}; return out;
     }
     var _introSecs=[{ h:_T('sim.help.modes'), rows:[
       ["🌍", _T('sim.mode.wc.name'), _T('sim.mode.wc.desc')],
@@ -11588,19 +11607,43 @@ function fcSubmitRiRun(champ){
 // v250: render the GLOBAL Random Imperialism feed on the Imperialism tab. Shows
 // the local recaps instantly (works offline), then swaps in the worldwide feed
 // once it loads. Falls back to local if the API is unreachable or empty.
+// v264: the Imperialism tab now has three sub-views — Recent (the global run
+// feed, now with the player who ran each sim), Champions (nations by outright
+// wins) and Power (nations by weighted placement points, 10/6/4/2/1 for a
+// top-5 finish). _riView remembers the last-picked sub-view within a session.
+var _riView='recent';
+function fcSetRiView(v){ if(v) _riView=v; fcRenderRiBoard(); }
 function fcRenderRiBoard(){
   const body=document.getElementById('g-leaderboard-body');
-  const count=document.getElementById('g-leaderboard-count');
   if(!body) return;
-  renderRiRecaps(); // instant local render / offline fallback
+  const views=['recent','champions','power'];
+  if(views.indexOf(_riView)<0) _riView='recent';
+  const subbar='<div class="g-ri-subtabs">'+views.map(function(v){
+    return '<button type="button" class="g-ri-subtab'+(v===_riView?' active':'')+'" data-riview="'+v+'">'+
+      escapeHtml(FCLang.t('sim.ri.sub.'+v))+'</button>';
+  }).join('')+'</div>';
+  body.innerHTML=subbar+'<div id="g-ri-list"></div>';
+  body.querySelectorAll('.g-ri-subtab').forEach(function(btn){
+    btn.addEventListener('click',function(){ fcSetRiView(btn.getAttribute('data-riview')); });
+  });
+  if(_riView==='recent') fcRenderRiRecent();
+  else fcRenderRiAggregate(_riView);
+}
+// Recent global feed — local recaps render instantly (offline-safe), then the
+// worldwide feed swaps in, each row crediting the player who ran it.
+function fcRenderRiRecent(){
+  if(!document.getElementById('g-ri-list')) return;
+  renderRiRecaps();
   if(typeof fetch!=='function') return;
   fetch(FC_API_BASE+'/ri-leaderboard?view=recent&limit=40')
     .then(function(r){ return r.ok?r.json():null; })
     .then(function(data){
       const rows=(data&&Array.isArray(data.rows))?data.rows:null;
-      if(!rows||!rows.length) return; // keep the local fallback already shown
+      const el=document.getElementById('g-ri-list');
+      if(!el||!rows||!rows.length) return; // keep the local fallback already shown
+      const count=document.getElementById('g-leaderboard-count');
       if(count) count.textContent=FCLang.t(rows.length===1?'sim.lb.run':'sim.lb.runs',{n:rows.length});
-      body.innerHTML=rows.map(function(r){
+      el.innerHTML=rows.map(function(r){
         const flags=(r.top||[]).slice(0,5).map(function(name,i){
           const b64=(typeof FLAG_B64!=='undefined')?FLAG_B64[name]:null;
           const bg=b64?('background-image:url(data:image/png;base64,'+b64+')'):'';
@@ -11609,13 +11652,48 @@ function fcRenderRiBoard(){
         }).join('');
         const champNm=r.champion?escapeHtml(teamDisplayName(r.champion)):'—';
         const ms=Date.parse(r.submitted_at)||Date.now();
+        const user=r.username?'<span class="g-ri-user"> · '+FCLang.t('sim.ri.by',{name:escapeHtml(r.username)})+'</span>':'';
         return '<div class="g-ri-recap"><div class="g-ri-recap-head">'+
-          '<span class="g-ri-champ-name">🏆 '+champNm+'</span>'+
+          '<span class="g-ri-champ-name">🏆 '+champNm+user+'</span>'+
           '<span class="g-ri-recap-meta">'+FCLang.t('sim.gp.turn',{n:r.turns||0})+' · '+fcRiRecapDate(ms)+'</span>'+
           '</div><div class="g-ri-flags">'+flags+'</div></div>';
       }).join('');
     })
     .catch(function(){ /* offline — local recaps already shown */ });
+}
+// Champions / Power aggregate tables — a ranked list of nations. champions →
+// most outright wins; power → weighted placement points (server-computed).
+function fcRenderRiAggregate(view){
+  const listEl=document.getElementById('g-ri-list');
+  if(!listEl) return;
+  const count=document.getElementById('g-leaderboard-count');
+  if(count) count.textContent='';
+  if(typeof fetch!=='function'){ listEl.innerHTML=''; return; }
+  fetch(FC_API_BASE+'/ri-leaderboard?view='+view+'&limit=50')
+    .then(function(r){ return r.ok?r.json():null; })
+    .then(function(data){
+      const rows=(data&&Array.isArray(data.rows))?data.rows:[];
+      const el=document.getElementById('g-ri-list');
+      if(!el) return;
+      if(!rows.length){
+        el.innerHTML='<div class="g-leaderboard-empty"><b>'+FCLang.t('sim.ri.empty.h')+'</b>'+FCLang.t('sim.ri.empty.p')+'</div>';
+        return;
+      }
+      const medals=['🥇','🥈','🥉'];
+      el.innerHTML=rows.map(function(r,i){
+        const nation=r.champion;
+        const b64=(typeof FLAG_B64!=='undefined')?FLAG_B64[nation]:null;
+        const bg=b64?('background-image:url(data:image/png;base64,'+b64+')'):'';
+        const nm=(typeof teamDisplayName==='function')?escapeHtml(teamDisplayName(nation)):escapeHtml(String(nation));
+        const rank=i<3?medals[i]:(i+1);
+        const val=(view==='power')?FCLang.t('sim.ri.pts',{n:r.points||0}):FCLang.t('sim.ri.wins',{n:r.wins||0});
+        return '<div class="g-ri-rank"><span class="g-ri-rank-num">'+rank+'</span>'+
+          '<span class="g-ri-rank-flag" style="'+bg+'"></span>'+
+          '<span class="g-ri-rank-name">'+nm+'</span>'+
+          '<span class="g-ri-rank-val">'+val+'</span></div>';
+      }).join('');
+    })
+    .catch(function(){ const el=document.getElementById('g-ri-list'); if(el) el.innerHTML=''; });
 }
 // v223: Random Imperialism VICTORY overlay — a full-screen champion moment so the
 // winner is unmistakable. The map flag ends wherever the final battle was fought
@@ -11734,7 +11812,10 @@ function fcRiRecapDate(ms){
 // Render the local Random Imperialism recaps into the leaderboard body: each
 // completed run as a single flag row — champion (gold) then the top-10 finishers.
 function renderRiRecaps(){
-  const body=document.getElementById('g-leaderboard-body');
+  // v264: when the Imperialism sub-tabs are mounted, render into the content
+  // region (#g-ri-list) so the sub-tab bar above it survives; otherwise fall
+  // back to the whole leaderboard body (standalone/offline path).
+  const body=document.getElementById('g-ri-list')||document.getElementById('g-leaderboard-body');
   const count=document.getElementById('g-leaderboard-count');
   if(!body) return;
   const list=fcLoadRiRecaps();
@@ -17181,7 +17262,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v262-impresult-i18n-fix-2026-08-18';
+  window._FC_CAP_VERSION = 'v263-i18n-audit-mode-headings-2026-08-18';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
