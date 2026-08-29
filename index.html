@@ -87,6 +87,14 @@
           <a href="#play" class="btn-primary" data-i18n="home.cta.start">Start a campaign →</a>
           <a href="/how-to-play.html" class="btn-secondary" data-i18n="home.cta.how">How it works</a>
         </div>
+        <!-- Google Play badge — the app is live on Android. Official Google-hosted
+             badge asset (brand-compliant); degrades to a styled text link if the
+             image ever fails to load. -->
+        <a class="hero-play-badge" href="https://play.google.com/store/apps/details?id=com.ghiellini.footballconquest" target="_blank" rel="noopener" aria-label="Get it on Google Play"
+           style="display:inline-block;margin-top:6px;line-height:0">
+          <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" style="height:56px;width:auto;display:block"
+               onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),{textContent:'▶ Get it on Google Play',style:'display:inline-block;background:#00875f;color:#fff;padding:11px 16px;border-radius:9px;font-weight:700;font-size:14px'}))">
+        </a>
         <div class="hero-stats">
           <div class="stat"><span class="stat-num">212</span><span class="stat-label" data-i18n="home.stat.nations">Nations</span></div>
           <div class="stat"><span class="stat-num">2</span><span class="stat-label" data-i18n="home.stat.modes">Modes</span></div>
@@ -269,7 +277,7 @@
 </footer>
 
 <!-- Localization: translations dictionary + i18n engine. -->
-<script src="/js/translations.js?v=20260724fifa"></script>
-<script src="/js/i18n.js?v=20260724fifa"></script>
+<script src="/js/translations.js?v=20260819playbadge"></script>
+<script src="/js/i18n.js?v=20260819playbadge"></script>
 </body>
 </html>

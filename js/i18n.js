@@ -284,3 +284,117 @@
     document.addEventListener('DOMContentLoaded', wireHamburger);
   } else { wireHamburger(); }
 })();
+
+/* ── Google Play promo: footer badge (all pages) + dismissible smart banner ──
+   The Android app is live, so every marketing page gets a "Get it on Google
+   Play" badge in its footer, plus a slim dismissible bottom banner. This file
+   loads on EVERY page (incl. simulator.html), so we hard-suppress the promo:
+     • inside the native app  (window.Capacitor / _FC_CAP_VERSION) — they're
+       already IN the app, and Play policy frowns on cross-promo-to-self;
+     • inside an iframe        (simulator.html embedded in play.html) — the
+       promo belongs on the wrapper page, not painted over the game;
+     • the banner is also skipped on the game page (body.play-page) so a fixed
+       bar can never cover the in-game controls — that page still gets the
+       footer badge below the game.
+   Self-contained: its own tiny 10-language string table + CSS, no dependency on
+   translations.js. Uses Google's official hosted badge asset (brand-compliant),
+   with a styled text fallback if the image ever fails to load. */
+(function () {
+  var PLAY_URL = 'https://play.google.com/store/apps/details?id=com.ghiellini.footballconquest';
+  var BADGE_IMG = 'https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png';
+
+  var inApp = !!(window.Capacitor || window._FC_CAP_VERSION ||
+    (document.body && document.body.classList.contains('fc-capacitor-app')));
+  var inFrame = (window.self !== window.top);
+  if (inApp || inFrame) return;   // never promote the app inside the app / the game
+
+  // Tiny self-contained banner headline table (badge wordmark stays English —
+  // that's how Google's official badge works). Falls back to English.
+  var STR = {
+    en: 'Play Football Conquest anywhere — now on Android',
+    tr: "Football Conquest'i her yerde oyna — artık Android'de",
+    es: 'Juega a Football Conquest donde quieras: ya en Android',
+    pt: 'Jogue Football Conquest em qualquer lugar — agora no Android',
+    fr: 'Jouez à Football Conquest partout — maintenant sur Android',
+    de: 'Football Conquest überall spielen — jetzt für Android',
+    it: 'Gioca a Football Conquest ovunque — ora su Android',
+    nl: 'Speel Football Conquest overal — nu op Android',
+    no: 'Spill Football Conquest overalt — nå på Android',
+    sv: 'Spela Football Conquest överallt — nu på Android'
+  };
+  function line() {
+    var l = (window.FCLang && FCLang.current) || 'en';
+    return STR[l] || STR.en;
+  }
+  // Badge <a> markup at a given pixel height, with an inline image-load fallback.
+  function badgeAnchor(height, cls, extraStyle) {
+    var fb = "this.onerror=null;this.replaceWith(Object.assign(document.createElement('span'),"
+      + "{textContent:'▶ Get it on Google Play',className:'fc-badge-fallback'}))";
+    return '<a class="' + cls + '" href="' + PLAY_URL + '" target="_blank" rel="noopener" '
+      + 'aria-label="Get it on Google Play" style="display:inline-block;line-height:0;' + (extraStyle || '') + '">'
+      + '<img src="' + BADGE_IMG + '" alt="Get it on Google Play" '
+      + 'style="height:' + height + 'px;width:auto;display:block" onerror="' + fb + '"></a>';
+  }
+
+  function injectStyles() {
+    if (document.getElementById('fc-promo-css')) return;
+    var s = document.createElement('style');
+    s.id = 'fc-promo-css';
+    s.textContent =
+      '#fc-app-banner{position:fixed;left:0;right:0;bottom:0;z-index:9500;display:flex;align-items:center;gap:14px;'
+      + 'padding:9px 14px;background:rgba(9,18,28,.97);border-top:1px solid #23503f;'
+      + 'box-shadow:0 -6px 22px rgba(0,0,0,.4);animation:fc-ab-in .35s ease}'
+      + '@keyframes fc-ab-in{from{transform:translateY(100%)}to{transform:translateY(0)}}'
+      + '#fc-app-banner .fc-ab-text{flex:1;min-width:0;color:#dce8f0;font-size:14px;font-weight:600;line-height:1.3}'
+      + '#fc-app-banner .fc-ab-badge{flex-shrink:0}'
+      + '#fc-app-banner .fc-ab-x{flex-shrink:0;background:transparent;border:0;color:#8fb0c8;font-size:16px;'
+      + 'cursor:pointer;padding:6px 8px;line-height:1;border-radius:6px}'
+      + '#fc-app-banner .fc-ab-x:hover{color:#fff;background:rgba(255,255,255,.08)}'
+      + '.fc-footer-badge{margin-top:14px}'
+      + '.fc-badge-fallback{display:inline-block;background:#00875f;color:#fff;padding:9px 13px;border-radius:8px;'
+      + 'font-weight:700;font-size:13px}'
+      + '@media(max-width:520px){#fc-app-banner{gap:10px;padding:8px 10px}#fc-app-banner .fc-ab-text{font-size:12.5px}}';
+    document.head.appendChild(s);
+  }
+
+  // Footer badge — appended once to each page's footer brand block.
+  function injectFooterBadge() {
+    var brands = document.querySelectorAll('footer.footer .footer-brand');
+    brands.forEach(function (brand) {
+      if (brand.querySelector('.fc-footer-badge')) return;
+      var wrap = document.createElement('div');
+      wrap.innerHTML = badgeAnchor(46, 'fc-footer-badge', 'margin-top:14px');
+      brand.appendChild(wrap.firstChild);
+    });
+  }
+
+  // Dismissible bottom banner — skipped on the game page + once dismissed.
+  var DISMISS_KEY = 'fc-appbanner-dismissed';
+  function injectBanner() {
+    if (document.body && document.body.classList.contains('play-page')) return; // game page: badge only
+    try { if (localStorage.getItem(DISMISS_KEY) === '1') return; } catch (e) {}
+    if (document.getElementById('fc-app-banner')) return;
+    var bar = document.createElement('div');
+    bar.id = 'fc-app-banner';
+    bar.setAttribute('role', 'region');
+    bar.setAttribute('aria-label', 'Get the Football Conquest app');
+    bar.innerHTML = '<span class="fc-ab-text">' + line() + '</span>'
+      + badgeAnchor(38, 'fc-ab-badge', '')
+      + '<button class="fc-ab-x" type="button" aria-label="Dismiss">✕</button>';
+    document.body.appendChild(bar);
+    bar.querySelector('.fc-ab-x').addEventListener('click', function () {
+      bar.remove();
+      try { localStorage.setItem(DISMISS_KEY, '1'); } catch (e) {}
+    });
+    // Re-localize the headline if the visitor switches language.
+    if (window.FCLang && Array.isArray(FCLang.onChange)) {
+      FCLang.onChange.push(function () {
+        var t = bar.querySelector('.fc-ab-text'); if (t) t.textContent = line();
+      });
+    }
+  }
+
+  function run() { injectStyles(); injectFooterBadge(); injectBanner(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+  else run();
+})();
