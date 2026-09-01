@@ -371,7 +371,10 @@
   // Dismissible bottom banner — skipped on the game page + once dismissed.
   var DISMISS_KEY = 'fc-appbanner-dismissed';
   function injectBanner() {
-    if (document.body && document.body.classList.contains('play-page')) return; // game page: badge only
+    if (document.body && document.body.classList.contains('play-page')) return; // game wrapper: badge only
+    // Never paint the banner over the game itself — e.g. a direct visit to the raw
+    // /simulator.html (not embedded, not in-app). #game-panel uniquely marks it.
+    if (document.getElementById('game-panel')) return;
     try { if (localStorage.getItem(DISMISS_KEY) === '1') return; } catch (e) {}
     if (document.getElementById('fc-app-banner')) return;
     var bar = document.createElement('div');
