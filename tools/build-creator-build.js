@@ -24,6 +24,7 @@ const ROOT = path.resolve(__dirname, '..');                       // repo root
 const SIM  = path.join(ROOT, 'simulator.html');
 const TRANSLATIONS = path.join(ROOT, 'js', 'translations.js');
 const I18N = path.join(ROOT, 'js', 'i18n.js');
+const HELP = path.join(ROOT, 'js', 'help-content.js');
 
 // Customer-facing release label. Pass a clean product version when you cut a
 // new store build:  FC_RELEASE=v1.2 node tools/build-creator-build.js
@@ -42,6 +43,7 @@ function must(cond, msg){ if(!cond){ console.error('✗ ' + msg); process.exit(1
 let html = fs.readFileSync(SIM, 'utf8');
 const translations = fs.readFileSync(TRANSLATIONS, 'utf8');
 const i18n = fs.readFileSync(I18N, 'utf8');
+const help = fs.existsSync(HELP) ? fs.readFileSync(HELP, 'utf8') : null;
 
 // 1. Title.
 must(html.includes('<title>Football Conquest</title>'), 'live <title> not found');
@@ -66,6 +68,13 @@ html = html.replace(/<script src="\/js\/translations\.js[^"]*"><\/script>/,
                     '<script>\n/* inlined js/translations.js */\n' + translations + '\n</script>');
 html = html.replace(/<script src="\/js\/i18n\.js[^"]*"><\/script>/,
                     '<script>\n/* inlined js/i18n.js */\n' + i18n + '\n</script>');
+// help-content.js was added after this script's first version; inline it too
+// (the in-game Help/Glossary modal 404s under file:// otherwise). Guarded so
+// the build still works if the file is ever removed.
+if (help !== null && /<script src="\/js\/help-content\.js[^"]*"><\/script>/.test(html)) {
+  html = html.replace(/<script src="\/js\/help-content\.js[^"]*"><\/script>/,
+                      '<script>\n/* inlined js/help-content.js */\n' + help + '\n</script>');
+}
 
 // 4. Banner CSS — inject before </head>.
 const BANNER_CSS =
