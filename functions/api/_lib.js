@@ -14,12 +14,10 @@ export const MAX_LEADERBOARD_DEPTH = 1000;
 export const MAX_USERNAME_LEN = 24;
 export const MAX_HERO_NAME_LEN = 40;
 export const MIN_CAMPAIGN_MS = 5_000;          // claimed-duration floor
-// 215 total entities on the map (UK is split into England/Scotland/Wales/NI,
-// so 212 nations + 3 extra splits − minus the hero themself = 214 territories
-// owned at full conquest). We allow up to 215 as the bounds-check ceiling to
-// be safe; the strict victory check below requires tOwned in [211, 214] so
-// runs from either the split-UK or unified-UK builds both validate cleanly.
-export const MAX_TERRITORIES_OWNED = 215;
+// The released national game owns 217 map regions at full conquest, including
+// the hero's starting land and folded regions such as Somaliland. Older builds
+// submit 211–214. Keep a bounded compatibility range for those released clients.
+export const MAX_TERRITORIES_OWNED = 217;
 export const MIN_VICTORY_TERRITORIES = 211;    // unified-UK build lower bound
 export const MAX_TURNS = 5_000;
 export const MAX_GOALS = 9_999;
@@ -106,10 +104,8 @@ export function validateSubmission(body) {
   // to turns (a player can lose many times in a row before getting eliminated).
   if (wins > turns + 1) return { error: 'turns_mismatch', detail: `${wins}>${turns}+1` };
 
-  // Full-map victory: tOwned must equal "everyone except yourself". The
-  // split-UK build produces 214; the unified-UK build (older or alternate
-  // configs) produces 211. Allow the inclusive range [211, 214].
-  if (result === 'victory' && (tOwned < MIN_VICTORY_TERRITORIES || tOwned > 214)) {
+  // Accept full-map totals from both current and older released national maps.
+  if (result === 'victory' && (tOwned < MIN_VICTORY_TERRITORIES || tOwned > MAX_TERRITORIES_OWNED)) {
     return { error: 'victory_without_full_map', detail: `tOwned=${tOwned}` };
   }
   if (result === 'eliminated') {
