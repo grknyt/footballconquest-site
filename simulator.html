@@ -17472,7 +17472,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v278-mobile-perf-2026-09-17';
+  window._FC_CAP_VERSION = 'v279-att-perf-2026-09-17';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
@@ -17960,11 +17960,25 @@ function openUsernameGate(onDone){
   // first launch — harmless on Android. Consent form is shown AFTER init
   // but BEFORE any ad preload so the first ad request already reflects
   // the user's consent decision (personalized vs non-personalized).
-  if (AdMob && AdMob.initialize) {
-    AdMob.initialize({
-      requestTrackingAuthorization: true,
-      initializeForTesting: AD_IS_TESTING,   // v253: mirror the test-ads flag
-      testingDevices: []
+  // v279 iOS ATT: request tracking authorization EXPLICITLY (and awaited)
+  // before initialize, instead of the initialize({requestTrackingAuthorization})
+  // option — that option can silently no-op if it fires before the app is in
+  // the active state, which is why Apple's reviewer couldn't find the prompt.
+  // requestTrackingAuthorization resolves instantly on Android and on iOS once
+  // the user has already answered, so it's safe on every platform. Deferred a
+  // beat so the webview is guaranteed active when the system prompt shows.
+  function fcInitAdMob(){
+    if (!(AdMob && AdMob.initialize)) return;
+    var attFirst = (AdMob.requestTrackingAuthorization)
+      ? AdMob.requestTrackingAuthorization().then(function(){
+          try { console.log('[FC-CAP] ATT prompt requested'); } catch(e){}
+        }).catch(function(e){ try { console.warn('[FC-CAP] ATT request failed (proceeding):', e); } catch(_){} })
+      : Promise.resolve();
+    attFirst.then(function(){
+      return AdMob.initialize({
+        initializeForTesting: AD_IS_TESTING,   // v253: mirror the test-ads flag
+        testingDevices: []
+      });
     }).then(function(){
       try { console.log('[FC-CAP] AdMob initialized (isTesting=' + AD_IS_TESTING + ')'); } catch(e){}
       requestConsentThen(function(){
@@ -17975,6 +17989,7 @@ function openUsernameGate(onDone){
       try { console.warn('[FC-CAP] AdMob init failed:', err); } catch(e){}
     });
   }
+  setTimeout(fcInitAdMob, 800);
 
   // Hook Game Over → New Game transition. showGameOverOverlay sets a pending
   // flag; startNewGameFlow consumes it. This scoping ensures the ad ONLY
