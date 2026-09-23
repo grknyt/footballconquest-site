@@ -2027,11 +2027,18 @@ body.map-light #inact{filter:drop-shadow(0 3px 4px rgba(0,0,0,0.18));}
    constant GPU repaint. Strip all three on touch devices (pointer:coarse =
    phones/tablets/app); desktop keeps the polish. Pure CSS, no gameplay change. */
 @media (pointer: coarse){
-  #active-layer,#inact,body.map-light #active-layer,body.map-light #inact{filter:none !important;}
+  /* Drop the costly shadow, but keep the map layers GPU-composited via a null
+     3D transform so pinch-zoom scales a cached texture (smooth on flagships)
+     instead of re-rasterising the SVG each gesture — without the shadow's
+     per-frame re-raster that overloaded weak GPUs. These leaf <g> groups carry
+     no transform of their own, so translateZ(0) can't shift the map. */
+  #active-layer,#inact,body.map-light #active-layer,body.map-light #inact{filter:none !important;transform:translateZ(0);}
   *{backdrop-filter:none !important;-webkit-backdrop-filter:none !important;}
   #game-panel.conquest-mode #g-spin-team:not(:disabled),
   #game-panel.conquest-mode #g-resolve:not(:disabled),
-  .g-btn.g-btn-ult:not(:disabled){animation:none !important;}
+  .g-btn.g-btn-ult:not(:disabled),
+  .fbadge.fc-hero-flag image,.fbadge.fc-hero-flag rect,
+  .g-hero-aura,.g-slot.winner{animation:none !important;}
 }
 .og-near{stop-color:#1a3a5c;stop-opacity:1;}
 .og-far{stop-color:#070f1a;stop-opacity:1;}
