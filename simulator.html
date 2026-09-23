@@ -6552,7 +6552,6 @@ function refreshLabels(k){
    their jobs (bounded world-view sizes, no mid-zoom blowups, readable
    minimums) all fall out of the clamp naturally. */
 function scaleBadges(k){
-  if(typeof rescaleGameOverlay==='function') rescaleGameOverlay();
   d3.select('#badge-layer').selectAll('.fbadge').attr('transform',function(){
     const id=parseInt(this.getAttribute('data-badge-id'));
     const s=getScale(id);
@@ -7536,12 +7535,20 @@ function buildMap(world){
   scaleBadges(1);
 
   svgSel=d3.select('#msvg');
+  var _lastZoomK=null;
   zoomBeh=d3.zoom().scaleExtent([1,72]).on('zoom',ev=>{
-    g.attr('transform',ev.transform);scaleBadges(ev.transform.k);
-    // Use the lightweight rescale during zoom — full rebuild is too expensive
-    // at 60fps. Game-state changes (turn end, conquest, retreat) call
-    // updateHeroGlow() directly when a full rebuild is actually warranted.
-    if(typeof rescaleHeroGlow==='function') rescaleHeroGlow();
+    g.attr('transform',ev.transform);
+    // v279 pan perf: d3.zoom fires 'zoom' for BOTH pan and zoom. On a pure PAN
+    // the scale k is unchanged, so re-scaling all ~200 flag badges + rebuilding
+    // the hero overlay + relaying out handles is pure waste — the parent
+    // transform above already moves every badge with the map. Only do that work
+    // when the ZOOM LEVEL actually changes.
+    var k=ev.transform.k;
+    if(k!==_lastZoomK){
+      _lastZoomK=k;
+      scaleBadges(k);
+      if(typeof rescaleHeroGlow==='function') rescaleHeroGlow();
+    }
   });
   svgSel.call(zoomBeh);
   $('zi').onclick=()=>svgSel.transition().duration(250).call(zoomBeh.scaleBy,1.5);
