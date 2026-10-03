@@ -2040,6 +2040,13 @@ body.map-light #inact{filter:drop-shadow(0 3px 4px rgba(0,0,0,0.18));}
   .fbadge.fc-hero-flag image,.fbadge.fc-hero-flag rect,
   .g-hero-aura,.g-slot.winner{animation:none !important;}
 }
+/* v284 lite pan (weak phones only, see the zoom handler): while a finger drags
+   the map, skip painting the flag badges + labels and use cheap path edges so
+   each frame is a plain shape repaint. Everything returns on release. */
+body.fc-lite-pan.fc-map-gesturing #badge-layer,
+body.fc-lite-pan.fc-map-gesturing #label-layer,
+body.fc-lite-pan.fc-map-gesturing #flag-handles{visibility:hidden;}
+body.fc-lite-pan.fc-map-gesturing #msvg path{shape-rendering:optimizeSpeed;}
 /* v280 viewport culling (ported from the Club Conquest preview): flags and
    territories well outside the visible map area skip painting and resize work. */
 .fbadge.fc-offscreen{visibility:hidden;pointer-events:none;}
@@ -7597,7 +7604,20 @@ function buildMap(world){
 
   svgSel=d3.select('#msvg');
   var _lastZoomK=null,_mapSettleTimer=0;
-  zoomBeh=d3.zoom().scaleExtent([1,72]).on('zoom',ev=>{
+  // v284 lite pan: on weak phones (iPhone 6 class, 2 CPU cores) WebKit can't
+  // re-raster the whole map at touch-event rate — the drag stutters and
+  // newly exposed areas paint blank. There: coalesce zoom writes to one per
+  // animation frame, and hide the flag badges/labels while a finger is on the
+  // map (they're ~200 embedded PNGs, the costliest part of each repaint).
+  // Override with localStorage fcLitePan = '1' / '0'.
+  var _litePan=(function(){
+    try{var o=localStorage.getItem('fcLitePan');if(o==='1')return true;if(o==='0')return false;}catch(e){}
+    var hc=navigator.hardwareConcurrency||0;
+    return hc>0&&hc<=2&&matchMedia('(pointer: coarse)').matches;
+  })();
+  if(_litePan)document.body.classList.add('fc-lite-pan');
+  var _litePending=null,_liteRaf=0;
+  function _applyZoom(ev){
     g.attr('transform',ev.transform);
     // v280: hide territories well off-screen so the GPU only paints what's visible.
     updateTerritoryViewport(ev.transform);
@@ -7615,6 +7635,20 @@ function buildMap(world){
       // v280: on a pan, only flags that just scrolled into view get resized.
       updateBadgeViewport(ev.transform,false);
     }
+  }
+  zoomBeh=d3.zoom().scaleExtent([1,72]).on('zoom',ev=>{
+    if(!_litePan){_applyZoom(ev);return;}
+    // Flags hide on the first real drag move, not on 'start', so a plain tap
+    // doesn't blink them. Camera flights (My Team, hero walk) have no
+    // sourceEvent and keep their flags visible.
+    if(ev.sourceEvent)document.body.classList.add('fc-map-gesturing');
+    _litePending=ev;
+    if(!_liteRaf)_liteRaf=requestAnimationFrame(()=>{_liteRaf=0;var e=_litePending;_litePending=null;if(e)_applyZoom(e);});
+  }).on('end.v284',()=>{
+    if(!_litePan)return;
+    if(_liteRaf){cancelAnimationFrame(_liteRaf);_liteRaf=0;}
+    if(_litePending){var e=_litePending;_litePending=null;_applyZoom(e);}
+    document.body.classList.remove('fc-map-gesturing');
   }).on('start.v280',()=>{
     // Re-measure the visible map once per gesture (cheap) so a layout change
     // that didn't fire window 'resize' (splash, panels, WebView bars) can't
@@ -17566,7 +17600,7 @@ function openUsernameGate(onDone){
   // Diagnostic — visible in chrome://inspect once webContentsDebuggingEnabled
   // is true in capacitor.config.json. Confirms the wrapper ran, and reports
   // which plugins actually made it into window.Capacitor.Plugins at runtime.
-  window._FC_CAP_VERSION = 'v283-no3d-2026-09-24';
+  window._FC_CAP_VERSION = 'v284-litepan-2026-10-03';
   try { console.log('[FC-CAP] tweaks active | version=', window._FC_CAP_VERSION, '| App=', !!CapApp, '| KeepAwake=', !!KeepAwake, '| StatusBar=', !!StatusBar, '| AdMob=', !!plugins.AdMob); } catch(e){}
 
   // ── (1) Android hardware back button ──
