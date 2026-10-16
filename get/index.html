@@ -2,71 +2,97 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Get Football Conquest</title>
-<meta name="description" content="Download Football Conquest on Google Play or the App Store, or play free in your browser.">
+<meta name="description" content="Download Football Conquest on Google Play or the App Store.">
 <meta property="og:title" content="Football Conquest: pick a nation, conquer the world">
-<meta property="og:description" content="Free football strategy game on Android, iPhone and the web.">
+<meta property="og:description" content="Free football strategy game on Android and iPhone.">
 <meta property="og:image" content="https://footballconquest.com/assets/fc-logo.png">
 <link rel="icon" href="/assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,900;1,900&display=swap" rel="stylesheet">
 <!-- Smart store link (Claude 2026-10-16; device language added the same day, ?lang=xx forces one): footballconquest.com/get sends Android phones to Google Play and
-     iPhones/iPads to the App Store automatically; everything else (PC, Mac) sees both badges + "play in browser".
-     ?to=play / ?to=ios / ?to=web force a destination (handy for testing); ?stay=1 shows the page without redirecting. -->
+     iPhones/iPads to the App Store automatically; everything else (PC, Mac) sees both store buttons, styled like the game's start screen
+     (stadium art carousel, Montserrat 900 italic title). ?to=play / ?to=ios force a destination (handy for testing); ?stay=1 shows the page without redirecting. -->
 <script>
 (function(){
   var PLAY='https://play.google.com/store/apps/details?id=com.ghiellini.footballconquest';
   var IOS='https://apps.apple.com/app/id6807651881';
-  var WEB='/simulator.html';
   var q=new URLSearchParams(location.search), to=q.get('to'), ua=navigator.userAgent||'';
   var isAndroid=/Android/i.test(ua);
   // iPadOS 13+ reports itself as a Mac; a touch screen gives it away
   var isIOS=/iPhone|iPad|iPod/i.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
-  var dest=to==='play'?PLAY:to==='ios'?IOS:to==='web'?WEB:(!q.get('stay')&&(isAndroid?PLAY:isIOS?IOS:null));
+  var dest=to==='play'?PLAY:to==='ios'?IOS:(!q.get('stay')&&(isAndroid?PLAY:isIOS?IOS:null));
   if(dest){location.replace(dest);}
-  window.FC_STORE={play:PLAY,ios:IOS,web:WEB};
 })();
 </script>
 <style>
-:root{--bg:#040b12;--card:#0d2231;--txt:#eaf4f8;--mut:#9fb6c2;--green:#6de8b0;--edge:#2b4c61}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--txt);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-body{display:flex;align-items:center;justify-content:center;padding:24px 16px;background:radial-gradient(120% 80% at 50% 110%,#0f3a2a 0%,#07161f 45%,#040b12 75%)}
-.card{width:min(420px,100%);text-align:center;padding:28px 22px;border-radius:20px;background:linear-gradient(180deg,#0f2738,#081723);box-shadow:inset 0 0 0 1.5px var(--edge),0 18px 40px #0008}
-img.logo{width:84px;height:84px}h1{margin:12px 0 4px;font-size:26px;font-style:italic;letter-spacing:-.5px}h1 span{color:var(--green)}
-p{color:var(--mut);margin:0 0 20px}
-.btn{display:flex;align-items:center;justify-content:center;gap:10px;margin:10px 0;padding:14px 16px;border-radius:14px;text-decoration:none;font-weight:800;color:#e6f2f8;background:#13283e;box-shadow:inset 0 0 0 1.5px #3b6680}
-.btn.web{background:linear-gradient(180deg,#9af7cd,#6de8b0 45%,#23b37a);color:#05281a;box-shadow:none}
-.btn small{display:block;font-weight:600;font-size:11px;opacity:.8}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#040b12;color:#eaf4f8;font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+body{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px 16px calc(24px + env(safe-area-inset-bottom,0px));overflow-x:hidden}
+/* stadium backdrop like the start screen: art cross-dissolves every 7 s */
+.bg{position:fixed;inset:-2%;background-size:cover;background-position:50% 60%;filter:saturate(.95) brightness(.7);opacity:0;transition:opacity 1.4s ease}
+.bg.on{opacity:1}
+.shade{position:fixed;inset:0;background:linear-gradient(180deg,#040b12ee 0%,#040b1288 30%,#040b1266 55%,#040b12e6 100%),radial-gradient(90% 70% at 50% 45%,transparent 40%,#000a)}
+main{position:relative;z-index:2;width:min(420px,100%);display:flex;flex-direction:column;gap:14px}
+.kick{font:900 11px/1.2 Montserrat,system-ui,sans-serif;letter-spacing:3px;color:#6de8b0;text-transform:uppercase}
+.brand{display:flex;align-items:center;gap:14px}
+.brand img{width:72px;height:72px;flex:none;filter:drop-shadow(0 4px 8px #000a)}
+h1{margin:0;font:italic 900 clamp(36px,10.5vw,60px)/.88 Montserrat,system-ui,sans-serif;letter-spacing:-1px;color:#f3fbff;text-shadow:0 4px 0 #000a}
+h1 span{display:block}h1 span+span{color:#6de8b0}
+.tag{color:#d3e4ec;font-size:15px;margin:2px 0 8px;text-shadow:0 2px 4px #000}
+.btn{display:flex;align-items:center;gap:14px;border-radius:14px;padding:14px 18px 16px;text-decoration:none;font:900 16px/1.15 Montserrat,system-ui,sans-serif;letter-spacing:.3px;text-transform:uppercase;transition:transform .06s,filter .15s}
+.btn:hover{filter:brightness(1.07)}.btn:active{transform:translateY(4px)}
+.btn span{text-align:left}
+.btn small{display:block;font:700 11px/1.2 Montserrat,system-ui,sans-serif;letter-spacing:.6px;opacity:.8;margin-top:3px;text-transform:none}
+.btn svg{width:28px;height:28px;flex:none}
+.btn.play,.btn.ios{background:linear-gradient(180deg,#9af7cd,#6de8b0 45%,#23b37a);color:#05281a;box-shadow:inset 0 2px 0 #ffffffb0,inset 0 -3px 0 #0a7a50,0 6px 0 #06573a,0 10px 18px #000a}
+@media (prefers-reduced-motion:reduce){.bg{transition:none}}
 </style>
 </head>
 <body>
-<main class="card">
-  <img class="logo" src="/assets/fc-logo.png" alt="Football Conquest">
-  <h1>FOOTBALL <span>CONQUEST</span></h1>
-  <p data-t="tag">Pick a nation. Build your squad. Conquer the world.</p>
-  <a class="btn" id="b-play" href="https://play.google.com/store/apps/details?id=com.ghiellini.footballconquest">▶ <span><b data-t="play">Get it on Google Play</b><small>Android</small></span></a>
-  <a class="btn" id="b-ios" href="https://apps.apple.com/app/id6807651881">🍎 <span><b data-t="ios">Download on the App Store</b><small>iPhone &amp; iPad</small></span></a>
-  <a class="btn web" href="/simulator.html" data-t="web">Play free in your browser</a>
+<div class="bg on"></div><div class="bg"></div><div class="shade"></div>
+<main>
+  <div class="kick" data-t="kick">The world is yours to conquer</div>
+  <div class="brand"><img src="/assets/fc-logo-round.png" alt="Football Conquest" width="72" height="72"><h1><span>FOOTBALL</span><span>CONQUEST</span></h1></div>
+  <div class="tag" data-t="tag">Pick a nation. Build your squad. Conquer the world.</div>
+  <a class="btn play" href="https://play.google.com/store/apps/details?id=com.ghiellini.footballconquest">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 2.6v18.8c0 .5.5.8 1 .6l10.9-10.1L5 1.9c-.5-.2-1 .2-1 .7zm13.6 8.1L6.6 1.3l12.2 7 .1.1-1.3 2.3zm2.6 1.5-2.4 1.4-1.7-1.6 1.7-1.6 2.4 1.4c.6.3.6 1.1 0 1.4zM6.6 22.7l11-9.4 1.3 2.3-.1.1-12.2 7z"/></svg>
+    <span><b data-t="play">Get it on Google Play</b><small>Android</small></span></a>
+  <a class="btn ios" href="https://apps.apple.com/app/id6807651881">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.2-1.7-3-1.900-3.6-2-1.5-.2-3 .9-3.8.9s-2-.9-3.3-.9C6.1 7 4.6 8 3.7 9.5c-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6s1.8-.8 3.3-.8 2 .8 3.3.8c1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.800 1.4-2.9-.1 0-2.9-1.1-2.9-4.3zM14 5.3c.7-.9 1.2-2 1-3.2-1 .1-2.2.7-2.9 1.6-.6.7-1.2 1.9-1 3.1 1.1.1 2.2-.6 2.9-1.5z"/></svg>
+    <span><b data-t="ios">Download on the App Store</b><small>iPhone &amp; iPad</small></span></a>
 </main>
+<script>
+/* stadium art carousel (same 8 images as the start screen), cross-dissolve every 7 s */
+(function(){
+  var A=['ist','kad','bar','dor','mad','mdv','mer','rio'],i=Math.floor(Math.random()*A.length),L=document.querySelectorAll('.bg');
+  L[0].style.backgroundImage='url(/assets/splash/'+A[i]+'.webp)';
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  setInterval(function(){i=(i+1)%A.length;var u='/assets/splash/'+A[i]+'.webp',im=new Image();
+    im.onload=function(){var on=document.querySelector('.bg.on'),off=on===L[0]?L[1]:L[0];off.style.backgroundImage='url('+u+')';off.classList.add('on');on.classList.remove('on');};im.src=u;},7000);
+})();
+</script>
 <script>
 /* device language (10-16): same 12 languages as the game; anything else stays English */
 (function(){
 var T={
-en:['Pick a nation. Build your squad. Conquer the world.','Get it on Google Play','Download on the App Store','Play free in your browser','Get Football Conquest'],
-tr:['Bir ülke seç. Kadronu kur. Dünyayı fethet.',"Google Play'den indir","App Store'dan indir",'Tarayıcıda ücretsiz oyna',"Football Conquest'i indir"],
-es:['Elige una selección. Arma tu plantilla. Conquista el mundo.','Disponible en Google Play','Descárgalo en el App Store','Juega gratis en tu navegador','Descarga Football Conquest'],
-pt:['Escolha uma seleção. Monte seu elenco. Conquiste o mundo.','Disponível no Google Play','Baixar na App Store','Jogue grátis no navegador','Baixe Football Conquest'],
-fr:['Choisis une nation. Construis ton effectif. Conquiers le monde.','Disponible sur Google Play',"Télécharger dans l'App Store",'Joue gratuitement dans ton navigateur','Télécharger Football Conquest'],
-de:['Wähle eine Nation. Baue deinen Kader. Erobere die Welt.','Jetzt bei Google Play','Laden im App Store','Kostenlos im Browser spielen','Football Conquest herunterladen'],
-it:['Scegli una nazionale. Costruisci la rosa. Conquista il mondo.','Disponibile su Google Play',"Scarica dall'App Store",'Gioca gratis nel browser','Scarica Football Conquest'],
-nl:['Kies een land. Bouw je selectie. Verover de wereld.','Ontdek het op Google Play','Download in de App Store','Speel gratis in je browser','Download Football Conquest'],
-sv:['Välj en nation. Bygg din trupp. Erövra världen.','Ladda ned på Google Play','Hämta i App Store','Spela gratis i webbläsaren','Ladda ned Football Conquest'],
-no:['Velg en nasjon. Bygg troppen. Erobre verden.','Last ned på Google Play','Last ned i App Store','Spill gratis i nettleseren','Last ned Football Conquest'],
-vi:['Chọn một quốc gia. Xây dựng đội hình. Chinh phục thế giới.','Tải trên Google Play','Tải về trên App Store','Chơi miễn phí trên trình duyệt','Tải Football Conquest'],
-id:['Pilih negara. Bangun skuadmu. Taklukkan dunia.','Dapatkan di Google Play','Unduh di App Store','Main gratis di browser','Unduh Football Conquest']};
+en:['The world is yours to conquer','Pick a nation. Build your squad. Conquer the world.','Get it on Google Play','Download on the App Store','Get Football Conquest'],
+tr:['Dünya seni bekliyor','Bir ülke seç. Kadronu kur. Dünyayı fethet.',"Google Play'den indir","App Store'dan indir","Football Conquest'i indir"],
+es:['El mundo es tuyo','Elige una selección. Arma tu plantilla. Conquista el mundo.','Disponible en Google Play','Descárgalo en el App Store','Descarga Football Conquest'],
+pt:['O mundo é seu','Escolha uma seleção. Monte seu elenco. Conquiste o mundo.','Disponível no Google Play','Baixar na App Store','Baixe Football Conquest'],
+fr:['Le monde est à toi','Choisis une nation. Construis ton effectif. Conquiers le monde.','Disponible sur Google Play',"Télécharger dans l'App Store",'Télécharger Football Conquest'],
+de:['Die Welt gehört dir','Wähle eine Nation. Baue deinen Kader. Erobere die Welt.','Jetzt bei Google Play','Laden im App Store','Football Conquest herunterladen'],
+it:['Il mondo è tuo','Scegli una nazionale. Costruisci la rosa. Conquista il mondo.','Disponibile su Google Play',"Scarica dall'App Store",'Scarica Football Conquest'],
+nl:['De wereld ligt aan je voeten','Kies een land. Bouw je selectie. Verover de wereld.','Ontdek het op Google Play','Download in de App Store','Download Football Conquest'],
+sv:['Världen är din','Välj en nation. Bygg din trupp. Erövra världen.','Ladda ned på Google Play','Hämta i App Store','Ladda ned Football Conquest'],
+no:['Verden er din','Velg en nasjon. Bygg troppen. Erobre verden.','Last ned på Google Play','Last ned i App Store','Last ned Football Conquest'],
+vi:['Thế giới là của bạn','Chọn một quốc gia. Xây dựng đội hình. Chinh phục thế giới.','Tải trên Google Play','Tải về trên App Store','Tải Football Conquest'],
+id:['Dunia milikmu','Pilih negara. Bangun skuadmu. Taklukkan dunia.','Dapatkan di Google Play','Unduh di App Store','Unduh Football Conquest']};
 var map={nb:'no',nn:'no',in:'id',ms:'id'},L='en',ls=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||'en']);
 for(var i=0;i<ls.length;i++){var c=String(ls[i]||'').toLowerCase().split('-')[0];c=map[c]||c;if(T[c]){L=c;break;}}
 var q=new URLSearchParams(location.search).get('lang');if(q&&T[q])L=q;
-var t=T[L],keys={tag:0,play:1,ios:2,web:3};document.documentElement.lang=L;document.title=t[4];
+var t=T[L],keys={kick:0,tag:1,play:2,ios:3};document.documentElement.lang=L;document.title=t[4];
 document.querySelectorAll('[data-t]').forEach(function(e){var k=keys[e.getAttribute('data-t')];if(k!=null)e.textContent=t[k];});
 })();
 </script>
