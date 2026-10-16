@@ -9,7 +9,7 @@
 <meta property="og:description" content="Free football strategy game on Android, iPhone and the web.">
 <meta property="og:image" content="https://footballconquest.com/assets/fc-logo.png">
 <link rel="icon" href="/assets/favicon.svg">
-<!-- Smart store link (Claude 2026-10-16): footballconquest.com/get sends Android phones to Google Play and
+<!-- Smart store link (Claude 2026-10-16; device language added the same day, ?lang=xx forces one): footballconquest.com/get sends Android phones to Google Play and
      iPhones/iPads to the App Store automatically; everything else (PC, Mac) sees both badges + "play in browser".
      ?to=play / ?to=ios / ?to=web force a destination (handy for testing); ?stay=1 shows the page without redirecting. -->
 <script>
@@ -42,10 +42,33 @@ p{color:var(--mut);margin:0 0 20px}
 <main class="card">
   <img class="logo" src="/assets/fc-logo.png" alt="Football Conquest">
   <h1>FOOTBALL <span>CONQUEST</span></h1>
-  <p>Pick a nation. Build your squad. Conquer the world.</p>
-  <a class="btn" id="b-play" href="https://play.google.com/store/apps/details?id=com.ghiellini.footballconquest">▶ <span>Get it on Google Play<small>Android</small></span></a>
-  <a class="btn" id="b-ios" href="https://apps.apple.com/app/id6807651881">🍎 <span>Download on the App Store<small>iPhone &amp; iPad</small></span></a>
-  <a class="btn web" href="/simulator.html">Play free in your browser</a>
+  <p data-t="tag">Pick a nation. Build your squad. Conquer the world.</p>
+  <a class="btn" id="b-play" href="https://play.google.com/store/apps/details?id=com.ghiellini.footballconquest">▶ <span><b data-t="play">Get it on Google Play</b><small>Android</small></span></a>
+  <a class="btn" id="b-ios" href="https://apps.apple.com/app/id6807651881">🍎 <span><b data-t="ios">Download on the App Store</b><small>iPhone &amp; iPad</small></span></a>
+  <a class="btn web" href="/simulator.html" data-t="web">Play free in your browser</a>
 </main>
+<script>
+/* device language (10-16): same 12 languages as the game; anything else stays English */
+(function(){
+var T={
+en:['Pick a nation. Build your squad. Conquer the world.','Get it on Google Play','Download on the App Store','Play free in your browser','Get Football Conquest'],
+tr:['Bir ülke seç. Kadronu kur. Dünyayı fethet.',"Google Play'den indir","App Store'dan indir",'Tarayıcıda ücretsiz oyna',"Football Conquest'i indir"],
+es:['Elige una selección. Arma tu plantilla. Conquista el mundo.','Disponible en Google Play','Descárgalo en el App Store','Juega gratis en tu navegador','Descarga Football Conquest'],
+pt:['Escolha uma seleção. Monte seu elenco. Conquiste o mundo.','Disponível no Google Play','Baixar na App Store','Jogue grátis no navegador','Baixe Football Conquest'],
+fr:['Choisis une nation. Construis ton effectif. Conquiers le monde.','Disponible sur Google Play',"Télécharger dans l'App Store",'Joue gratuitement dans ton navigateur','Télécharger Football Conquest'],
+de:['Wähle eine Nation. Baue deinen Kader. Erobere die Welt.','Jetzt bei Google Play','Laden im App Store','Kostenlos im Browser spielen','Football Conquest herunterladen'],
+it:['Scegli una nazionale. Costruisci la rosa. Conquista il mondo.','Disponibile su Google Play',"Scarica dall'App Store",'Gioca gratis nel browser','Scarica Football Conquest'],
+nl:['Kies een land. Bouw je selectie. Verover de wereld.','Ontdek het op Google Play','Download in de App Store','Speel gratis in je browser','Download Football Conquest'],
+sv:['Välj en nation. Bygg din trupp. Erövra världen.','Ladda ned på Google Play','Hämta i App Store','Spela gratis i webbläsaren','Ladda ned Football Conquest'],
+no:['Velg en nasjon. Bygg troppen. Erobre verden.','Last ned på Google Play','Last ned i App Store','Spill gratis i nettleseren','Last ned Football Conquest'],
+vi:['Chọn một quốc gia. Xây dựng đội hình. Chinh phục thế giới.','Tải trên Google Play','Tải về trên App Store','Chơi miễn phí trên trình duyệt','Tải Football Conquest'],
+id:['Pilih negara. Bangun skuadmu. Taklukkan dunia.','Dapatkan di Google Play','Unduh di App Store','Main gratis di browser','Unduh Football Conquest']};
+var map={nb:'no',nn:'no',in:'id',ms:'id'},L='en',ls=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||'en']);
+for(var i=0;i<ls.length;i++){var c=String(ls[i]||'').toLowerCase().split('-')[0];c=map[c]||c;if(T[c]){L=c;break;}}
+var q=new URLSearchParams(location.search).get('lang');if(q&&T[q])L=q;
+var t=T[L],keys={tag:0,play:1,ios:2,web:3};document.documentElement.lang=L;document.title=t[4];
+document.querySelectorAll('[data-t]').forEach(function(e){var k=keys[e.getAttribute('data-t')];if(k!=null)e.textContent=t[k];});
+})();
+</script>
 </body>
 </html>
