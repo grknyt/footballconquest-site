@@ -4840,10 +4840,12 @@ body.fc-aura-in-panel #game-panel.open.conquest-mode.g-mini .g-body > .g-aura-hb
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<!-- Claude 2026-10-22: if a CDN is blocked/unreachable, load the same files from a second CDN (otherwise the map never builds and Start does nothing). -->
+<script>window.d3||document.write('<script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"><\/script>');window.topojson||document.write('<script src="https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js"><\/script>');</script>
 <!-- Localization: shared dictionary + i18n engine (EN/TR). FCLang.t() drives
      the simulator's dynamic strings; data-i18n attributes drive static ones. -->
-<script src="/js/translations.js?v=20260924no3d"></script>
-<script src="/js/i18n.js?v=20260924no3d"></script>
+<script src="/js/translations.js?v=20261022cantstart"></script>
+<script src="/js/i18n.js?v=20261022cantstart"></script>
 <script src="/js/help-content.js?v=20260924no3d"></script>
 <script>
 const FLAG_B64={
@@ -11137,9 +11139,48 @@ $('btn-flag-hide').onclick=()=>{
 };
 
 window.addEventListener('resize',()=>{if(typeof renderHandles==='function')renderHandles();});
-fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json')
-  .then(r=>r.json()).then(buildMap)
-  .catch(()=>{$('hint').textContent='Failed to load map — please refresh.';});
+/* Claude 2026-10-22: the map came from ONE jsDelivr request with no retry. If it failed (or was still downloading
+   on a slow phone), Start Conquest threw inside resetMapVisuals (svgSel undefined) after setting GAME.mode, so the
+   picker just stayed open ("nothing happens"; bug reports showed mode=conquest, turn=0). Now the download retries
+   with a second CDN, and every start/resume path waits for the map via fcWhenMapReady(). */
+const FC_MAP_URLS=['https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json','https://unpkg.com/world-atlas@2/countries-50m.json'];
+window._fcMapBuilt=false;
+let _fcMapTry=0,_fcMapLoading=false,_fcMapPending=null;
+function fcLoadMap(){
+  if(window._fcMapBuilt||_fcMapLoading) return;
+  _fcMapLoading=true;
+  const url=FC_MAP_URLS[_fcMapTry%FC_MAP_URLS.length];
+  fetch(url).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(w=>{ buildMap(w); window._fcMapBuilt=true; _fcMapLoading=false; fcMapDrain(); })
+    .catch(e=>{
+      _fcMapLoading=false; _fcMapTry++;
+      console.warn('Map load failed ('+url+'):', e);
+      if(_fcMapTry<6){ setTimeout(fcLoadMap, Math.min(4000,600*_fcMapTry)); return; }
+      $('hint').textContent=FCLang.t('sim.map.loadfail');
+      const p=_fcMapPending;   // leave it queued: tapping the button again retries the download
+      if(p&&p.btn){ p.btn.disabled=false; p.btn.textContent=FCLang.t('sim.map.loadfail'); }
+    });
+}
+function fcWhenMapReady(fn,btn){
+  if(window._fcMapBuilt){ fn(); return; }
+  if(_fcMapPending&&_fcMapPending.btn&&_fcMapPending.btn!==btn) fcMapRestoreBtn(_fcMapPending);
+  _fcMapPending={fn:fn,btn:btn||null};
+  if(btn){ btn.disabled=true; btn.textContent=FCLang.t('sim.map.loading'); }
+  if(!_fcMapLoading){ if(_fcMapTry>=6) _fcMapTry=0; fcLoadMap(); }
+}
+function fcMapRestoreBtn(p){
+  if(!p||!p.btn) return;
+  p.btn.disabled=false;
+  const k=p.btn.getAttribute('data-i18n'); if(k) p.btn.textContent=FCLang.t(k);
+}
+function fcMapCancelPending(){ const p=_fcMapPending; _fcMapPending=null; fcMapRestoreBtn(p); }
+function fcMapDrain(){
+  const p=_fcMapPending; _fcMapPending=null;
+  if(!p) return;
+  fcMapRestoreBtn(p);
+  try{ p.fn(); }catch(e){ console.error('Deferred start failed:', e); }
+}
+fcLoadMap();
 
 
 
@@ -11207,6 +11248,7 @@ function openConquestStartup(){
   setTimeout(fcFitStartCard, 60);
 }
 function closeConquestStartup(){
+  if(typeof fcMapCancelPending==='function') fcMapCancelPending();   // Claude 2026-10-22: drop a start queued behind the map load
   const modal=document.getElementById('g-startup-modal');
   if(modal){modal.classList.remove('open');modal.style.display='none';}
   // If the user cancelled the mode picker (no game started), bring the splash back
@@ -11264,7 +11306,7 @@ function renderTeamList(filter){
 function wireStartupModal(){
   const resumeBtn=document.getElementById('g-resume-conquest');
   if(resumeBtn){
-    resumeBtn.addEventListener('click',()=>{
+    resumeBtn.addEventListener('click',()=>fcWhenMapReady(()=>{   // Claude 2026-10-22: wait for the map
       if(typeof loadConquestRun==='function' && loadConquestRun()){
         closeConquestStartup();
       } else {
@@ -11272,7 +11314,7 @@ function wireStartupModal(){
         if(typeof clearConquestRun==='function') clearConquestRun();
         updateResumeButton();
       }
-    });
+    },resumeBtn));
   }
   document.querySelectorAll('.g-mode-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
@@ -11287,9 +11329,8 @@ function wireStartupModal(){
         requestAnimationFrame(fcFitStartCard);
         setTimeout(fcFitStartCard, 60);
       } else {
-        // Imperialism: start immediately
-        startGameInMode('imperialism',null);
-        closeConquestStartup();
+        // Imperialism: start immediately (Claude 2026-10-22: once the map exists)
+        fcWhenMapReady(()=>{ startGameInMode('imperialism',null); closeConquestStartup(); });
       }
     });
   });
@@ -11343,8 +11384,12 @@ function wireStartupModal(){
   const startBtn=document.getElementById('g-start-conquest');
   if(startBtn) startBtn.addEventListener('click',()=>{
     if(_selectedConquestTeamId==null)return;
-    startGameInMode('conquest',_selectedConquestTeamId);
-    closeConquestStartup();
+    // Claude 2026-10-22: don't start before the map exists (it threw and left the picker stuck).
+    fcWhenMapReady(()=>{
+      if(_selectedConquestTeamId==null)return;
+      startGameInMode('conquest',_selectedConquestTeamId);
+      closeConquestStartup();
+    },startBtn);
   });
   // Random team picker — respects the current search filter (so if the
   // player has typed "asia" and hit random, they get a random Asian team).
@@ -18230,6 +18275,6 @@ function openUsernameGate(onDone){
 })();
 </script>
 
-<script src="js/fc-app-nudge.js?v=1" defer></script>
+<script src="js/fc-app-nudge.js?v=2" defer></script>
 </body>
 </html>

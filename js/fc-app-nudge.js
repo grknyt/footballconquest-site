@@ -56,6 +56,7 @@
       '#fcan-bar a.go{flex:none;padding:9px 12px;border-radius:10px;background:linear-gradient(180deg,#9af7cd,#6de8b0 45%,#23b37a);color:#05281a;font:900 12px/1 Montserrat,system-ui,sans-serif;text-transform:uppercase;text-decoration:none;white-space:nowrap}' +
       '#fcan-bar button{flex:none;width:30px;height:30px;border:0;border-radius:8px;background:transparent;color:#9fb6c2;font-size:20px;line-height:1;cursor:pointer}' +
       '@keyframes fcanUp{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}' +
+      'body.fcan-game:not(.fc-splash-active) #fcan-bar{display:none}' +   /* Claude 2026-10-22: never over the game's start card */
       '#fcan-card{position:fixed;inset:0;z-index:2147483001;display:flex;align-items:center;justify-content:center;padding:20px;background:#020609d9;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}' +
       '#fcan-card .box{width:min(400px,100%);padding:24px 20px 18px;border-radius:20px;background:linear-gradient(180deg,#0f2738,#081723);box-shadow:inset 0 0 0 1.5px #2b4c61,0 18px 40px #000a;color:#eaf4f8;text-align:center;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}' +
       '#fcan-card img.logo{width:72px;height:72px}#fcan-card h2{margin:10px 0 6px;font:italic 900 24px/1.05 Montserrat,system-ui,sans-serif;letter-spacing:-.5px}' +
@@ -90,6 +91,9 @@
     b.innerHTML = '<img src="/assets/fc-logo-round.png" alt="" onerror="this.src=\'/assets/fc-logo.png\'"><p><span class="l">' + t[0] + '</span><span class="s">' + t[2] + '</span></p>' +
       '<a class="go" href="' + GET + '?stay=1" data-w="bar_get">' + t[1] + '</a><button type="button" aria-label="Close">×</button>';
     if (mobile) b.querySelector('a.go').href = GET;
+    // Claude 2026-10-22: in the game, show the bar on the home splash only. It used to cover the bottom of the
+    // start card, so tapping "Start Conquest" hit the bar (or its store link) instead and the game never started.
+    if (document.getElementById('game-panel')) document.body.classList.add('fcan-game');
     document.body.appendChild(b);
     b.querySelector('a.go').onclick = function () { track('bar_get'); };
     b.querySelector('button').onclick = function () { track('bar_close'); b.remove(); try { sessionStorage.setItem('fc-nudge-bar', '1'); } catch (e) {} };

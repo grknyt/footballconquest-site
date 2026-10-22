@@ -375,6 +375,9 @@
     // Never paint the banner over the game itself — e.g. a direct visit to the raw
     // /simulator.html (not embedded, not in-app). #game-panel uniquely marks it.
     if (document.getElementById('game-panel')) return;
+    // Claude 2026-10-22: the home page runs the game in an iframe; a fixed bottom banner there sat on top of the
+    // game's "Start Conquest" button (taps hit the banner, the game never started). Badge only on such pages.
+    if (document.querySelector('iframe[src*="simulator"]')) return;
     try { if (localStorage.getItem(DISMISS_KEY) === '1') return; } catch (e) {}
     if (document.getElementById('fc-app-banner')) return;
     var bar = document.createElement('div');

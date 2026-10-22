@@ -395,6 +395,7 @@ window.FC_TRANSLATIONS = {
     /* B — map */
     "sim.map.hint": "Scroll/pinch to zoom · Drag to pan",
     "sim.map.loadfail": "Failed to load map — please refresh.",
+    "sim.map.loading": "Loading map…",   /* Claude 2026-10-22 */
     /* C — splash */
     "sim.splash.ed": "ED. 01 · GLOBAL",
     "sim.splash.preview": "BROADCAST PREVIEW",
@@ -1274,6 +1275,7 @@ window.FC_TRANSLATIONS = {
     "sim.log.willattack": "🎡 <b>{name}</b> bu tur saldıracak.",
     "sim.map.hint": "Yak\u0131nla\u015ft\u0131rmak i\u00e7in kayd\u0131r/s\u0131k\u0131\u015ft\u0131r \u00b7 S\u00fcr\u00fckleyerek kayd\u0131r",
     "sim.map.loadfail": "Harita y\u00fcklenemedi \u2014 sayfay\u0131 yenile.",
+    "sim.map.loading": "Harita y\u00fckleniyor\u2026",   /* Claude 2026-10-22 */
     "sim.over.3losses": "3 üst üste yenilgi · Son skor {score}",
     "sim.over.afterturns": "{turns} tur sonra",
     "sim.over.conquered": "<b>{hero}</b> d\u00fcnyay\u0131 fethetti!",
